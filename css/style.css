@@ -4,6 +4,21 @@
 }
 
 .state {
-  fill: #ccc;
-  stroke: #666;
+  fill: #fff;
+  stroke: none;
+}
+
+.viewer {
+	border: black 1px;
+	position: absolute;
+	left: 800px;
+	top: 300px;
+}
+
+.clickoff {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	height: 500px;
+	width: 1000px;
 }
