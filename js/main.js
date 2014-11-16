@@ -37,6 +37,8 @@ var svg = d3.select("body").append("svg")
     .attr("width", 960)
     .attr("height", 500);
 
+//
+
 d3.json("data/can.json", function(error, can) {
   svg.append("path")
       .datum(topojson.feature(can, can.objects.can))
@@ -63,22 +65,24 @@ d3.json("data/us.json", function(error, us) {
       .append("path")
       .attr("class", function(d) { return d.properties.stateID })
       .attr("d", path)
-      .attr("transform", function(d) {
+
+      /*.attr("transform", function(d) {
         var centroid = path.centroid(d),
             x = centroid[0],
             y = centroid[1];
         return "translate(" + x + "," + y + ")"
             + "scale(" + 100/Math.sqrt(valueById[d.properties.ID_1] || 0) + ")" //need to work on the proper scaling, esp. how to make scaling flexible to other toxics
             + "translate(" + -x + "," + -y + ")";
-      })
+      })*/
       .attr("fill", function(d) {return (valueById[d.properties.ID_1] > 0 ? "#ccc" : "#fff")}) // if state is one actually importing, fill it gray. if not, white
       /*.style("stroke-width", function(d) {
         return .1/Math.sqrt(valueById[d.properties.ID_1] || .01)
       })*/
-      
+
       .on("mouseover", highlight)
       .on("mouseout", dehighlight)
       .on("click", viewer);
+
   lakes();
 });
 
@@ -101,7 +105,7 @@ function dehighlight(data){
   //json or csv properties
   var subb = d3.selectAll("."+data.properties.stateID); //designate selector variable for brevity
   //var fillcolor = subb.select("desc").text(); //access original color from desc
-  subb.style({"stroke": "#000", "stroke-width": "1px"}); //reset enumeration unit to orginal color
+  subb.style({"stroke": "#000", "stroke-width": "0px"}); //reset enumeration unit to orginal color
   };
 
 function viewer(data){
@@ -109,7 +113,7 @@ function viewer(data){
   d3.select("body")
     .append("div")
     .attr("class", "clickoff")
-    .style({"background-color": "#d3d3d3", "opacity": ".3"}) //need to adjust size, color, opacity of div
+    .style({"background-color": "#d3d3d3", "opacity": ".75"}) //need to adjust size, color, opacity of div
     .on("click", function(){
       d3.selectAll(".viewer").remove()
       d3.selectAll(".clickoff").remove(); //removes itself so that the map can be clicked again
@@ -120,6 +124,43 @@ function viewer(data){
     .append("div")
     .attr("class", "viewer")
     .text("this is: "+data.properties.NAME_1+", which imports "+valueById[data.properties.ID_1]+" tons of lead");
-};
 
+  //load state map here
+  var width = 500;
+  var height = 500;
+  var stateObject = data.properties.NAME_1;
+  var svgViewer = d3.select(".viewer").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+  d3.json("data/"+stateObject+".json", function(error, state) {
+    // adapted from: http://bl.ocks.org/mbostock/4707858
+
+    var stateFeature = topojson.feature(state, state.objects[stateObject]);
+    // Create a unit projection.
+    
+    var projection = d3.geo.mercator()
+        .scale(1)
+        .translate([0, 0]);
+
+    // Create a path generator.
+    var path = d3.geo.path()
+        .projection(projection);
+
+    // Compute the bounds of a feature of interest, then derive scale & translate.
+    var b = path.bounds(stateFeature),
+        s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
+        t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+
+    // Update the projection to use computed scale & translate.
+    projection
+        .scale(s)
+        .translate(t);
+      
+    svgViewer.append("path")
+          .datum(stateFeature)
+          .attr("class", "land")
+          .attr("d", path);
+});
+
+};
 };

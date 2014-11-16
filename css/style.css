@@ -9,16 +9,19 @@
 }
 
 .viewer {
-	border: black 1px;
 	position: absolute;
+	height: 50%;
+	width: 25%;
 	left: 800px;
 	top: 300px;
+	border: 1px solid black;
+	background: #fff;
 }
 
 .clickoff {
 	position: absolute;
 	left: 0px;
 	top: 0px;
-	height: 500px;
-	width: 1000px;
+	height: 100%;
+	width: 100%;
 }
