@@ -1,3 +1,8 @@
+//global variables
+
+var latlongs;
+var svg;
+var projection;
 //begin script when window loads 
 window.onload = initialize(); 
 
@@ -14,8 +19,11 @@ for (var i = 0; i < 50; i++) valueById[i] = 0;
 d3.csv("data/leadTest.csv", function(data) {
   data.forEach(function(d){
     d.totalQuantityinShipment = +d.totalQuantityinShipment // convert the quantity of waste from string to number
+    d.exporterLAT = +d.exporterLAT
+    d.exporterLONG = +d.exporterLONG 
   });
-  var sum = d3.sum(data, function(d) { return d.totalQuantityinShipment; }); // sums quantity of waste in shipment for entire set
+  console.log(data);
+ // var sum = d3.sum(data, function(d) { return d.totalQuantityinShipment; }); // sums quantity of waste in shipment for entire set
   var nested_data = d3.nest() //d3.nest allows us to sum only parts of a column of data, in this case, sum total waste by state, creating a new array called netsted_data to do so. code adapted from: http://bl.ocks.org/phoebebright/raw/3176159/
   .key(function(d) { return d.receivingStateCode; }) // set state code as key
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
@@ -25,15 +33,19 @@ d3.csv("data/leadTest.csv", function(data) {
        valueById[nested_data[i]["key"]] = nested_data[i]["values"]["total_waste"];
         
 };
-
+  
+    latlongs = d3.nest()
+    .key(function(d) {return d.receivingStateCode;})
+    .key(function(d) {return d.exporterLONG;})
+    .entries(data);
 });
 
-var projection = d3.geo.albers();
+projection = d3.geo.albers();
 var path = d3.geo.path()
   .projection(projection);
 
 
-var svg = d3.select("body").append("svg")
+svg = d3.select("body").append("svg")
     .attr("width", 960)
     .attr("height", 500);
 
@@ -109,12 +121,35 @@ function dehighlight(data){
   };
 
 function viewer(data){
+
+   //implement function that will place locations of waste exporters on map
+  var latlongdump = [];
+   for (var i=0; i<latlongs.length-1; i++) {
+    if (latlongs[i]["key"] == data.properties.ID_1) {
+      for (var j=0; j<latlongs[i]["values"].length; j++) {
+        if( parseFloat(latlongs[i]["values"][j]["key"]) != 0) {
+            latlongdump.push([latlongs[i]["values"][j]["values"][0]["exporterLONG"], latlongs[i]["values"][j]["values"][0]["exporterLAT"]])
+        };     
+      };
+    };
+  };
+
+svg.selectAll(".pin")
+  .data(latlongdump)
+  .enter().append("circle", ".pin")
+  .attr("r", 15)
+  .attr("class", "pin")
+  .style("fill", "yellow")
+  .attr("cx", function(d) { return projection(d)[0]; }) 
+  .attr("cy", function(d) { return projection(d)[1]; });
+  
   //implement clickoff div - this creates a div that will do two things: 1) make the map more opaque, emphasizing the new info panel; 2) provide a clickable space so that when people click away from the info panel back to the map, the info panel closes
   d3.select("body")
     .append("div")
     .attr("class", "clickoff")
     .style({"background-color": "#d3d3d3", "opacity": ".75"}) //need to adjust size, color, opacity of div
     .on("click", function(){
+      d3.selectAll(".pin").remove()
       d3.selectAll(".viewer").remove()
       d3.selectAll(".clickoff").remove(); //removes itself so that the map can be clicked again
     });
@@ -137,22 +172,21 @@ function viewer(data){
 
     var stateFeature = topojson.feature(state, state.objects[stateObject]);
     // Create a unit projection.
-    
-    var projection = d3.geo.mercator()
+    var projectionV = d3.geo.mercator()
         .scale(1)
         .translate([0, 0]);
 
     // Create a path generator.
     var path = d3.geo.path()
-        .projection(projection);
+        .projection(projectionV);
 
     // Compute the bounds of a feature of interest, then derive scale & translate.
     var b = path.bounds(stateFeature),
-        s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
+        s = .5 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
         t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
 
     // Update the projection to use computed scale & translate.
-    projection
+    projectionV
         .scale(s)
         .translate(t);
       
@@ -160,7 +194,13 @@ function viewer(data){
           .datum(stateFeature)
           .attr("class", "land")
           .attr("d", path);
-});
+
+  
+
+
+  });
+
+
 
 };
 };
