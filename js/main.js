@@ -3,6 +3,9 @@
 var latlongs;
 var svg;
 var projection;
+var projectionV;
+var pathV;
+
 //begin script when window loads 
 window.onload = initialize(); 
 
@@ -22,7 +25,6 @@ d3.csv("data/leadTest.csv", function(data) {
     d.exporterLAT = +d.exporterLAT
     d.exporterLONG = +d.exporterLONG 
   });
-  console.log(data);
  // var sum = d3.sum(data, function(d) { return d.totalQuantityinShipment; }); // sums quantity of waste in shipment for entire set
   var nested_data = d3.nest() //d3.nest allows us to sum only parts of a column of data, in this case, sum total waste by state, creating a new array called netsted_data to do so. code adapted from: http://bl.ocks.org/phoebebright/raw/3176159/
   .key(function(d) { return d.receivingStateCode; }) // set state code as key
@@ -123,17 +125,21 @@ function dehighlight(data){
 function viewer(data){
 
    //implement function that will place locations of waste exporters on map
+   d3.selectAll(".pin").remove()
   var latlongdump = [];
+  var countydump = [];
    for (var i=0; i<latlongs.length-1; i++) {
     if (latlongs[i]["key"] == data.properties.ID_1) {
       for (var j=0; j<latlongs[i]["values"].length; j++) {
         if( parseFloat(latlongs[i]["values"][j]["key"]) != 0) {
-            latlongdump.push([latlongs[i]["values"][j]["values"][0]["exporterLONG"], latlongs[i]["values"][j]["values"][0]["exporterLAT"]])
+            countydump.push([latlongs[i]["values"][j]["values"][0]["receivingFacilityCounty"]]);
+             //which counties these foreign waste sites are exporting to...
+            latlongdump.push([latlongs[i]["values"][j]["values"][0]["exporterLONG"], latlongs[i]["values"][j]["values"][0]["exporterLAT"]]) //lat longs of the foreign waste sites
         };     
       };
     };
   };
-
+console.log(countydump[0]);
 svg.selectAll(".pin")
   .data(latlongdump)
   .enter().append("circle", ".pin")
@@ -144,7 +150,7 @@ svg.selectAll(".pin")
   .attr("cy", function(d) { return projection(d)[1]; });
   
   //implement clickoff div - this creates a div that will do two things: 1) make the map more opaque, emphasizing the new info panel; 2) provide a clickable space so that when people click away from the info panel back to the map, the info panel closes
-  d3.select("body")
+  /*d3.select("body")
     .append("div")
     .attr("class", "clickoff")
     .style({"background-color": "#d3d3d3", "opacity": ".75"}) //need to adjust size, color, opacity of div
@@ -152,9 +158,11 @@ svg.selectAll(".pin")
       d3.selectAll(".pin").remove()
       d3.selectAll(".viewer").remove()
       d3.selectAll(".clickoff").remove(); //removes itself so that the map can be clicked again
-    });
+    });*/
 
   //implement the info panel/viewer here
+
+  d3.selectAll(".viewer").remove();
   d3.select("body")
     .append("div")
     .attr("class", "viewer")
@@ -172,16 +180,16 @@ svg.selectAll(".pin")
 
     var stateFeature = topojson.feature(state, state.objects[stateObject]);
     // Create a unit projection.
-    var projectionV = d3.geo.mercator()
+    projectionV = d3.geo.mercator()
         .scale(1)
         .translate([0, 0]);
 
     // Create a path generator.
-    var path = d3.geo.path()
+    pathV = d3.geo.path()
         .projection(projectionV);
 
     // Compute the bounds of a feature of interest, then derive scale & translate.
-    var b = path.bounds(stateFeature),
+    var b = pathV.bounds(stateFeature),
         s = .5 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
         t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
 
@@ -193,13 +201,27 @@ svg.selectAll(".pin")
     svgViewer.append("path")
           .datum(stateFeature)
           .attr("class", "land")
-          .attr("d", path);
-
-  
-
+          .attr("d", pathV);
 
   });
 
+  //do work here getting counties...
+
+  //implement county filler here
+  d3.json("data/"+stateObject+"County.json", function(error, counties) {
+  var countyObject = ""+stateObject+"County";
+  var countyFeature = topojson.feature(counties, counties.objects[countyObject]).features;
+
+  svgViewer.selectAll(".counties")
+      .data(countyFeature)
+    .enter()
+      .append("g")
+      .attr("class", "counties")
+      .append("path")
+      .attr("class", function(d) { return d.properties.COUNTYFP })
+      .attr("d", pathV)
+      .attr("fill", function(d) {return countydump[0] == d.properties.COUNTYFP ? "#ccc" : "#fff"});
+  });
 
 
 };

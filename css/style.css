@@ -8,6 +8,11 @@
   stroke: none;
 }
 
+.counties {
+  stroke: none;
+  fill: #fff;
+}
+
 .viewer {
 	position: absolute;
 	height: 50%;
