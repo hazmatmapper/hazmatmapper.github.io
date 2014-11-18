@@ -7,6 +7,7 @@ var projectionV;
 var pathV;
 var latlongsR;
 var valueById;
+var latlongRdump = [];
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -59,140 +60,146 @@ function setMap(data) {
 console.log(latlongsR);
 
 //get facility data ready to project
-var latlongdump = [];
+
  for (var i=0; i<latlongsR.length-1; i++) {
     for (var j=0; j<latlongsR[i]["values"].length; j++) {
       if( parseFloat(latlongsR[i]["values"][j]["key"]) != 0) {
-          latlongdump.push([latlongsR[i]["values"][j]["values"][0]["receivingLong"], latlongsR[i]["values"][j]["values"][0]["receivingLat"]]) //lat longs of the foreign waste sites
+          latlongRdump.push({"long": latlongsR[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongsR[i]["values"][j]["values"][0]["receivingLat"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityName"]}) //lat longs of the foreign waste sites
       };     
     };
   };
 
-console.log(latlongdump);
+svg = d3.select("body").append("svg")
+    .attr("width", 960)
+    .attr("height", 500);
 
 projection = d3.geo.albers();
 var path = d3.geo.path()
   .projection(projection);
 
 
-svg = d3.select("body").append("svg")
-    .attr("width", 960)
-    .attr("height", 500);
+queue()
+  .defer(d3.json, "data/us.json")
+  .defer(d3.json, "data/can.json")
+  .defer(d3.json, "data/mex.json")
+  .defer(d3.json, "data/lakes.json")
+  .await(callback);
 
-//
+function callback(error, us, can, mex, lakes){
+  var us = svg.append("path")
+    .datum(topojson.feature(us, us.objects.usa))
+    .attr("class", "land")
+    .attr("d", path);
 
-d3.json("data/can.json", function(error, can) {
-  svg.append("path")
-      .datum(topojson.feature(can, can.objects.can))
-      .attr("class", "land")
-      .attr("d", path);
-});
+  var can = svg.append("path")
+    .datum(topojson.feature(can, can.objects.can))
+    .attr("class", "land")
+    .attr("d", path);
 
-d3.json("data/mex.json", function(error, mex) {
-  svg.append("path")
-      .datum(topojson.feature(mex, mex.objects.mex))
-      .attr("class", "land")
-      .attr("d", path);
-});
+  var mex = svg.append("path")
+    .datum(topojson.feature(mex, mex.objects.mex))
+    .attr("class", "land")
+    .attr("d", path);
 
+  var lakes =  svg.append("path")
+    .datum(topojson.feature(lakes, lakes.objects.lakes))
+    .attr("class", "land")
+    .attr("d", path);
 
-d3.json("data/us.json", function(error, us) {
-  svg.append("path")
-      .datum(topojson.feature(us, us.objects.usa))
-      .attr("class", "land")
-      .attr("d", path);
-});
+  importers();
 
-svg.selectAll(".facility")
-  .data(latlongdump)
-  .enter().append("circle", ".facility")
-  .attr("r", 15) //scale size here for proportional symboling
-  .attr("class", "facility")
-  .style("fill", "yellow")
-  .attr("cx", function(d) { return projection(d)[0]; }) 
-  .attr("cy", function(d) { return projection(d)[1]; })
-  .on("mouseover", highlight)
-  .on("mouseout", dehighlight)
-  .on("click", viewer);
-    //scaling algorithm
-    /*.attr("transform", function(d) {
-      var centroid = path.centroid(d),
-          x = centroid[0],
-          y = centroid[1];
-      return "translate(" + x + "," + y + ")"
-          + "scale(" + 100/Math.sqrt(valueById[d.properties.ID_1] || 0) + ")" //need to work on the proper scaling, esp. how to make scaling flexible to other toxics
-          + "translate(" + -x + "," + -y + ")";
-    })*/
-
-    //color by attribute algorithm
-    //.attr("fill", function(d) {return (valueById[d.properties.ID_1] > 0 ? "#ccc" : "#fff")}) // if state is one actually importing, fill it gray. if not, white
-   
-    //stroke-width by attribute algorithm
-    /*.style("stroke-width", function(d) {
-      return .1/Math.sqrt(valueById[d.properties.ID_1] || .01)
-    })*/
-lakes();
-//load great lakes last so that they overlay canada and us
-function lakes(){
-  d3.json("data/lakes.json", function(error, lakes) {
-  svg.append("path")
-      .datum(topojson.feature(lakes, lakes.objects.lakes))
-      .attr("class", "land")
-      .attr("d", path);
-});
+  };
 };
+
+function importers(data){
+  svg.selectAll(".facility")
+    .data(latlongRdump)
+    .enter().append("circle", ".facility")
+    .attr("r", 15) //scale size here for proportional symboling
+    .attr("class", function(d) {console.log(d.id); return d.id})
+    .style("fill", "yellow")
+    .attr("cx", function(d) {console.log(d.long); return projection([d.long, d.lat])[0]; }) 
+    .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
+    .on("mouseover", highlight)
+    .on("mouseout", dehighlight)
+    .on("click", viewer);
+    /*.append("desc") //append the current color
+          .text(function(d) {
+            return choropleth(d, colorize);
+          });*/
+      //scaling algorithm
+      /*.attr("transform", function(d) {
+        var centroid = path.centroid(d),
+            x = centroid[0],
+            y = centroid[1];
+        return "translate(" + x + "," + y + ")"
+            + "scale(" + 100/Math.sqrt(valueById[d.properties.ID_1] || 0) + ")" //need to work on the proper scaling, esp. how to make scaling flexible to other toxics
+            + "translate(" + -x + "," + -y + ")";
+      })*/
+
+      //color by attribute algorithm
+      //.attr("fill", function(d) {return (valueById[d.properties.ID_1] > 0 ? "#ccc" : "#fff")}) // if state is one actually importing, fill it gray. if not, white
+     
+      //stroke-width by attribute algorithm
+      /*.style("stroke-width", function(d) {
+        return .1/Math.sqrt(valueById[d.properties.ID_1] || .01)
+      })*/
 };
 
 function highlight(data){
-  console.log(data)
-  d3.selectAll("."+data.properties.stateID) //select the current province in the DOM
-    .style({"stroke": "#ffff00", "stroke-width": "5px"}); //yellow outline
+  d3.selectAll("."+data.id) //select the current province in the DOM
+    .style({"stroke": "black", "stroke-width": "5px"}); //yellow outline
 };
 
 function dehighlight(data){
   //json or csv properties
-  var subb = d3.selectAll("."+data.properties.stateID); //designate selector variable for brevity
+  var subb = d3.selectAll("."+data.id); //designate selector variable for brevity
   //var fillcolor = subb.select("desc").text(); //access original color from desc
   subb.style({"stroke": "#000", "stroke-width": "0px"}); //reset enumeration unit to orginal color
   };
 
 
 function viewer(data){
-  console.log(latlongs);
    //implement function that will place locations of waste exporters on map
-   d3.selectAll(".pin").remove()
+  //remove all other importers
+  var self = this;
+  var circles = d3.selectAll('svg circle');
+    // All other elements resize randomly.
+    circles.filter(function (x) { return self != this; })
+        .transition()
+        .remove();
+  d3.selectAll(".pin").remove();
   var latlongdump = [];
-  var countydump = [];
+  //var countydump = [];
    for (var i=0; i<latlongs.length-1; i++) {
-    if (latlongs[i]["key"] == data.properties.ID_1) {
-      for (var j=0; j<latlongs[i]["values"].length; j++) {
-        if( parseFloat(latlongs[i]["values"][j]["key"]) != 0) {
-            countydump.push([latlongs[i]["values"][j]["values"][0]["receivingFacilityCounty"]]);//which counties these foreign waste sites are exporting to...
-            latlongdump.push([latlongs[i]["values"][j]["values"][0]["exporterLONG"], latlongs[i]["values"][j]["values"][0]["exporterLAT"]]) //lat longs of the foreign waste sites
+    for (var j=0; j<latlongs[i]["values"].length; j++) {
+      if (latlongs[i]["values"][j]["values"][0]["receivingLong"] == data.long) {
+        latlongdump.push([latlongs[i]["values"][j]["values"][0]["exporterLONG"], latlongs[i]["values"][j]["values"][0]["exporterLAT"]]) //lat longs of the foreign waste sites
         };     
       };
     };
-  };
-console.log(countydump[0]);
+
 svg.selectAll(".pin")
   .data(latlongdump)
   .enter().append("circle", ".pin")
   .attr("r", 15)
   .attr("class", "pin")
-  .style("fill", "yellow")
+  .style("fill", "green")
   .attr("cx", function(d) { return projection(d)[0]; }) 
   .attr("cy", function(d) { return projection(d)[1]; });
   
   //implement clickoff div - this creates a div that will do two things: 1) make the map more opaque, emphasizing the new info panel; 2) provide a clickable space so that when people click away from the info panel back to the map, the info panel closes
-  /*d3.select("body")
+  d3.select("body")
     .append("div")
     .attr("class", "clickoff")
-    .style({"background-color": "#d3d3d3", "opacity": ".75"}) //need to adjust size, color, opacity of div
+    .style({"background-color": "#d3d3d3", "opacity": ".1"}) //need to adjust size, color, opacity of div
     .on("click", function(){
       d3.selectAll(".pin").remove()
       d3.selectAll(".viewer").remove()
-      d3.selectAll(".clickoff").remove(); //removes itself so that the map can be clicked again
-    });*/
+      d3.select(data.id).remove()
+      d3.selectAll(".clickoff").remove()
+      importers(); //removes itself so that the map can be clicked again
+    });
 
   //implement the info panel/viewer here
 
@@ -200,7 +207,7 @@ svg.selectAll(".pin")
   d3.select("body")
     .append("div")
     .attr("class", "viewer")
-    .text("this is: "+data.properties.NAME_1+", which imports "+valueById[data.properties.ID_1]+" tons of lead");
+    .text("this is: "+data.name+", which imports X tons of lead");
 
   //load state map here
   var width = 500;
