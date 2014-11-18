@@ -5,18 +5,20 @@ var svg;
 var projection;
 var projectionV;
 var pathV;
+var latlongsR;
+var valueById;
 
 //begin script when window loads 
 window.onload = initialize(); 
 
 //the first function called once the html is loaded 
 function initialize(){
-  setMap(); 
+  setData(); 
   
 }; 
 
-function setMap() {
-var valueById = new Array (50); 
+function setData(){
+valueById = new Array (50); 
 for (var i = 0; i < 50; i++) valueById[i] = 0;
 
 d3.csv("data/leadTest.csv", function(data) {
@@ -24,8 +26,11 @@ d3.csv("data/leadTest.csv", function(data) {
     d.totalQuantityinShipment = +d.totalQuantityinShipment // convert the quantity of waste from string to number
     d.exporterLAT = +d.exporterLAT
     d.exporterLONG = +d.exporterLONG 
+    d.receivingLat = +d.receivingLat
+    d.receivingLong = +d.receivingLong 
   });
- // var sum = d3.sum(data, function(d) { return d.totalQuantityinShipment; }); // sums quantity of waste in shipment for entire set
+
+  var sum = d3.sum(data, function(d) { return d.totalQuantityinShipment; }); // sums quantity of waste in shipment for entire set
   var nested_data = d3.nest() //d3.nest allows us to sum only parts of a column of data, in this case, sum total waste by state, creating a new array called netsted_data to do so. code adapted from: http://bl.ocks.org/phoebebright/raw/3176159/
   .key(function(d) { return d.receivingStateCode; }) // set state code as key
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
@@ -33,14 +38,37 @@ d3.csv("data/leadTest.csv", function(data) {
   delete nested_data[10]["key"]; //removes "" key for the waste that had no state listed - will need to rework to make flexible to any kind of waste
   for (var i=0; i<nested_data.length-1; i++) {
        valueById[nested_data[i]["key"]] = nested_data[i]["values"]["total_waste"];
-        
-};
+      };
   
-    latlongs = d3.nest()
-    .key(function(d) {return d.receivingStateCode;})
-    .key(function(d) {return d.exporterLONG;})
-    .entries(data);
+  latlongs = d3.nest() //rollup unique exportlatlongs
+  .key(function(d) {return d.receivingStateCode;})
+  .key(function(d) {return d.exporterLONG;})
+  .entries(data);
+
+  latlongsR = d3.nest() //rollup unique receivinglatlongs by state
+  .key(function(d) {return d.receivingStateCode;})
+  .key(function(d) {return d.receivingLong;})
+  .entries(data);
+
+  setMap(data);
+
 });
+}
+
+function setMap(data) {
+console.log(latlongsR);
+
+//get facility data ready to project
+var latlongdump = [];
+ for (var i=0; i<latlongsR.length-1; i++) {
+    for (var j=0; j<latlongsR[i]["values"].length; j++) {
+      if( parseFloat(latlongsR[i]["values"][j]["key"]) != 0) {
+          latlongdump.push([latlongsR[i]["values"][j]["values"][0]["receivingLong"], latlongsR[i]["values"][j]["values"][0]["receivingLat"]]) //lat longs of the foreign waste sites
+      };     
+    };
+  };
+
+console.log(latlongdump);
 
 projection = d3.geo.albers();
 var path = d3.geo.path()
@@ -68,38 +96,42 @@ d3.json("data/mex.json", function(error, mex) {
 });
 
 
-
 d3.json("data/us.json", function(error, us) {
-
-  svg.selectAll(".state")
-      .data(topojson.feature(us, us.objects.usa).features)
-    .enter()
-      .append("g")
-      .attr("class", "state")
-      .append("path")
-      .attr("class", function(d) { return d.properties.stateID })
-      .attr("d", path)
-
-      /*.attr("transform", function(d) {
-        var centroid = path.centroid(d),
-            x = centroid[0],
-            y = centroid[1];
-        return "translate(" + x + "," + y + ")"
-            + "scale(" + 100/Math.sqrt(valueById[d.properties.ID_1] || 0) + ")" //need to work on the proper scaling, esp. how to make scaling flexible to other toxics
-            + "translate(" + -x + "," + -y + ")";
-      })*/
-      .attr("fill", function(d) {return (valueById[d.properties.ID_1] > 0 ? "#ccc" : "#fff")}) // if state is one actually importing, fill it gray. if not, white
-      /*.style("stroke-width", function(d) {
-        return .1/Math.sqrt(valueById[d.properties.ID_1] || .01)
-      })*/
-
-      .on("mouseover", highlight)
-      .on("mouseout", dehighlight)
-      .on("click", viewer);
-
-  lakes();
+  svg.append("path")
+      .datum(topojson.feature(us, us.objects.usa))
+      .attr("class", "land")
+      .attr("d", path);
 });
 
+svg.selectAll(".facility")
+  .data(latlongdump)
+  .enter().append("circle", ".facility")
+  .attr("r", 15) //scale size here for proportional symboling
+  .attr("class", "facility")
+  .style("fill", "yellow")
+  .attr("cx", function(d) { return projection(d)[0]; }) 
+  .attr("cy", function(d) { return projection(d)[1]; })
+  .on("mouseover", highlight)
+  .on("mouseout", dehighlight)
+  .on("click", viewer);
+    //scaling algorithm
+    /*.attr("transform", function(d) {
+      var centroid = path.centroid(d),
+          x = centroid[0],
+          y = centroid[1];
+      return "translate(" + x + "," + y + ")"
+          + "scale(" + 100/Math.sqrt(valueById[d.properties.ID_1] || 0) + ")" //need to work on the proper scaling, esp. how to make scaling flexible to other toxics
+          + "translate(" + -x + "," + -y + ")";
+    })*/
+
+    //color by attribute algorithm
+    //.attr("fill", function(d) {return (valueById[d.properties.ID_1] > 0 ? "#ccc" : "#fff")}) // if state is one actually importing, fill it gray. if not, white
+   
+    //stroke-width by attribute algorithm
+    /*.style("stroke-width", function(d) {
+      return .1/Math.sqrt(valueById[d.properties.ID_1] || .01)
+    })*/
+lakes();
 //load great lakes last so that they overlay canada and us
 function lakes(){
   d3.json("data/lakes.json", function(error, lakes) {
@@ -108,9 +140,11 @@ function lakes(){
       .attr("class", "land")
       .attr("d", path);
 });
-}
+};
+};
 
 function highlight(data){
+  console.log(data)
   d3.selectAll("."+data.properties.stateID) //select the current province in the DOM
     .style({"stroke": "#ffff00", "stroke-width": "5px"}); //yellow outline
 };
@@ -122,8 +156,9 @@ function dehighlight(data){
   subb.style({"stroke": "#000", "stroke-width": "0px"}); //reset enumeration unit to orginal color
   };
 
-function viewer(data){
 
+function viewer(data){
+  console.log(latlongs);
    //implement function that will place locations of waste exporters on map
    d3.selectAll(".pin").remove()
   var latlongdump = [];
@@ -132,8 +167,7 @@ function viewer(data){
     if (latlongs[i]["key"] == data.properties.ID_1) {
       for (var j=0; j<latlongs[i]["values"].length; j++) {
         if( parseFloat(latlongs[i]["values"][j]["key"]) != 0) {
-            countydump.push([latlongs[i]["values"][j]["values"][0]["receivingFacilityCounty"]]);
-             //which counties these foreign waste sites are exporting to...
+            countydump.push([latlongs[i]["values"][j]["values"][0]["receivingFacilityCounty"]]);//which counties these foreign waste sites are exporting to...
             latlongdump.push([latlongs[i]["values"][j]["values"][0]["exporterLONG"], latlongs[i]["values"][j]["values"][0]["exporterLAT"]]) //lat longs of the foreign waste sites
         };     
       };
@@ -220,9 +254,8 @@ svg.selectAll(".pin")
       .append("path")
       .attr("class", function(d) { return d.properties.COUNTYFP })
       .attr("d", pathV)
-      .attr("fill", function(d) {return countydump[0] == d.properties.COUNTYFP ? "#ccc" : "#fff"});
+      .attr("fill", function(d) { return parseFloat(countydump[0][0]) == parseFloat(d.properties.COUNTYFP) ? "#ccc" : "#fff"}); // may need to do loop here if countydump > 1, if there are more than one counties in a state importing...
   });
 
 
-};
 };
