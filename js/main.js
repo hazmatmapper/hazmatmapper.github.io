@@ -8,6 +8,7 @@ var pathV;
 var latlongsR;
 var valueById;
 var latlongRdump = [];
+var facilitySum;
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -41,24 +42,31 @@ d3.csv("data/leadTest.csv", function(data) {
        valueById[nested_data[i]["key"]] = nested_data[i]["values"]["total_waste"];
       };
   
+  facilitySum = d3.nest()
+  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // set state code as key
+  .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
+  .entries(data);
+
+  console.log(facilitySum[0]["key"]);
+
   latlongs = d3.nest() //rollup unique exportlatlongs
   .key(function(d) {return d.receivingStateCode;})
   .key(function(d) {return d.exporterLONG;})
   .entries(data);
 
   latlongsR = d3.nest() //rollup unique receivinglatlongs by state
-  .key(function(d) {return d.receivingStateCode;})
+  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // set state code as key
   .key(function(d) {return d.receivingLong;})
   .entries(data);
 
+  brusher(data);
   setMap(data);
+  
 
 });
 }
 
 function setMap(data) {
-console.log(latlongsR);
-
 //get facility data ready to project
 
  for (var i=0; i<latlongsR.length-1; i++) {
@@ -69,6 +77,16 @@ console.log(latlongsR);
     };
   };
 
+
+for (var i =0; i<facilitySum.length-1; i++){
+  for (var j=0; j<latlongRdump.length; j++){
+    if (facilitySum[i]["key"] == latlongRdump[j].id){
+      console.log(latlongRdump);
+      latlongRdump[j].total_waste = facilitySum[i]["values"]["total_waste"]
+    }
+  } 
+}
+console.log(latlongRdump);
 svg = d3.select("body").append("svg")
     .attr("width", 960)
     .attr("height", 500);
@@ -106,17 +124,18 @@ function callback(error, us, can, mex, lakes){
     .attr("class", "land")
     .attr("d", path);
 
-  importers();
+  importers(latlongRdump);
 
   };
 };
 
 function importers(data){
+  console.log(data);
   svg.selectAll(".facility")
-    .data(latlongRdump)
+    .data(data)
     .enter().append("circle", ".facility")
     .attr("r", 15) //scale size here for proportional symboling
-    .attr("class", function(d) {console.log(d.id); return d.id})
+    .attr("class", function(d) {return d.id})
     .style("fill", "yellow")
     .attr("cx", function(d) {console.log(d.long); return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
@@ -144,6 +163,7 @@ function importers(data){
       /*.style("stroke-width", function(d) {
         return .1/Math.sqrt(valueById[d.properties.ID_1] || .01)
       })*/
+
 };
 
 function highlight(data){
@@ -157,6 +177,127 @@ function dehighlight(data){
   //var fillcolor = subb.select("desc").text(); //access original color from desc
   subb.style({"stroke": "#000", "stroke-width": "0px"}); //reset enumeration unit to orginal color
   };
+
+
+
+function brusher(data){
+  var max = d3.max(facilitySum, function(d) {return d.values.total_waste}),
+  min = d3.min(facilitySum, function(d) {return d.values.total_waste})
+  var margin = {top: 10, bottom: 10, left: 10, right: 10},
+      width = 200,
+      height = 100,
+      duration = 500,
+      formatNumber = d3.format(',d'),
+      brush = d3.svg.brush();
+
+    margin.left = formatNumber(d3.max(facilitySum, function(d) {return d.values.total_waste})).length * 10;
+  var w = width - margin.left - margin.right,
+      h = height - margin.top - margin.bottom;
+
+  var x = d3.scale.ordinal()
+              .rangeRoundBands([0, w], .01),
+      y = d3.scale.log()
+              .range([h, 0]);
+
+  y.domain([min, max]);
+  x.domain(facilitySum.map(function(d) { return d.key; }));
+
+
+  var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient('bottom'),
+      yAxis = d3.svg.axis()
+                .scale(y)
+                .orient('left'),
+      brush = d3.svg.brush()
+                      .x(x)
+                      .on('brushstart', brushstart)
+                      .on('brush', brushmove)
+                      .on('brushend', brushend);
+
+  var Bsvg = d3.select('#chart').selectAll('svg').data([facilitySum]),
+      svgEnter = Bsvg.enter().append('svg')
+                              .append('g')
+                                .attr('width', w)
+                                .attr('height', h)
+                                //.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+                                .classed('chart', true),
+      chart = d3.select('.chart');
+
+  svgEnter.append('g')
+            .classed('x axis', true)
+            .attr('transform', 'translate(' + 0 + ',' + h + ')');
+  svgEnter.append('g')
+            .classed('y axis', true)
+  svgEnter.append('g').classed('barGroup', true);
+  chart.selectAll('.brush').remove();
+  chart.selectAll('.selected').classed('selected', false);
+  chart.append('g')
+            .classed('brush', true)
+            .call(brush)
+          .selectAll('rect')
+            .attr('height', h);
+
+  bars = chart.select('.barGroup').selectAll('.bar').data(facilitySum);
+
+  bars.enter()
+        .append('rect')
+          .sort(function(a, b){return a.values.total_waste-b.values.total_waste})
+          .classed('bar', true)
+          .attr('x', w) // start here for object constancy
+          .attr('width', x.rangeBand())
+          .attr('y', function(d, i) { return y(d.values.total_waste); })
+          .attr('height', function(d, i) { return h - y(d.values.total_waste); })
+          .attr("class", function(d){
+            return "bar " + d.key;
+          })
+          .on("mouseover", highlight)
+          .on("mouseout", dehighlight);
+
+  bars.transition()
+        .duration(duration)
+          .attr('width', x.rangeBand())
+          .attr('x', function(d, i) { return x(d.key); })
+          .attr('y', function(d, i) { return y(d.values.total_waste); })
+          .attr('height', function(d, i) { return h - y(d.values.total_waste); });
+
+
+  chart.select('.x.axis')
+        .transition()
+            .duration(duration)
+              .call(xAxis);
+  chart.select('.y.axis')
+        .transition()
+            .duration(duration)
+              .call(yAxis);
+
+  function brushstart() {
+    chart.classed("selecting", true);
+  }
+
+  function brushmove() {
+    var extent = d3.event.target.extent();
+    bars.classed("selected", function(d) { return extent[0] <= x(d.values.total_waste) && x(d.values.total_waste) + x.rangeBand() <= extent[1];});
+
+    }
+  function brushend() {
+    chart.classed("selecting", !d3.event.target.empty());
+    var extent = brush.extent()
+    var filtered = facilitySum.filter(function(d) {
+        return (x(d.values.total_waste) > extent[0] && x(d.values.total_waste) < extent[1])
+      })
+    console.log(filtered);
+    var filterExit =[];
+    for (var i=0; i<filtered.length; i++) {
+      filterExit.push(filtered[i]["key"]);
+    }
+    var circle = d3.selectAll("circle")
+      .data(filterExit, function(d) { return(d); })
+    circle.exit().remove();
+
+  }
+
+};
 
 
 function viewer(data){
@@ -198,7 +339,7 @@ svg.selectAll(".pin")
       d3.selectAll(".viewer").remove()
       d3.select(data.id).remove()
       d3.selectAll(".clickoff").remove()
-      importers(); //removes itself so that the map can be clicked again
+      importers(latlongRdump); //removes itself so that the map can be clicked again
     });
 
   //implement the info panel/viewer here
@@ -207,7 +348,7 @@ svg.selectAll(".pin")
   d3.select("body")
     .append("div")
     .attr("class", "viewer")
-    .text("this is: "+data.name+", which imports X tons of lead");
+    .text("this is: "+data.name+", which imports "+data.total_waste+" tons of lead");
 
   //load state map here
   var width = 500;

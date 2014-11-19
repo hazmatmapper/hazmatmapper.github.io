@@ -1,3 +1,9 @@
+body {
+  font: 14px helvetica;
+  color: #f0f0f0;
+  background-color: #333;
+}
+
 .land {
   fill: #fff;
   stroke: #ccc;
@@ -29,4 +35,40 @@
 	top: 0px;
 	height: 100%;
 	width: 100%;
+}
+
+
+
+#chart{
+	position: absolute;
+	left: 20px;
+	top: 600px;
+}
+
+.row {
+  padding: 5px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #f0f0f0;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  fill: #f0f0f0;
+}
+
+.brush .extent {
+  stroke: #f0f0f0;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
+.bar {
+  fill: #5EB4E3;
+}
+.selected {
+  fill: #78C656;
 }
