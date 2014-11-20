@@ -9,6 +9,7 @@ var latlongsR;
 var valueById;
 var latlongRdump = [];
 var facilitySum;
+var exporterSum;
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -44,8 +45,14 @@ d3.csv("data/leadTest.csv", function(data) {
   
   facilitySum = d3.nest()
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // set state code as key
+  .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by receiving facility code
+  .entries(data);
+
+  exporterSum = d3.nest()
+  .key(function(d) {return d.exporterLONG;})
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
   .entries(data);
+  console.log(exporterSum);
 
   latlongs = d3.nest() //rollup unique exportlatlongs
   .key(function(d) {return d.receivingStateCode;})
@@ -126,13 +133,21 @@ function callback(error, us, can, mex, lakes){
 };
 
 function importers(data){
+  var max = d3.max(data, function(d) {return d.total_waste}),
+  min = d3.min(data, function(d) {return d.total_waste})
+  console.log(min, max)
+  var radius = d3.scale.log()
+    .domain([min, max])
+    .range([10, 30]);
+
+
   svg.selectAll(".facility")
     .data(data)
     .enter().append("circle", ".facility")
-    .attr("r", 15) //scale size here for proportional symboling
     .attr("class", function(d) {return d.id})
-    .style("fill", "yellow")
-    .attr("cx", function(d) {console.log(d.long); return projection([d.long, d.lat])[0]; }) 
+    .style({"fill": "yellow", "fill-opacity": ".75"})
+    .attr("r", function(d) { return radius(d.total_waste); })
+    .attr("cx", function(d) { return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", highlight)
     .on("mouseout", dehighlight)
@@ -163,6 +178,7 @@ function importers(data){
 };
 
 function highlight(data){
+  console.log(data);
   d3.selectAll("."+data.id) //select the current province in the DOM
     .style({"stroke": "black", "stroke-width": "5px"}); //yellow outline
 };
@@ -307,6 +323,8 @@ function viewer(data){
         .transition()
         .remove();
   d3.selectAll(".pin").remove();
+
+  //begin constructing latlongs of exporters
   var latlongdump = [];
   //var countydump = [];
    for (var i=0; i<latlongs.length-1; i++) {
@@ -318,15 +336,30 @@ function viewer(data){
       };
     };
 
-console.log(latlongdump);
+  for (var i =0; i<exporterSum.length-1; i++){
+    for (var j=0; j<latlongdump.length; j++){
+      if (exporterSum[i]["key"] == latlongdump[j].long){
+        latlongdump[j].total_waste = exporterSum[i]["values"]["total_waste"]
+      };
+    }; 
+  };
+
+  //scale exporter symbolization
+  var max = d3.max(latlongdump, function(d) {return d.total_waste}),
+  min = d3.min(latlongdump, function(d) {return d.total_waste})
+  var radius = d3.scale.log()
+    .domain([min, max])
+    .range([10, 30]);
+
+//add exporters to the map    
 svg.selectAll(".pin")
   .data(latlongdump)
   .enter().append("circle", ".pin")
-  .attr("r", 15)
-  .attr("class", "pin")
+  .attr("r", function(d) { return radius(d.total_waste); })
+  //.attr("class", "pin")
   .attr("class", function (d) { return d.id})
-  .style("fill", "green")
-  .attr("cx", function(d) {console.log(d.long); return projection([d.long, d.lat])[0]; }) 
+  .style({"fill": "green", "fill-opacity": ".75"})
+  .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
   .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
   .on("mouseover", highlight)
   .on("mouseout", dehighlight)
