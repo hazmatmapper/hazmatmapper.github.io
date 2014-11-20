@@ -1,6 +1,6 @@
 body {
   font: 14px helvetica;
-  color: #f0f0f0;
+  color: black;
   background-color: #333;
 }
 
@@ -31,17 +31,17 @@ body {
 
 .clickoff {
 	position: absolute;
-	left: 0px;
-	top: 0px;
-	height: 100%;
-	width: 100%;
+	left: 800px;
+	top: 200px;
+	height: 30px;
+	width: 30px;
 }
 
 
 
 #chart{
 	position: absolute;
-	left: 20px;
+	left: 0px;
 	top: 600px;
 }
 
@@ -58,6 +58,7 @@ body {
 
 .axis text {
   fill: #f0f0f0;
+  font-size: 8px;
 }
 
 .brush .extent {

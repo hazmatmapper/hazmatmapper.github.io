@@ -47,8 +47,6 @@ d3.csv("data/leadTest.csv", function(data) {
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
   .entries(data);
 
-  console.log(facilitySum[0]["key"]);
-
   latlongs = d3.nest() //rollup unique exportlatlongs
   .key(function(d) {return d.receivingStateCode;})
   .key(function(d) {return d.exporterLONG;})
@@ -59,7 +57,6 @@ d3.csv("data/leadTest.csv", function(data) {
   .key(function(d) {return d.receivingLong;})
   .entries(data);
 
-  brusher(data);
   setMap(data);
   
 
@@ -72,7 +69,7 @@ function setMap(data) {
  for (var i=0; i<latlongsR.length-1; i++) {
     for (var j=0; j<latlongsR[i]["values"].length; j++) {
       if( parseFloat(latlongsR[i]["values"][j]["key"]) != 0) {
-          latlongRdump.push({"long": latlongsR[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongsR[i]["values"][j]["values"][0]["receivingLat"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityName"]}) //lat longs of the foreign waste sites
+          latlongRdump.push({"long": latlongsR[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongsR[i]["values"][j]["values"][0]["receivingLat"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityName"]})
       };     
     };
   };
@@ -81,7 +78,6 @@ function setMap(data) {
 for (var i =0; i<facilitySum.length-1; i++){
   for (var j=0; j<latlongRdump.length; j++){
     if (facilitySum[i]["key"] == latlongRdump[j].id){
-      console.log(latlongRdump);
       latlongRdump[j].total_waste = facilitySum[i]["values"]["total_waste"]
     }
   } 
@@ -130,7 +126,6 @@ function callback(error, us, can, mex, lakes){
 };
 
 function importers(data){
-  console.log(data);
   svg.selectAll(".facility")
     .data(data)
     .enter().append("circle", ".facility")
@@ -163,6 +158,7 @@ function importers(data){
       /*.style("stroke-width", function(d) {
         return .1/Math.sqrt(valueById[d.properties.ID_1] || .01)
       })*/
+  brusher(latlongRdump);
 
 };
 
@@ -181,16 +177,17 @@ function dehighlight(data){
 
 
 function brusher(data){
-  var max = d3.max(facilitySum, function(d) {return d.values.total_waste}),
-  min = d3.min(facilitySum, function(d) {return d.values.total_waste})
+  console.log(data);
+  var max = d3.max(data, function(d) {return d.total_waste}),
+  min = d3.min(data, function(d) {return d.total_waste})
   var margin = {top: 10, bottom: 10, left: 10, right: 10},
-      width = 200,
+      width = (screen.width)/3
       height = 100,
       duration = 500,
       formatNumber = d3.format(',d'),
       brush = d3.svg.brush();
 
-    margin.left = formatNumber(d3.max(facilitySum, function(d) {return d.values.total_waste})).length * 10;
+    margin.left = formatNumber(d3.max(data, function(d) {return d.total_waste})).length * 20;
   var w = width - margin.left - margin.right,
       h = height - margin.top - margin.bottom;
 
@@ -200,7 +197,7 @@ function brusher(data){
               .range([h, 0]);
 
   y.domain([min, max]);
-  x.domain(facilitySum.map(function(d) { return d.key; }));
+  x.domain(data.map(function(d) { return d.name; }));
 
 
   var xAxis = d3.svg.axis()
@@ -215,7 +212,7 @@ function brusher(data){
                       .on('brush', brushmove)
                       .on('brushend', brushend);
 
-  var Bsvg = d3.select('#chart').selectAll('svg').data([facilitySum]),
+  var Bsvg = d3.select('#chart').selectAll('svg').data([data]),
       svgEnter = Bsvg.enter().append('svg')
                               .append('g')
                                 .attr('width', w)
@@ -226,7 +223,7 @@ function brusher(data){
 
   svgEnter.append('g')
             .classed('x axis', true)
-            .attr('transform', 'translate(' + 0 + ',' + h + ')');
+            .attr('transform', 'translate(' + 0 + ',' + h + ')')
   svgEnter.append('g')
             .classed('y axis', true)
   svgEnter.append('g').classed('barGroup', true);
@@ -238,18 +235,18 @@ function brusher(data){
           .selectAll('rect')
             .attr('height', h);
 
-  bars = chart.select('.barGroup').selectAll('.bar').data(facilitySum);
+  bars = chart.select('.barGroup').selectAll('.bar').data(data);
 
   bars.enter()
         .append('rect')
-          .sort(function(a, b){return a.values.total_waste-b.values.total_waste})
+          .sort(function(a, b){console.log(a.total_waste); return a.total_waste - b.total_waste})
           .classed('bar', true)
           .attr('x', w) // start here for object constancy
           .attr('width', x.rangeBand())
-          .attr('y', function(d, i) { return y(d.values.total_waste); })
-          .attr('height', function(d, i) { return h - y(d.values.total_waste); })
+          .attr('y', function(d, i) { return y(d.total_waste); })
+          .attr('height', function(d, i) { return h - y(d.total_waste); })
           .attr("class", function(d){
-            return "bar " + d.key;
+            return "bar " + d.id;
           })
           .on("mouseover", highlight)
           .on("mouseout", dehighlight);
@@ -257,9 +254,9 @@ function brusher(data){
   bars.transition()
         .duration(duration)
           .attr('width', x.rangeBand())
-          .attr('x', function(d, i) { return x(d.key); })
-          .attr('y', function(d, i) { return y(d.values.total_waste); })
-          .attr('height', function(d, i) { return h - y(d.values.total_waste); });
+          .attr('x', function(d, i) { return x(d.name); })
+          .attr('y', function(d, i) { return y(d.total_waste); })
+          .attr('height', function(d, i) { return h - y(d.total_waste); });
 
 
   chart.select('.x.axis')
@@ -277,23 +274,23 @@ function brusher(data){
 
   function brushmove() {
     var extent = d3.event.target.extent();
-    bars.classed("selected", function(d) { return extent[0] <= x(d.values.total_waste) && x(d.values.total_waste) + x.rangeBand() <= extent[1];});
+    bars.classed("selected", function(d) { return extent[0] <= x(d.total_waste) && x(d.total_waste) + x.rangeBand() <= extent[1];});
 
     }
   function brushend() {
     chart.classed("selecting", !d3.event.target.empty());
     var extent = brush.extent()
-    var filtered = facilitySum.filter(function(d) {
-        return (x(d.values.total_waste) > extent[0] && x(d.values.total_waste) < extent[1])
+    var filtered = data.filter(function(d) {
+        return (x(d.total_waste) > extent[0] && x(d.total_waste) < extent[1])
       })
     console.log(filtered);
     var filterExit =[];
     for (var i=0; i<filtered.length; i++) {
-      filterExit.push(filtered[i]["key"]);
+      filterExit.push(filtered[i]["id"]);
     }
     var circle = d3.selectAll("circle")
-      .data(filterExit, function(d) { return(d); })
-    circle.exit().remove();
+    circle.remove();
+    importers(filtered);
 
   }
 
@@ -315,29 +312,35 @@ function viewer(data){
    for (var i=0; i<latlongs.length-1; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
       if (latlongs[i]["values"][j]["values"][0]["receivingLong"] == data.long) {
-        latlongdump.push([latlongs[i]["values"][j]["values"][0]["exporterLONG"], latlongs[i]["values"][j]["values"][0]["exporterLAT"]]) //lat longs of the foreign waste sites
+        console.log(latlongs[i]["values"][j]["values"][0]);
+        latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["Foreign Exporter Name"], "id": latlongs[i]["values"][j]["values"][0]["Foreign Exporter Name"]}) //lat longs of the foreign waste sites
         };     
       };
     };
 
+console.log(latlongdump);
 svg.selectAll(".pin")
   .data(latlongdump)
   .enter().append("circle", ".pin")
   .attr("r", 15)
   .attr("class", "pin")
+  .attr("class", function (d) { return d.id})
   .style("fill", "green")
-  .attr("cx", function(d) { return projection(d)[0]; }) 
-  .attr("cy", function(d) { return projection(d)[1]; });
+  .attr("cx", function(d) {console.log(d.long); return projection([d.long, d.lat])[0]; }) 
+  .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
+  .on("mouseover", highlight)
+  .on("mouseout", dehighlight)
+  .on("click", exportViewer);
   
   //implement clickoff div - this creates a div that will do two things: 1) make the map more opaque, emphasizing the new info panel; 2) provide a clickable space so that when people click away from the info panel back to the map, the info panel closes
   d3.select("body")
     .append("div")
+    .text("X")
     .attr("class", "clickoff")
-    .style({"background-color": "#d3d3d3", "opacity": ".1"}) //need to adjust size, color, opacity of div
+    .style({"background-color": "#d3d3d3"}) //need to adjust size, color, opacity of div
     .on("click", function(){
-      d3.selectAll(".pin").remove()
+      d3.selectAll("circle").remove()
       d3.selectAll(".viewer").remove()
-      d3.select(data.id).remove()
       d3.selectAll(".clickoff").remove()
       importers(latlongRdump); //removes itself so that the map can be clicked again
     });
@@ -350,6 +353,8 @@ svg.selectAll(".pin")
     .attr("class", "viewer")
     .text("this is: "+data.name+", which imports "+data.total_waste+" tons of lead");
 
+
+/*
   //load state map here
   var width = 500;
   var height = 500;
@@ -403,7 +408,29 @@ svg.selectAll(".pin")
       .attr("class", function(d) { return d.properties.COUNTYFP })
       .attr("d", pathV)
       .attr("fill", function(d) { return parseFloat(countydump[0][0]) == parseFloat(d.properties.COUNTYFP) ? "#ccc" : "#fff"}); // may need to do loop here if countydump > 1, if there are more than one counties in a state importing...
-  });
+  });*/
+};
 
+function exportViewer(data){
+  console.log(data);
+d3.selectAll(".clickoff").remove()
+d3.select("body")
+    .append("div")
+    .text("X")
+    .attr("class", "clickoff")
+    .style({"background-color": "#d3d3d3"}) //need to adjust size, color, opacity of div
+    .on("click", function(){
+      d3.selectAll("circle").remove()
+      d3.selectAll(".viewer").remove()
+      d3.selectAll(".clickoff").remove()
+      importers(latlongRdump); //removes itself so that the map can be clicked again
+    });
 
+  //implement the info panel/viewer here
+
+  d3.selectAll(".viewer").remove();
+  d3.select("body")
+    .append("div")
+    .attr("class", "viewer")
+    .text("this is: "+data.name+", which exports "+data.total_waste+" tons of lead");
 };
