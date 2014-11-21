@@ -10,12 +10,22 @@ var valueById;
 var latlongRdump = [];
 var facilitySum;
 var exporterSum;
+var typeSum;
 
 //begin script when window loads 
 window.onload = initialize(); 
 
 //the first function called once the html is loaded 
 function initialize(){
+  d3.select("body")
+    .append("div")
+    .classed("viewer", true)
+    .style("display", "inline-block");
+  d3.selectAll(".viewer")
+    .append("div")
+    .attr("class", "viewerText")
+    .style({"background-color": "#555", "color": "white", "font-size": "24px"})
+    .text("Welcome to the HazMatMapper");
   setData(); 
   
 }; 
@@ -43,6 +53,12 @@ d3.csv("data/leadTest.csv", function(data) {
        valueById[nested_data[i]["key"]] = nested_data[i]["values"]["total_waste"];
       };
   
+  typeSum = d3.nest()
+  .key(function(d) { return d.hazWasteDesc; }) // set type as key
+  .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by receiving facility code
+  .entries(data);
+  console.log(typeSum);
+
   facilitySum = d3.nest()
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // set state code as key
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by receiving facility code
@@ -64,11 +80,94 @@ d3.csv("data/leadTest.csv", function(data) {
   .key(function(d) {return d.receivingLong;})
   .entries(data);
 
+  //barChart();
   setMap(data);
   
 
 });
 }
+
+//http://bl.ocks.org/mbostock/3886208
+//figuring out that bar chart...
+function barChart(){
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 250,
+    height = 500;
+
+var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1);
+
+var y = d3.scale.linear()
+    .rangeRound([height, 0]);
+
+var color = d3.scale.ordinal()
+    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .tickFormat(d3.format(".2s"));
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(600, 700)");
+
+  var typedump=[];
+  for (var i =0; i<typeSum.length; i++){
+      typedump.push([{"unit": 1, "total_waste": typeSum[i]["values"]["total_waste"], "type": typeSum[i]["key"]}])
+    };
+  console.log(typedump);
+
+  color.domain(d3.keys(typedump.type));
+  typedump.forEach(function(d) {
+    console.log(d)
+    var y0 = 0;
+    d.cat = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]}; });
+    d.total = d.cat[d.cat.length - 1].y1;
+  });
+  console.log(typedump)
+  typedump.sort(function(a, b) { return b.total - a.total; });
+
+  x.domain(typedump.map(function(d) { return d.unit; }));
+  y.domain([0, d3.max(typedump, function(d) { return d.total; })]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Population");
+
+  var state = svg.selectAll(".unit")
+      .data(typedump)
+    .enter().append("g")
+      .attr("class", "g")
+      .attr("transform", function(d) { return "translate(" + x(d.unit) + ",0)"; });
+
+  state.selectAll("rect")
+      .data(function(d) { return d.type; })
+    .enter().append("rect")
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.y1); })
+      .attr("height", function(d) { return y(d.y0) - y(d.y1); })
+      .style("fill", function(d) { return color(d.name); });
+
+
+};
 
 function setMap(data) {
 //get facility data ready to project
@@ -151,6 +250,7 @@ function importers(data){
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", highlight)
     .on("mouseout", dehighlight)
+    .on("mousemove", moveLabel)
     .on("click", viewer);
     /*.append("desc") //append the current color
           .text(function(d) {
@@ -178,9 +278,23 @@ function importers(data){
 };
 
 function highlight(data){
-  console.log(data);
   d3.selectAll("."+data.id) //select the current province in the DOM
     .style({"stroke": "black", "stroke-width": "5px"}); //yellow outline
+
+  var labelAttribute = "<h1>"+data.total_waste+
+    "</h1><br><b> pounds of lead </b>"; //label content
+  var labelName = data.name //html string for name to go in child div
+  
+  //create info label div
+  var infolabel = d3.select("body")
+    .append("div") //create the label div
+    .attr("class", "infolabel")
+    .attr("id", data.id+"label") //for styling label
+    .html(labelAttribute) //add text
+    .append("div") //add child div for feature name
+    .attr("class", "labelname") //for styling name
+    .html(labelName); //add feature name to label
+
 };
 
 function dehighlight(data){
@@ -188,12 +302,24 @@ function dehighlight(data){
   var subb = d3.selectAll("."+data.id); //designate selector variable for brevity
   //var fillcolor = subb.select("desc").text(); //access original color from desc
   subb.style({"stroke": "#000", "stroke-width": "0px"}); //reset enumeration unit to orginal color
+
+  d3.select("#"+data.id+"label").remove(); //remove info label
+
   };
 
+function moveLabel() {
 
+  //horizontal label coordinate based mouse position stored in d3.event
+ // var x = d3.event.clientX < window.innerWidth - 245 ? d3.event.clientX+10 : d3.event.clientX-210; 
+  //vertical label coordinate
+ // var y = d3.event.clientY < window.innerHeight - 100 ? d3.event.clientY-75 : d3.event.clientY-175; 
+  
+  d3.select(".infolabel") //select the label div for moving
+    .style("margin-left", "6px") //reposition label horizontal
+    .style("margin-top", "6px"); //reposition label vertical
+};
 
 function brusher(data){
-  console.log(data);
   var max = d3.max(data, function(d) {return d.total_waste}),
   min = d3.min(data, function(d) {return d.total_waste})
   var margin = {top: 10, bottom: 10, left: 10, right: 10},
@@ -203,7 +329,7 @@ function brusher(data){
       formatNumber = d3.format(',d'),
       brush = d3.svg.brush();
 
-    margin.left = formatNumber(d3.max(data, function(d) {return d.total_waste})).length * 20;
+  margin.left = formatNumber(d3.max(data, function(d) {return d.total_waste})).length * 20;
   var w = width - margin.left - margin.right,
       h = height - margin.top - margin.bottom;
 
@@ -265,7 +391,8 @@ function brusher(data){
             return "bar " + d.id;
           })
           .on("mouseover", highlight)
-          .on("mouseout", dehighlight);
+          .on("mouseout", dehighlight)
+          .on("mousemove", moveLabel);
 
   bars.transition()
         .duration(duration)
@@ -295,7 +422,7 @@ function brusher(data){
     }
   function brushend() {
     chart.classed("selecting", !d3.event.target.empty());
-    var extent = brush.extent()
+    var extent = d3.event.target.extent();
     var filtered = data.filter(function(d) {
         return (x(d.total_waste) > extent[0] && x(d.total_waste) < extent[1])
       })
@@ -363,6 +490,7 @@ svg.selectAll(".pin")
   .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
   .on("mouseover", highlight)
   .on("mouseout", dehighlight)
+  .on("mousemove", moveLabel)
   .on("click", exportViewer);
   
   //implement clickoff div - this creates a div that will do two things: 1) make the map more opaque, emphasizing the new info panel; 2) provide a clickable space so that when people click away from the info panel back to the map, the info panel closes
@@ -373,18 +501,33 @@ svg.selectAll(".pin")
     .style({"background-color": "#d3d3d3"}) //need to adjust size, color, opacity of div
     .on("click", function(){
       d3.selectAll("circle").remove()
-      d3.selectAll(".viewer").remove()
+      d3.selectAll(".viewer")
+        .transition()
+          .duration(0)
+        .style({"height": "0%", "width": "0%"})
+      d3.selectAll(".viewerText").remove()
       d3.selectAll(".clickoff").remove()
       importers(latlongRdump); //removes itself so that the map can be clicked again
     });
 
   //implement the info panel/viewer here
-
-  d3.selectAll(".viewer").remove();
-  d3.select("body")
+  d3.selectAll(".viewerText").remove()
+  d3.selectAll(".viewer")
+    .style({"height": "0%", "width": "0%"})
+  d3.selectAll(".viewer")
+    .transition()
+      .duration(1000)
+        .style({"height": "50%", "width": "25%"})
+          .each("end", function(d){ 
+              d3.selectAll(".viewer").append("div").attr("class", "viewerText");
+              d3.selectAll(".viewerText").text("this is: "+data.name+", which imports "+data.total_waste+" tons of lead");
+            });
+  /*d3.selectAll(".viewer")
     .append("div")
-    .attr("class", "viewer")
-    .text("this is: "+data.name+", which imports "+data.total_waste+" tons of lead");
+    .attr("class", "viewerText");*/
+ 
+
+
 
 
 /*
@@ -445,7 +588,6 @@ svg.selectAll(".pin")
 };
 
 function exportViewer(data){
-  console.log(data);
 d3.selectAll(".clickoff").remove()
 d3.select("body")
     .append("div")
@@ -454,16 +596,26 @@ d3.select("body")
     .style({"background-color": "#d3d3d3"}) //need to adjust size, color, opacity of div
     .on("click", function(){
       d3.selectAll("circle").remove()
-      d3.selectAll(".viewer").remove()
+      d3.selectAll(".viewer")
+        .transition()
+          .duration(0)
+            .style({"height": "0%", "width": "0%"})
+              .each("start", function(){ d3.selectAll(".viewerText").remove()});
       d3.selectAll(".clickoff").remove()
       importers(latlongRdump); //removes itself so that the map can be clicked again
     });
 
   //implement the info panel/viewer here
 
-  d3.selectAll(".viewer").remove();
-  d3.select("body")
-    .append("div")
-    .attr("class", "viewer")
-    .text("this is: "+data.name+", which exports "+data.total_waste+" tons of lead");
+  d3.selectAll(".viewerText").remove()
+  d3.selectAll(".viewer")
+    .style({"height": "0%", "width": "0%"})
+   d3.selectAll(".viewer")
+    .transition()
+      .duration(1000)
+        .style({"height": "50%", "width": "25%"})
+          .each("end", function(){ 
+              d3.selectAll(".viewer").append("div").attr("class", "viewerText");
+              d3.selectAll(".viewerText").text("this is: "+data.name+", which exports "+data.total_waste+" tons of lead");
+            });
 };
