@@ -11,6 +11,7 @@ var latlongRdump = [];
 var facilitySum;
 var exporterSum;
 var typeSum;
+var sum;
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -26,6 +27,10 @@ function initialize(){
     .attr("class", "viewerText")
     .style({"background-color": "#555", "color": "white", "font-size": "24px"})
     .text("Welcome to the HazMatMapper");
+  d3.selectAll("body")
+    .append("div")
+    .attr("class", "barWrap");
+
   setData(); 
   
 }; 
@@ -43,7 +48,7 @@ d3.csv("data/leadTest.csv", function(data) {
     d.receivingLong = +d.receivingLong 
   });
 
-  var sum = d3.sum(data, function(d) { return d.totalQuantityinShipment; }); // sums quantity of waste in shipment for entire set
+  sum = d3.sum(data, function(d) { return d.totalQuantityinShipment; }); // sums quantity of waste in shipment for entire set
   var nested_data = d3.nest() //d3.nest allows us to sum only parts of a column of data, in this case, sum total waste by state, creating a new array called netsted_data to do so. code adapted from: http://bl.ocks.org/phoebebright/raw/3176159/
   .key(function(d) { return d.receivingStateCode; }) // set state code as key
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
@@ -80,7 +85,7 @@ d3.csv("data/leadTest.csv", function(data) {
   .key(function(d) {return d.receivingLong;})
   .entries(data);
 
-  //barChart();
+  barChart();
   setMap(data);
   
 
@@ -90,9 +95,9 @@ d3.csv("data/leadTest.csv", function(data) {
 //http://bl.ocks.org/mbostock/3886208
 //figuring out that bar chart...
 function barChart(){
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 250,
-    height = 500;
+var margin = {top: 10, right: 10, bottom: 10, left: 10},
+    width = 500,
+    height = 100;
 
 var x = d3.scale.ordinal()
     .rangeRoundBands([0, width], .1);
@@ -112,18 +117,29 @@ var yAxis = d3.svg.axis()
     .orient("left")
     .tickFormat(d3.format(".2s"));
 
-var svg = d3.select("body").append("svg")
+var x1 = 400, y1 = 400;
+
+var Csvg = d3.select(".barWrap").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
-    .attr("transform", "translate(600, 700)");
+//    .attr("transform", "translate(" + x1 + "," + y1 + ")")
+
 
   var typedump=[];
   for (var i =0; i<typeSum.length; i++){
-      typedump.push([{"unit": 1, "total_waste": typeSum[i]["values"]["total_waste"], "type": typeSum[i]["key"]}])
+      var barWidth = (typeSum[i]["values"]["total_waste"]/sum)*width //set width ratio
+      if (i>=1){
+        var prevBarWidth = d3.sum(typedump, function(d) {return d.barWidth})
+      }
+      else {
+        var prevBarWidth = 0;
+      }
+      typedump.push({"unit": "lead", "total_waste": typeSum[i]["values"]["total_waste"], "id": typeSum[i]["key"], "barWidth": barWidth, "prevBarWidth": prevBarWidth})
     };
   console.log(typedump);
 
+/*
   color.domain(d3.keys(typedump.type));
   typedump.forEach(function(d) {
     console.log(d)
@@ -131,17 +147,18 @@ var svg = d3.select("body").append("svg")
     d.cat = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]}; });
     d.total = d.cat[d.cat.length - 1].y1;
   });
-  console.log(typedump)
-  typedump.sort(function(a, b) { return b.total - a.total; });
+*/
 
   x.domain(typedump.map(function(d) { return d.unit; }));
   y.domain([0, d3.max(typedump, function(d) { return d.total; })]);
 
-  svg.append("g")
+  Csvg.append("g")
       .attr("class", "x axis")
+      .attr("y", 105)
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis);
 
+/*
   svg.append("g")
       .attr("class", "y axis")
       .call(yAxis)
@@ -152,19 +169,27 @@ var svg = d3.select("body").append("svg")
       .style("text-anchor", "end")
       .text("Population");
 
+
   var state = svg.selectAll(".unit")
       .data(typedump)
     .enter().append("g")
       .attr("class", "g")
       .attr("transform", function(d) { return "translate(" + x(d.unit) + ",0)"; });
-
-  state.selectAll("rect")
-      .data(function(d) { return d.type; })
+*/
+  Csvg.selectAll("rect")
+      .data(typedump)
     .enter().append("rect")
-      .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.y1); })
-      .attr("height", function(d) { return y(d.y0) - y(d.y1); })
-      .style("fill", function(d) { return color(d.name); });
+      .sort(function(a, b) { return b.barWidth - a.barWidth; })
+      .attr("class", function(d){
+       return d.id;
+      })
+      .attr("x", function(d) { return d.prevBarWidth; })
+      .attr("y", 0)
+      .attr("width", function(d){ return d.barWidth})
+      .attr("height", height)
+      .style("fill", "blue")
+      //.on("mouseover", highlight)
+      //.on("mouseout", dehighlight);
 
 
 };
