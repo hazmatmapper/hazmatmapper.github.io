@@ -12,6 +12,7 @@ var facilitySum;
 var exporterSum;
 var typeSum;
 var sum;
+var bigNest;
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -57,6 +58,24 @@ d3.csv("data/leadTest.csv", function(data) {
   for (var i=0; i<nested_data.length-1; i++) {
        valueById[nested_data[i]["key"]] = nested_data[i]["values"]["total_waste"];
       };
+
+  bigNest = d3.nest()
+  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
+  .key(function(d) { return d.hazWasteDesc; })
+  .key(function(d) { return d.ExpectedManagementMethod; })
+  .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
+  .entries(data);
+  bigNest={"key": "total", "values": bigNest};
+
+  renameStuff(bigNest);
+  function renameStuff(d) {
+    d.name = d.key; delete d.key;
+    if (typeof d.values === "number") d.size = d.values;
+    else d.values.forEach(renameStuff), d.children = d.values;
+    delete d.values;
+  }
+
+  console.log(bigNest);
   
   typeSum = d3.nest()
   .key(function(d) { return d.hazWasteDesc; }) // set type as key
@@ -85,12 +104,52 @@ d3.csv("data/leadTest.csv", function(data) {
   .key(function(d) {return d.receivingLong;})
   .entries(data);
 
-  barChart();
+  icicle();
+  //barChart();
   setMap(data);
   
 
 });
 }
+
+function icicle(){
+
+var width = 960,
+    height = 500;
+
+var color = d3.scale.category20();
+
+var Isvg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var partition = d3.layout.partition()
+    .size([width, height])
+    .value(function(d) { return d.size; });
+
+//d3.json("/js/thing.json", function(error, root) {
+//  var nodes = partition.nodes(root);
+var nodes = partition.nodes(bigNest);
+console.log(nodes);
+Isvg.selectAll(".node")
+    .data(nodes)
+  .enter().append("rect")
+    .attr("class", "node")
+    .attr("x", function(d) { return d.x; })
+    .attr("y", function(d) { return d.y; })
+    .attr("width", function(d) { return d.dx; })
+    .attr("height", function(d) { return d.dy; })
+    .style("fill", function(d) { return color((d.children ? d : d.parent).name); });
+
+Isvg.selectAll(".label")
+      .data(nodes.filter(function(d) { return d.dx > 6; }))
+    .enter().append("text")
+      .attr("class", "label")
+      .attr("dy", ".35em")
+      .attr("transform", function(d) { return "translate(" + (d.x + d.dx / 2) + "," + (d.y + d.dy / 2) + ")rotate(90)"; })
+      .text(function(d) { return d.name; });
+}
+
 
 //http://bl.ocks.org/mbostock/3886208
 //figuring out that bar chart...
@@ -298,7 +357,7 @@ function importers(data){
       /*.style("stroke-width", function(d) {
         return .1/Math.sqrt(valueById[d.properties.ID_1] || .01)
       })*/
-  brusher(latlongRdump);
+  //brusher(latlongRdump);
 
 };
 

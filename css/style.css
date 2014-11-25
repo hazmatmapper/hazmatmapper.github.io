@@ -110,3 +110,13 @@ body {
   font-weight: bold;
   position: absolute;
 }
+
+
+.label {
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+.node {
+  fill: #ddd;
+  stroke: #fff;
+}
