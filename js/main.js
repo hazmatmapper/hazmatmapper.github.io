@@ -13,6 +13,8 @@ var exporterSum;
 var typeSum;
 var sum;
 var bigNest;
+var latlongReset;
+var Isvg;
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -23,15 +25,34 @@ function initialize(){
     .append("div")
     .classed("viewer", true)
     .style("display", "inline-block");
-  d3.selectAll(".viewer")
+  d3.select(".viewer")
     .append("div")
     .attr("class", "viewerText")
     .style({"background-color": "#555", "color": "white", "font-size": "24px"})
     .text("Welcome to the HazMatMapper");
-  d3.selectAll("body")
+  d3.select("body")
     .append("div")
     .attr("class", "barWrap");
-
+  d3.select("body")
+    .append("div")
+    .text("Filter by:")
+    .attr("class", "filterSelector");
+  d3.select(".filterSelector")
+    .append("div")
+    .text("Site")
+    .attr("class", "bySite")
+    .on("click", function(){
+      Isvg.remove();
+      icicle(bigNest)
+    });
+  d3.select(".filterSelector")
+    .append("div")
+    .text("Disposal")
+    .attr("class", "byDisposal")
+    .on("click", function(){
+      Isvg.remove();
+      icicle(bigNest2)
+    });
   setData(); 
   
 }; 
@@ -46,7 +67,8 @@ d3.csv("data/leadTest.csv", function(data) {
     d.exporterLAT = +d.exporterLAT
     d.exporterLONG = +d.exporterLONG 
     d.receivingLat = +d.receivingLat
-    d.receivingLong = +d.receivingLong 
+    d.receivingLong = +d.receivingLong
+    d.hazWasteDesc.indexOf("LEAD") > -1 ? d.hazWasteDesc = "lead" : d.hazWasteDesc = d.hazWasteDesc; //convert everything with lead to lead in waste description; // this is where we can do work creating waste categories...
   });
 
   sum = d3.sum(data, function(d) { return d.totalQuantityinShipment; }); // sums quantity of waste in shipment for entire set
@@ -67,15 +89,22 @@ d3.csv("data/leadTest.csv", function(data) {
   .entries(data);
   bigNest={"key": "total", "values": bigNest};
 
+  bigNest2 = d3.nest()  
+  .key(function(d) { return d.ExpectedManagementMethod; })
+  .key(function(d) { return d.hazWasteDesc; })
+  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
+  .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
+  .entries(data);
+  bigNest2={"key": "total", "values": bigNest2};
+
   renameStuff(bigNest);
+  renameStuff(bigNest2);
   function renameStuff(d) {
     d.name = d.key; delete d.key;
     if (typeof d.values === "number") d.size = d.values;
     else d.values.forEach(renameStuff), d.children = d.values;
     delete d.values;
   }
-
-  console.log(bigNest);
   
   typeSum = d3.nest()
   .key(function(d) { return d.hazWasteDesc; }) // set type as key
@@ -104,7 +133,7 @@ d3.csv("data/leadTest.csv", function(data) {
   .key(function(d) {return d.receivingLong;})
   .entries(data);
 
-  icicle();
+  icicle(bigNest);
   //barChart();
   setMap(data);
   
@@ -112,44 +141,107 @@ d3.csv("data/leadTest.csv", function(data) {
 });
 }
 
-function icicle(){
+function icicle(data){
 
-var width = 960,
-    height = 500;
+var width =  .66 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+var height = .3 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([0, height]);
 
 var color = d3.scale.category20();
 
-var Isvg = d3.select("body").append("svg")
+Isvg = d3.select(".barWrap").append("svg")
     .attr("width", width)
     .attr("height", height);
 
 var partition = d3.layout.partition()
-    .size([width, height])
+    //.size([width, height])
     .value(function(d) { return d.size; });
 
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
-var nodes = partition.nodes(bigNest);
-console.log(nodes);
-Isvg.selectAll(".node")
+var nodes = partition.nodes(data);
+
+var rect = Isvg.selectAll("rect")
     .data(nodes)
   .enter().append("rect")
-    .attr("class", "node")
-    .attr("x", function(d) { return d.x; })
-    .attr("y", function(d) { return d.y; })
-    .attr("width", function(d) { return d.dx; })
-    .attr("height", function(d) { return d.dy; })
-    .style("fill", function(d) { return color((d.children ? d : d.parent).name); });
+    //.attr("class", "node")
+    .attr ("class",  function(d) { return d.name; } ) //change so that class = name + parent name
+    .attr("x", function(d) { return x(d.x); })
+    .attr("y", function(d) { return y(d.y); })
+    .attr("width", function(d) { return x(d.dx); })
+    .attr("height", function(d) { return y(d.dy); })
+    .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
+    .on("mouseover", icicleHighlight)
+    .on("mouseout", icicleDehighlight)
+    .on('click', function(d){
+      clicked(d);
+      icicleImporters(d);
+    });
+    //.on('click', icicleImporters);
+    //call node highlighter here
+    //call node clicker here
 
 Isvg.selectAll(".label")
-      .data(nodes.filter(function(d) { return d.dx > 6; }))
+      .data(nodes.filter(function(d) { console.log(x(d.dx)); return x(d.dx) > 50; }))
     .enter().append("text")
       .attr("class", "label")
       .attr("dy", ".35em")
-      .attr("transform", function(d) { return "translate(" + (d.x + d.dx / 2) + "," + (d.y + d.dy / 2) + ")rotate(90)"; })
+      .attr("transform", function(d) { return "translate(" + x((d.x + d.dx / 2)) + "," + y((d.y + d.dy / 2)) + ")rotate(0)"; })
       .text(function(d) { return d.name; });
+
+function clicked(d) {
+  x.domain([d.x, d.x + d.dx]);
+  y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
+
+  rect.transition()
+      .duration(750)
+      .attr("x", function(d) { return x(d.x); })
+      .attr("y", function(d) { return y(d.y); })
+      .attr("width", function(d) { console.log(x(d.x + d.dx) - x(d.x)); return x(d.x + d.dx) - x(d.x); })
+      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+}
 }
 
+function icicleHighlight(data){
+  console.log(data);
+  d3.selectAll("."+data.name) //select the current id
+    .style({"stroke": "black", "stroke-width": "5px"}); //yellow outline
+  if (data.parent.parent.parent) {
+    d3.selectAll("."+data.parent.parent.parent.name).style({"stroke": "black", "stroke-width": "1px"})
+    d3.selectAll("."+data.parent.parent.name).style({"stroke": "black", "stroke-width": "1px"})
+    d3.selectAll("."+data.parent.name).style({"stroke": "black", "stroke-width": "1px"})
+    d3.selectAll("."+data.name).style({"stroke": "black", "stroke-width": "1px"})
+    }
+  else if (data.parent.parent) {
+    d3.selectAll("."+data.parent.parent.name).style({"stroke": "black", "stroke-width": "1px"})
+    d3.selectAll("."+data.parent.name).style({"stroke": "black", "stroke-width": "1px"})
+    d3.selectAll("."+data.name).style({"stroke": "black", "stroke-width": "1px"})
+  }
+  else if (data.parent) {
+    d3.selectAll("."+data.parent.name).style({"stroke": "black", "stroke-width": "1px"})
+    d3.selectAll("."+data.name).style({"stroke": "black", "stroke-width": "1px"})
+  }
+  else if (data.name) {
+    d3.selectAll("."+data.name).style({"stroke": "black", "stroke-width": "1px"})
+  }
+}; 
+
+function icicleDehighlight(data){
+  d3.selectAll("."+data.name) //designate selector variable for brevity
+    .style({"stroke": "#000", "stroke-width": "0px"}); //reset enumeration unit to orginal color
+  d3.selectAll("."+data.parent.name) //select the current id
+    .style({"stroke": "#000", "stroke-width": "0px"});
+   d3.selectAll("."+data.parent.parent.name) //select the current id
+    .style({"stroke": "#000", "stroke-width": "0px"});
+   d3.selectAll("."+data.parent.parent.parent.name) //select the current id
+    .style({"stroke": "#000", "stroke-width": "0px"});
+
+  };
 
 //http://bl.ocks.org/mbostock/3886208
 //figuring out that bar chart...
@@ -254,28 +346,12 @@ var Csvg = d3.select(".barWrap").append("svg")
 };
 
 function setMap(data) {
-//get facility data ready to project
+var width = .66 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+var height = .66 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
- for (var i=0; i<latlongsR.length-1; i++) {
-    for (var j=0; j<latlongsR[i]["values"].length; j++) {
-      if( parseFloat(latlongsR[i]["values"][j]["key"]) != 0) {
-          latlongRdump.push({"long": latlongsR[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongsR[i]["values"][j]["values"][0]["receivingLat"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityName"]})
-      };     
-    };
-  };
-
-
-for (var i =0; i<facilitySum.length-1; i++){
-  for (var j=0; j<latlongRdump.length; j++){
-    if (facilitySum[i]["key"] == latlongRdump[j].id){
-      latlongRdump[j].total_waste = facilitySum[i]["values"]["total_waste"]
-    }
-  } 
-}
-console.log(latlongRdump);
 svg = d3.select("body").append("svg")
-    .attr("width", 960)
-    .attr("height", 500);
+    .attr("width", width)
+    .attr("height", height);
 
 projection = d3.geo.albers();
 var path = d3.geo.path()
@@ -310,19 +386,56 @@ function callback(error, us, can, mex, lakes){
     .attr("class", "land")
     .attr("d", path);
 
-  importers(latlongRdump);
+    //call data crunch instead
+  dataCrunch();
 
   };
 };
 
+function dataCrunch(data){
+  //get facility data ready to project
+ for (var i=0; i<latlongsR.length-1; i++) {
+    for (var j=0; j<latlongsR[i]["values"].length; j++) {
+      if( parseFloat(latlongsR[i]["values"][j]["key"]) != 0) {
+          latlongRdump.push({"long": latlongsR[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongsR[i]["values"][j]["values"][0]["receivingLat"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityName"]})
+      };     
+    };
+  };
+
+for (var i =0; i<facilitySum.length-1; i++){
+  for (var j=0; j<latlongRdump.length; j++){
+    if (facilitySum[i]["key"] == latlongRdump[j].id){
+      latlongRdump[j].total_waste = facilitySum[i]["values"]["total_waste"]
+    };
+  }; 
+};
+
+latlongReset = latlongRdump;
+importers(latlongRdump);
+}
+
+function icicleImporters(data){
+  for (var j=0; j<latlongRdump.length; j++){
+    if (data.name == latlongRdump[j].id){
+      latlongRdump = latlongRdump.slice([j], [j+1])
+    };
+  };
+  if (data.name == "total") {
+      latlongRdump = latlongReset;
+  };
+
+  var circle = d3.selectAll("circle") //reset map
+    circle.remove();
+  importers(latlongRdump); //project filtered lat/longs
+};
+
 function importers(data){
-  var max = d3.max(data, function(d) {return d.total_waste}),
-  min = d3.min(data, function(d) {return d.total_waste})
-  console.log(min, max)
+  var max = d3.max(latlongReset, function(d) {return d.total_waste}),
+  min = d3.min(latlongReset, function(d) {return d.total_waste})
   var radius = d3.scale.log()
     .domain([min, max])
     .range([10, 30]);
-
+  
 
   svg.selectAll(".facility")
     .data(data)
@@ -591,7 +704,7 @@ svg.selectAll(".pin")
         .style({"height": "0%", "width": "0%"})
       d3.selectAll(".viewerText").remove()
       d3.selectAll(".clickoff").remove()
-      importers(latlongRdump); //removes itself so that the map can be clicked again
+      importers(latlongReset); //removes itself so that the map can be clicked again
     });
 
   //implement the info panel/viewer here
@@ -686,7 +799,7 @@ d3.select("body")
             .style({"height": "0%", "width": "0%"})
               .each("start", function(){ d3.selectAll(".viewerText").remove()});
       d3.selectAll(".clickoff").remove()
-      importers(latlongRdump); //removes itself so that the map can be clicked again
+      importers(latlongReset); //removes itself so that the map can be clicked again
     });
 
   //implement the info panel/viewer here
