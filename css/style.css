@@ -37,6 +37,17 @@ body {
 
 
 
+.textdiv { /* text in the boxes */
+  display: inline-block;
+font-size: medium;
+text-align: center;
+width: 50%;
+vertical-align: middle;
+font-family: "Open Sans", Helvetica, Arial, sans-serif; 
+}
+
+
+
 .barWrap{
   position: absolute;
   top: 66%;
@@ -51,60 +62,8 @@ body {
   margin-right: 5%;
   width: 16%;
   height: 33%;
-  background-color: #f0f;
+  background-color: #555;
 }
-.bySite{
-  width: 100%;
-  height: 20%;
-  margin-left: auto%;
-  margin-right: auto%;
-  background-color: green;
-}
-.byDisposal{
-  width: 100%;
-  height: 20%;
-  margin-left: auto%;
-  margin-right: auto%;
-  background-color: red;
-}
-
-#chart{
-	position: absolute;
-	left: 0px;
-	top: 600px;
-}
-
-.row {
-  padding: 5px;
-}
-
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #f0f0f0;
-  shape-rendering: crispEdges;
-}
-
-.axis text {
-  fill: #f0f0f0;
-  font-size: 8px;
-}
-
-.brush .extent {
-  stroke: #f0f0f0;
-  fill-opacity: .125;
-  shape-rendering: crispEdges;
-}
-
-.bar {
-  fill: #5EB4E3;
-}
-.selected {
-  fill: #78C656;
-}
-
-
-
 .infolabel {
   position: absolute;
   width: 200px;
