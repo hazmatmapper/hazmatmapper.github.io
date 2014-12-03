@@ -34,10 +34,10 @@ function initialize(){
     .attr("class", "viewerText")
     .style({"background-color": "#555", "color": "white", "font-size": "24px"})
     .text("Welcome to the HazMatMapper");
-  d3.select("body")
+  d3.select("#accordion")
     .append("div")
     .attr("class", "barWrap");
-  d3.select("body")
+  d3.select(".barWrap")
     .append("div")
     .text("Filter by:")
     .attr("class", "filterSelector");
@@ -167,7 +167,7 @@ var x = d3.scale.linear()
 var y = d3.scale.linear()
     .range([0, height33]);
 
-var color = d3.scale.category20();
+var color = d3.scale.category10();
 
 var partition = d3.layout.partition()
     //.size([width, height])
@@ -185,7 +185,7 @@ Isvg.selectAll("rects")
     .attr("y", function(d) { return y(d.y); })
     .attr("width", function(d) { return x(d.dx); })
     .attr("height", function(d) { return y(d.dy); })
-    .style({"cursor": "pointer", "fill": function(d) { return color((d.children ? d : d.parent).name); }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".75"} )
+    .style({"cursor": "pointer", "fill": function(d) { return color((d.children ? d : d.parent).name); }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"} )
     .on("mouseover", function (d) {
       console.log(d.name[0])
       if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
@@ -244,7 +244,7 @@ function icicleHighlight(data){
 
 function icicleDehighlight(data){
   Isvg.selectAll("."+data.name) //designate selector variable for brevity
-    .style({"fill-opacity": ".75"}); //reset enumeration unit to orginal color
+    .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
   svg.selectAll("."+data.name)
     .style({"stroke": "black", "stroke-width": "0px"})
   };

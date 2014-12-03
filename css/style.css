@@ -46,7 +46,20 @@ vertical-align: middle;
 font-family: "Open Sans", Helvetica, Arial, sans-serif; 
 }
 
+h3{
+  color: #fff;
+  cursor: pointer;
+}
 
+
+
+#accordion {
+  position: absolute;
+  top: 66%;
+  width: 100%;
+  height: inherit;
+  background-color: #555;
+}
 
 .barWrap{
   position: absolute;
@@ -56,12 +69,10 @@ font-family: "Open Sans", Helvetica, Arial, sans-serif;
   width: 100%;
 }
 .filterSelector{
-  position: absolute;
-  top: 66%;
-  margin-left: 5%;
-  margin-right: 5%;
-  width: 16%;
-  height: 33%;
+  position: fixed;
+  width: 15%;
+  height: 10%;
+  left: 1%;
   background-color: #555;
 }
 .infolabel {
