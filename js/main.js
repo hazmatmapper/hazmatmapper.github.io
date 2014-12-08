@@ -6,12 +6,10 @@ var projection;
 var projectionV;
 var pathV;
 var latlongsR;
-var valueById;
 var latlongRdump = [];
 var facilitySum;
 var exporterSum;
 var typeSum;
-var sum;
 var bigNest;
 var latlongReset;
 var Isvg;
@@ -19,6 +17,11 @@ var width66;
 var height33;
 var Site;
 var DisposalMethod;
+var povertydata = [];
+var colorKey;
+var checker = false;
+
+
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -48,7 +51,7 @@ function initialize(){
     .attr("width", width66)
     .attr("height", height33);
 
-  filterTypes = ["Site", "DisposalMethod"]
+  filterTypes = ["Site", "DisposalMethod", "Type"]
   var form = d3.select(".filterSelector").append("form"), j = 0;
   var labelEnter = form.selectAll("span")
     .data(filterTypes)
@@ -72,16 +75,45 @@ function initialize(){
         //.each("end", function(){
       icicle(window[this.value])
        // });
+     svg.selectAll("circle")
+      .style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }});
      
     });
   labelEnter.append("label").text(function(d) {return d;});
+
+  //do show all exporters/importers here
+  filterTypes = ["Importers", "Exporters"]
+  var show = d3.select(".filterSelector").append("text").text("Show on the map:");
+  var form = d3.select(".filterSelector").append("form"), j = 0;
+  var labelEnter = form.selectAll("span")
+    .data(filterTypes)
+    .enter().append("span");
+  labelEnter.append("input")
+    .attr({
+      type: "checkbox",
+      class: "something",
+      name: "mode",
+      value: function(d, i) {return d;}
+    })
+    .on("change", function(){
+     // add exporters and/or importers here
+     var type = this.value, display = this.checked ? "on": "off";
+     console.log(display);
+     if (type == "Exporters"){
+        exporters(latlongRdump)
+        checker = true;
+      }
+      if (display == "off"){
+        svg.selectAll("#exporter").remove();
+      }
+
+    });
+  labelEnter.append("label").text(function(d) {return d;});
+
   setData(); 
 }; 
 
 function setData(){
-valueById = new Array (50); 
-for (var i = 0; i < 50; i++) valueById[i] = 0;
-
 d3.csv("data/leadTest.csv", function(data) {
   data.forEach(function(d){
     d.totalQuantityinShipment = +d.totalQuantityinShipment // convert the quantity of waste from string to number
@@ -89,18 +121,9 @@ d3.csv("data/leadTest.csv", function(data) {
     d.exporterLONG = +d.exporterLONG 
     d.receivingLat = +d.receivingLat
     d.receivingLong = +d.receivingLong
+    d.receivingFacilityZipCode = +d.receivingFacilityZipCode
     d.hazWasteDesc.indexOf("LEAD") > -1 ? d.hazWasteDesc = "lead" : d.hazWasteDesc = d.hazWasteDesc; //convert everything with lead to lead in waste description; // this is where we can do work creating waste categories...
   });
-
-  sum = d3.sum(data, function(d) { return d.totalQuantityinShipment; }); // sums quantity of waste in shipment for entire set
-  var nested_data = d3.nest() //d3.nest allows us to sum only parts of a column of data, in this case, sum total waste by state, creating a new array called netsted_data to do so. code adapted from: http://bl.ocks.org/phoebebright/raw/3176159/
-  .key(function(d) { return d.receivingStateCode; }) // set state code as key
-  .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
-  .entries(data);
-  delete nested_data[10]["key"]; //removes "" key for the waste that had no state listed - will need to rework to make flexible to any kind of waste
-  for (var i=0; i<nested_data.length-1; i++) {
-       valueById[nested_data[i]["key"]] = nested_data[i]["values"]["total_waste"];
-      };
 
   Site = d3.nest()
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
@@ -118,8 +141,17 @@ d3.csv("data/leadTest.csv", function(data) {
   .entries(data);
   DisposalMethod={"key": "total", "values": DisposalMethod};
 
+  Type = d3.nest()
+  .key(function(d) { return d.hazWasteDesc; })
+  .key(function(d) { return d.ExpectedManagementMethod; })
+  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
+  .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
+  .entries(data);
+  Type={"key": "total", "values": Type};
+
   renameStuff(Site);
   renameStuff(DisposalMethod);
+  renameStuff(Type);
   function renameStuff(d) {
     d.name = d.key; delete d.key;
     if (typeof d.values === "number") d.size = d.values;
@@ -131,7 +163,6 @@ d3.csv("data/leadTest.csv", function(data) {
   .key(function(d) { return d.hazWasteDesc; }) // set type as key
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by receiving facility code
   .entries(data);
-  console.log(typeSum);
 
   facilitySum = d3.nest()
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // set state code as key
@@ -142,7 +173,6 @@ d3.csv("data/leadTest.csv", function(data) {
   .key(function(d) {return d.exporterLONG;})
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
   .entries(data);
-  console.log(exporterSum);
 
   latlongs = d3.nest() //rollup unique exportlatlongs
   .key(function(d) {return d.receivingStateCode;})
@@ -177,17 +207,17 @@ var partition = d3.layout.partition()
 //  var nodes = partition.nodes(root);
 var nodes = partition.nodes(data);
 
+colorKey=[];
 Isvg.selectAll("rects")
     .data(nodes)
   .enter().append("rect")
-    .attr ("class",  function(d) { return d.name} ) //change so that class = name + parent name
+    .attr ("class",  function(d) { return d.name} )
     .attr("x", function(d) {  return x(d.x); })
     .attr("y", function(d) { return y(d.y); })
     .attr("width", function(d) { return x(d.dx); })
     .attr("height", function(d) { return y(d.dy); })
-    .style({"cursor": "pointer", "fill": function(d) { return color((d.children ? d : d.parent).name); }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"} )
+    .style({"cursor": "pointer", "fill": function(d) { colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); return color((d.children ? d : d.parent).name); }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"} )
     .on("mouseover", function (d) {
-      console.log(d.name[0])
       if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
         icicleHighlight(d)
       };  
@@ -197,7 +227,6 @@ Isvg.selectAll("rects")
       clicked(d);
       icicleImporters(d);
     });
-
 
 Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.dx) > 50; })).enter()
      .append("foreignObject")
@@ -303,7 +332,7 @@ function dataCrunch(data){
  for (var i=0; i<latlongsR.length-1; i++) {
     for (var j=0; j<latlongsR[i]["values"].length; j++) {
       if( parseFloat(latlongsR[i]["values"][j]["key"]) != 0) {
-          latlongRdump.push({"long": latlongsR[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongsR[i]["values"][j]["values"][0]["receivingLat"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityName"]})
+          latlongRdump.push({"zip": latlongsR[i]["values"][j]["values"][0]["receivingFacilityZipCode"], "long": latlongsR[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongsR[i]["values"][j]["values"][0]["receivingLat"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityName"]})
       };     
     };
   };
@@ -343,20 +372,18 @@ function importers(data){
     .domain([min, max])
     .range([10, 30]);
   
-
   svg.selectAll(".facility")
     .data(data)
     .enter().append("circle", ".facility")
     .attr("class", function(d) {return d.id})
-    .style({"fill": "yellow", "fill-opacity": ".75"})
+    .style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }})
+    .style("fill-opacity", ".75")
     .attr("r", function(d) { return radius(d.total_waste); })
     .attr("cx", function(d) { return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", highlight)
     .on("mouseout", dehighlight)
-    .on("mousemove", moveLabel)
-    .on("click", viewer);
-  
+    .on("click", viewer); 
 };
 
 function highlight(data){
@@ -364,67 +391,26 @@ function highlight(data){
     .style({"stroke": "black", "stroke-width": "5px"}); //yellow outline
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": "1"});
-
-  var labelAttribute = "<h1>"+data.total_waste+
-    "</h1><br><b> pounds of lead </b>"; //label content
-  var labelName = data.name //html string for name to go in child div
-  
-  //create info label div
-  var infolabel = d3.select("body")
-    .append("div") //create the label div
-    .attr("class", "infolabel")
-    .attr("id", data.id+"label") //for styling label
-    .html(labelAttribute) //add text
-    .append("div") //add child div for feature name
-    .attr("class", "labelname") //for styling name
-    .html(labelName); //add feature name to label
-
 };
 
 function dehighlight(data){
-  //json or csv properties
-  var subb = svg.selectAll("."+data.id); //designate selector variable for brevity
-  //var fillcolor = subb.select("desc").text(); //access original color from desc
-  subb.style({"stroke": "#000", "stroke-width": "0px"}); //reset enumeration unit to orginal color
+  svg.selectAll("."+data.id) //designate selector variable for brevity
+    .style({"stroke": "#000", "stroke-width": "0px"}); //reset enumeration unit to orginal color
   Isvg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"fill-opacity": ".75"});
-
-  d3.select("#"+data.id+"label").remove(); //remove info label
-
-  };
-
-function moveLabel() {
-
-  //horizontal label coordinate based mouse position stored in d3.event
- // var x = d3.event.clientX < window.innerWidth - 245 ? d3.event.clientX+10 : d3.event.clientX-210; 
-  //vertical label coordinate
- // var y = d3.event.clientY < window.innerHeight - 100 ? d3.event.clientY-75 : d3.event.clientY-175; 
-  
-  d3.select(".infolabel") //select the label div for moving
-    .style("margin-left", "6px") //reposition label horizontal
-    .style("margin-top", "6px"); //reposition label vertical
+    .style({"fill-opacity": ".5"});
 };
 
 
-function viewer(data){
-   //implement function that will place locations of waste exporters on map
-  //remove all other importers
-  var self = this;
-  var circles = d3.selectAll('svg circle');
-    // All other elements resize randomly.
-    circles.filter(function (x) { return self != this; })
-        .transition()
-        .remove();
-  d3.selectAll(".pin").remove();
-
-  //begin constructing latlongs of exporters
+function exporters(data){
+    //begin constructing latlongs of exporters
+  if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
   var latlongdump = [];
-  //var countydump = [];
    for (var i=0; i<latlongs.length-1; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
-      if (latlongs[i]["values"][j]["values"][0]["receivingLong"] == data.long) {
-        console.log(latlongs[i]["values"][j]["values"][0]);
-        latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["Foreign Exporter Name"], "id": latlongs[i]["values"][j]["values"][0]["Foreign Exporter Name"]}) //lat longs of the foreign waste sites
+      for (var k=0; k<data.length; k++){
+        if (latlongs[i]["values"][j]["values"][0]["receivingLong"] == data[k].long) {
+          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["Foreign Exporter Name"], "id": latlongs[i]["values"][j]["values"][0]["Foreign Exporter Name"]}) //lat longs of the foreign waste sites
+        };
         };     
       };
     };
@@ -444,21 +430,33 @@ function viewer(data){
     .domain([min, max])
     .range([10, 30]);
 
-//add exporters to the map    
-svg.selectAll(".pin")
-  .data(latlongdump)
-  .enter().append("circle", ".pin")
-  .attr("r", function(d) { return radius(d.total_waste); })
-  //.attr("class", "pin")
-  .attr("class", function (d) { return d.id})
-  .style({"fill": "green", "fill-opacity": ".75"})
-  .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
-  .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
-  .on("mouseover", highlight)
-  .on("mouseout", dehighlight)
-  .on("mousemove", moveLabel)
-  .on("click", exportViewer);
+  //add exporters to the map    
+  svg.selectAll(".pin")
+    .data(latlongdump)
+    .enter().append("circle")
+    .attr("r", function(d) { return radius(d.total_waste); })
+    .attr("id", "exporter")
+    .attr("class", function (d) { return d.id})
+    .style({"fill": "#3d3d3d", "fill-opacity": ".5"})
+    .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
+    .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
+    .on("mouseover", highlight)
+    .on("mouseout", dehighlight)
+    .on("click", exportViewer);
+};
+
+function viewer(data){
+   //implement function that will place locations of waste exporters on map
+  //remove all other importers
+  var self = this;
+  var circles = d3.selectAll('svg circle');
+    // All other elements resize randomly.
+    circles.filter(function (x) { return self != this; })
+        .transition()
+        .remove();
+  d3.selectAll(".pin").remove();
   
+  exporters(data)
   //implement clickoff div - this creates a div that will do two things: 1) make the map more opaque, emphasizing the new info panel; 2) provide a clickable space so that when people click away from the info panel back to the map, the info panel closes
   d3.select("body")
     .append("div")
@@ -466,7 +464,8 @@ svg.selectAll(".pin")
     .attr("class", "clickoff")
     .style({"background-color": "#d3d3d3"}) //need to adjust size, color, opacity of div
     .on("click", function(){
-      d3.selectAll("circle").remove()
+      if (checker != true) {d3.selectAll("circle").remove()}      
+      d3.selectAll(".povertyChart").remove()
       d3.selectAll(".viewer")
         .transition()
           .duration(0)
@@ -476,19 +475,93 @@ svg.selectAll(".pin")
       importers(latlongReset); //removes itself so that the map can be clicked again
     });
 
+
   //implement the info panel/viewer here
   d3.selectAll(".viewerText").remove()
   d3.selectAll(".viewer")
     .style({"height": "0%", "width": "0%"})
+  d3.selectAll(".povertyChart").remove()
   d3.selectAll(".viewer")
     .transition()
       .duration(1000)
         .style({"height": "50%", "width": "25%"})
-          .each("end", function(d){ 
-              d3.selectAll(".viewer").append("div").attr("class", "viewerText");
-              d3.selectAll(".viewerText").text("this is: "+data.name+", which imports "+data.total_waste+" tons of lead");
-            });
-};
+          .each("end", function (d){
+            d3.selectAll(".viewer").append("div").attr("class", "viewerText");
+            d3.selectAll(".viewerText").text("this is: "+data.name+", which imports "+data.total_waste+" tons of lead");
+            demographicCharts(data);
+          });
+
+function demographicCharts(data){ 
+  d3.selectAll(".viewer").append("div").attr("class", "povertyChart");
+
+  var width = 150
+  var height = 250
+
+  var povSVG =  d3.select(".povertyChart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+//match zips
+  d3.csv("data/poverty.csv", function(povdata) {
+    povertydata = povdata.map(function(d) { return {"Geography": d["Geography"], "percentPoverty": +d["percentPoverty"] }; });
+  
+  var povdump;
+  for (var i =0; i<povertydata.length-1; i++){
+      if (povertydata[i].Geography == data.zip){
+        povdump = [povertydata[i].percentPoverty, povertydata[0].percentPoverty]
+      };
+    }; 
+/*var x = d3.scale.linear()
+    .range([0, width]);
+*/
+  var y = d3.scale.linear()
+    .domain([0, 100])
+    .range([height, 0]);
+  /*var bar = povSVG.selectAll("g")
+    .data(povdump)
+    .enter().append("g")
+    .attr("transform", function(d, i) { return "translate(" + i * 25 + ",0)"; });
+  bar.append("rect")
+    .attr("class", "povBars")
+    .attr("width", 25)
+    .attr("height", y)*/
+var barPadding = 1;
+povSVG.selectAll("rect")
+     .data(povdump)
+     .enter()
+     .append("rect")
+     .attr("x", function(d, i) {
+        return i * (width / povdump.length);
+     })
+     .attr("y", function(d) { return y(d); })
+     .attr("width", width / povdump.length - barPadding)
+     .attr("height", function(d){ return height - y(d)})
+     .attr("fill", function(d, i) {
+        if (i == 0) {
+          return "rgb(255, 0, 0)"
+        }
+        else {
+          return "rgb(0,0,255)"
+        }
+     });
+povSVG.selectAll("text")
+         .data(povdump)
+         .enter()
+         .append("text")
+         .text(function(d) {
+            return d;
+         })
+         .attr("text-anchor", "middle")
+         .attr("x", function(d, i) {
+            return i * (width / povdump.length) + (width / povdump.length - barPadding) / 2;
+         })
+         .attr("y", function(d) { return y(d) + 14; })
+         .attr("font-family", "sans-serif")
+         .attr("font-size", "11px")
+         .attr("fill", "white");
+  });
+}
+}
 
 function exportViewer(data){
 d3.selectAll(".clickoff").remove()
@@ -498,7 +571,8 @@ d3.select("body")
     .attr("class", "clickoff")
     .style({"background-color": "#d3d3d3"}) //need to adjust size, color, opacity of div
     .on("click", function(){
-      d3.selectAll("circle").remove()
+      if (checker != true) {d3.selectAll("circle").remove()}
+      d3.selectAll(".povertyChart").remove()
       d3.selectAll(".viewer")
         .transition()
           .duration(0)
@@ -513,6 +587,7 @@ d3.select("body")
   d3.selectAll(".viewerText").remove()
   d3.selectAll(".viewer")
     .style({"height": "0%", "width": "0%"})
+  d3.selectAll(".povertyChart").remove()
    d3.selectAll(".viewer")
     .transition()
       .duration(1000)

@@ -1,5 +1,33 @@
 // code scraps
 
+  var labelAttribute = "<h1>"+data.total_waste+
+    "</h1><br><b> pounds of lead </b>"; //label content
+  var labelName = data.name //html string for name to go in child div
+  
+  //create info label div
+  var infolabel = d3.select("body")
+    .append("div") //create the label div
+    .attr("class", "infolabel")
+    .attr("id", data.id+"label") //for styling label
+    .html(labelAttribute) //add text
+    .append("div") //add child div for feature name
+    .attr("class", "labelname") //for styling name
+    .html(labelName); //add feature name to label
+
+  d3.select("#"+data.id+"label").remove(); //remove info label
+function moveLabel() {
+
+  //horizontal label coordinate based mouse position stored in d3.event
+ // var x = d3.event.clientX < window.innerWidth - 245 ? d3.event.clientX+10 : d3.event.clientX-210; 
+  //vertical label coordinate
+ // var y = d3.event.clientY < window.innerHeight - 100 ? d3.event.clientY-75 : d3.event.clientY-175; 
+  
+  d3.select(".infolabel") //select the label div for moving
+    .style("margin-left", "6px") //reposition label horizontal
+    .style("margin-top", "6px"); //reposition label vertical
+};
+
+
 function brusher(data){
   var max = d3.max(data, function(d) {return d.total_waste}),
   min = d3.min(data, function(d) {return d.total_waste})

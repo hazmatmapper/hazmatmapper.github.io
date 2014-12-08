@@ -5,19 +5,13 @@ body {
 }
 
 .land {
-  fill: #fff;
-  stroke: #ccc;
+  fill: #d3d3d3;
+  stroke: #fff;
+  fill-opacity: .3;
 }
 
-.state {
-  fill: #fff;
-  stroke: none;
-}
 
-.counties {
-  stroke: none;
-  fill: #fff;
-}
+
 
 .viewer {
 	position: absolute;
@@ -71,40 +65,11 @@ h3{
 .filterSelector{
   position: fixed;
   width: 15%;
-  height: 10%;
+  height: 20%;
   left: 1%;
   background-color: #555;
+  height:10%;
 }
-.infolabel {
-  position: absolute;
-  width: 200px;
-  height: 50px;
-  color: #fff;
-  background-color: #000;
-  border: solid thin #fff;
-  padding: 5px;
-}
-
-.infolabel h1 {
-  margin: 0px;
-  padding: 0px;
-  display: inline-block;
-  line-height: 1em;
-}
-
-.infolabel b {
-  float: left;
-}
-
-.labelname {
-  display: inline-block;
-  float: right;
-  margin: -25px 0px 0px 40px;
-  font-size: 1em;
-  font-weight: bold;
-  position: absolute;
-}
-
 
 .label {
   font: 10px sans-serif;
