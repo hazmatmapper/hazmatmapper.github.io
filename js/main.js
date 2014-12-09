@@ -20,7 +20,8 @@ var DisposalMethod;
 var povertydata = [];
 var colorKey;
 var checker = false;
-
+var povSVG;
+var clickCheck = true;
 
 
 //begin script when window loads 
@@ -37,6 +38,18 @@ function initialize(){
     .attr("class", "viewerText")
     .style({"background-color": "#555", "color": "white", "font-size": "24px"})
     .text("Welcome to the HazMatMapper");
+  d3.select("#showHide")
+    .append("text")
+    .text("Show/Hide")
+    .on("click", function(){
+      if (clickCheck == true) {
+        d3.select("#accordion")
+          .style("display": none)
+        d3.select("#showHide")
+          .style({"top": "0%"})
+      }
+    }
+
   d3.select("#accordion")
     .append("div")
     .attr("class", "barWrap");
@@ -103,8 +116,15 @@ function initialize(){
         exporters(latlongRdump)
         checker = true;
       }
-      if (display == "off"){
+     if (type == "Exporters" && display == "off"){
         svg.selectAll("#exporter").remove();
+      }
+     if (type == "Importers"){
+        importers(latlongRdump)
+        checker = true;
+      }
+     if (type == "Importers" && display == "off"){
+        svg.selectAll("#importer").remove();
       }
 
     });
@@ -114,15 +134,20 @@ function initialize(){
 }; 
 
 function setData(){
-d3.csv("data/leadTest.csv", function(data) {
+d3.csv("data/sites_geocoded_t3.csv", function(data) {
   data.forEach(function(d){
     d.totalQuantityinShipment = +d.totalQuantityinShipment // convert the quantity of waste from string to number
     d.exporterLAT = +d.exporterLAT
     d.exporterLONG = +d.exporterLONG 
-    d.receivingLat = +d.receivingLat
-    d.receivingLong = +d.receivingLong
-    d.receivingFacilityZipCode = +d.receivingFacilityZipCode
+    d.receivingLat = +d.latitude
+    d.receivingLong = +d.longitude
+    d.receivingFacilityZipCode = +d.receivingfacilityzipcode
     d.hazWasteDesc.indexOf("LEAD") > -1 ? d.hazWasteDesc = "lead" : d.hazWasteDesc = d.hazWasteDesc; //convert everything with lead to lead in waste description; // this is where we can do work creating waste categories...
+    d.hazWasteDesc.indexOf("MERCURY") > -1 ? d.hazWasteDesc = "mercury" : d.hazWasteDesc = d.hazWasteDesc;
+    d.hazWasteDesc.indexOf("TOLULENE") > -1 ? d.hazWasteDesc = "toluene" : d.hazWasteDesc = d.hazWasteDesc;
+    d.hazWasteDesc.indexOf("BATTER") > -1 ? d.hazWasteDesc = "batteries" : d.hazWasteDesc = d.hazWasteDesc;
+    d.hazWasteDesc.indexOf("PAINT") > -1 ? d.hazWasteDesc = "paint" : d.hazWasteDesc = d.hazWasteDesc;
+    d.hazWasteDesc.indexOf("CHLOROETHYLENE") > -1 ? d.hazWasteDesc = "Tri/dichloroethlene" : d.hazWasteDesc = d.hazWasteDesc;
   });
 
   Site = d3.nest()
@@ -149,6 +174,8 @@ d3.csv("data/leadTest.csv", function(data) {
   .entries(data);
   Type={"key": "total", "values": Type};
 
+  //need a sort by type solid/liquid here based on G/L vs K/P
+
   renameStuff(Site);
   renameStuff(DisposalMethod);
   renameStuff(Type);
@@ -165,7 +192,7 @@ d3.csv("data/leadTest.csv", function(data) {
   .entries(data);
 
   facilitySum = d3.nest()
-  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // set state code as key
+  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // EPA ID number
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by receiving facility code
   .entries(data);
 
@@ -175,15 +202,15 @@ d3.csv("data/leadTest.csv", function(data) {
   .entries(data);
 
   latlongs = d3.nest() //rollup unique exportlatlongs
-  .key(function(d) {return d.receivingStateCode;})
+  .key(function(d) {return d.importer_state;}) // state code
   .key(function(d) {return d.exporterLONG;})
   .entries(data);
 
+
   latlongsR = d3.nest() //rollup unique receivinglatlongs by state
-  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // set state code as key
+  .key(function(d) { return d.importer_state; }) //EPA ID number
   .key(function(d) {return d.receivingLong;})
   .entries(data);
-
   setMap(data);
   
 
@@ -269,6 +296,10 @@ function icicleHighlight(data){
     .style({"fill-opacity": "1"}); //yellow outline
   svg.selectAll("."+data.name)
     .style({"stroke": "black", "stroke-width": "5px"})
+  povSVG.selectAll("."+data.id)
+    .style({"stroke": "black", "stroke-width": "2px"});
+  rSVG.selectAll("."+data.id)
+    .style({"stroke": "black", "stroke-width": "2px"});
 }; 
 
 function icicleDehighlight(data){
@@ -276,6 +307,10 @@ function icicleDehighlight(data){
     .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
   svg.selectAll("."+data.name)
     .style({"stroke": "black", "stroke-width": "0px"})
+  povSVG.selectAll("."+data.id)
+    .style({"stroke": "#000", "stroke-width": "0px"});
+  rSVG.selectAll("."+data.id)
+    .style({"stroke": "#000", "stroke-width": "0px"});
   };
 
 
@@ -293,20 +328,13 @@ var path = d3.geo.path()
 
 
 queue()
-  .defer(d3.json, "data/us.json")
-  .defer(d3.json, "data/can.json")
-  .defer(d3.json, "data/mex.json")
-  .defer(d3.json, "data/lakes.json")
+  .defer(d3.json, "data/us4.topojson")
+  .defer(d3.json, "data/mex2.topojson")
   .await(callback);
 
-function callback(error, us, can, mex, lakes){
+function callback(error, us, mex){
   var us = svg.append("path")
     .datum(topojson.feature(us, us.objects.usa))
-    .attr("class", "land")
-    .attr("d", path);
-
-  var can = svg.append("path")
-    .datum(topojson.feature(can, can.objects.can))
     .attr("class", "land")
     .attr("d", path);
 
@@ -315,12 +343,6 @@ function callback(error, us, can, mex, lakes){
     .attr("class", "land")
     .attr("d", path);
 
-  var lakes =  svg.append("path")
-    .datum(topojson.feature(lakes, lakes.objects.lakes))
-    .attr("class", "land")
-    .attr("d", path);
-
-    //call data crunch instead
   dataCrunch();
 
 
@@ -332,11 +354,12 @@ function dataCrunch(data){
  for (var i=0; i<latlongsR.length-1; i++) {
     for (var j=0; j<latlongsR[i]["values"].length; j++) {
       if( parseFloat(latlongsR[i]["values"][j]["key"]) != 0) {
-          latlongRdump.push({"zip": latlongsR[i]["values"][j]["values"][0]["receivingFacilityZipCode"], "long": latlongsR[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongsR[i]["values"][j]["values"][0]["receivingLat"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityName"]})
+          latlongRdump.push({"zip": latlongsR[i]["values"][j]["values"][0]["receivingFacilityZipCode"], "long": latlongsR[i]["values"][j]["values"][0]["longitude"], "lat": latlongsR[i]["values"][j]["values"][0]["latitude"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["importer_name"]})
       };     
     };
   };
 
+console.log(facilitySum)
 for (var i =0; i<facilitySum.length-1; i++){
   for (var j=0; j<latlongRdump.length; j++){
     if (facilitySum[i]["key"] == latlongRdump[j].id){
@@ -344,7 +367,6 @@ for (var i =0; i<facilitySum.length-1; i++){
     };
   }; 
 };
-
 latlongReset = latlongRdump;
 icicle(Site);
 importers(latlongRdump);
@@ -376,6 +398,7 @@ function importers(data){
     .data(data)
     .enter().append("circle", ".facility")
     .attr("class", function(d) {return d.id})
+    .attr("id", "importer")
     .style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }})
     .style("fill-opacity", ".75")
     .attr("r", function(d) { return radius(d.total_waste); })
@@ -391,6 +414,10 @@ function highlight(data){
     .style({"stroke": "black", "stroke-width": "5px"}); //yellow outline
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": "1"});
+  povSVG.selectAll("."+data.id)
+    .style({"stroke": "black", "stroke-width": "2px"});
+  rSVG.selectAll("."+data.id)
+    .style({"stroke": "black", "stroke-width": "2px"});
 };
 
 function dehighlight(data){
@@ -398,6 +425,10 @@ function dehighlight(data){
     .style({"stroke": "#000", "stroke-width": "0px"}); //reset enumeration unit to orginal color
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": ".5"});
+  povSVG.selectAll("."+data.id)
+    .style({"stroke": "#000", "stroke-width": "0px"});
+  rSVG.selectAll("."+data.id)
+    .style({"stroke": "#000", "stroke-width": "0px"});
 };
 
 
@@ -408,13 +439,12 @@ function exporters(data){
    for (var i=0; i<latlongs.length-1; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
       for (var k=0; k<data.length; k++){
-        if (latlongs[i]["values"][j]["values"][0]["receivingLong"] == data[k].long) {
-          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["Foreign Exporter Name"], "id": latlongs[i]["values"][j]["values"][0]["Foreign Exporter Name"]}) //lat longs of the foreign waste sites
+        if (latlongs[i]["values"][j]["values"][0]["longitude"] == data[k].long) {
+          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"]}) //lat longs of the foreign waste sites
         };
         };     
       };
     };
-
   for (var i =0; i<exporterSum.length-1; i++){
     for (var j=0; j<latlongdump.length; j++){
       if (exporterSum[i]["key"] == latlongdump[j].long){
@@ -427,14 +457,13 @@ function exporters(data){
   var max = d3.max(latlongdump, function(d) {return d.total_waste}),
   min = d3.min(latlongdump, function(d) {return d.total_waste})
   var radius = d3.scale.log()
-    .domain([min, max])
+    .domain([min+1, max]) //don't want min to be 0
     .range([10, 30]);
-
   //add exporters to the map    
   svg.selectAll(".pin")
     .data(latlongdump)
     .enter().append("circle")
-    .attr("r", function(d) { return radius(d.total_waste); })
+    .attr("r", function(d) {return radius(d.total_waste); })
     .attr("id", "exporter")
     .attr("class", function (d) { return d.id})
     .style({"fill": "#3d3d3d", "fill-opacity": ".5"})
@@ -484,7 +513,7 @@ function viewer(data){
   d3.selectAll(".viewer")
     .transition()
       .duration(1000)
-        .style({"height": "50%", "width": "25%"})
+        .style({"height": "50%", "width": "33%"})
           .each("end", function (d){
             d3.selectAll(".viewer").append("div").attr("class", "viewerText");
             d3.selectAll(".viewerText").text("this is: "+data.name+", which imports "+data.total_waste+" tons of lead");
@@ -497,7 +526,7 @@ function demographicCharts(data){
   var width = 150
   var height = 250
 
-  var povSVG =  d3.select(".povertyChart").append("svg")
+  povSVG =  d3.select(".povertyChart").append("svg")
     .attr("width", width)
     .attr("height", height);
 
@@ -526,6 +555,7 @@ function demographicCharts(data){
     .attr("width", 25)
     .attr("height", y)*/
 var barPadding = 1;
+console.log(data)
 povSVG.selectAll("rect")
      .data(povdump)
      .enter()
@@ -536,14 +566,17 @@ povSVG.selectAll("rect")
      .attr("y", function(d) { return y(d); })
      .attr("width", width / povdump.length - barPadding)
      .attr("height", function(d){ return height - y(d)})
+     .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
         if (i == 0) {
-          return "rgb(255, 0, 0)"
+          for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == data.id) {return colorKey[i].color} }
         }
         else {
-          return "rgb(0,0,255)"
+          return "rgb(136,136,136)"
         }
-     });
+     })
+     .on("mouseover", highlight)
+     .on("mouseout", dehighlight);
 povSVG.selectAll("text")
          .data(povdump)
          .enter()
@@ -560,9 +593,80 @@ povSVG.selectAll("text")
          .attr("font-size", "11px")
          .attr("fill", "white");
   });
-}
-}
 
+  var width = 150
+  var chartPadding = 50
+  var height = 250
+
+  rSVG =  d3.select(".povertyChart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+//match zips
+  d3.csv("data/minority.csv", function(racedata) {
+    racedata = racedata.map(function(d) { return {"Geography": d["Geography"], "percentMinority": +d["percentMinority"] }; });
+  
+  var racedump;
+  for (var i =0; i<racedata.length-1; i++){
+      if (racedata[i].Geography == data.zip){
+        racedump = [racedata[i].percentMinority, racedata[0].percentMinority]
+      };
+    }; 
+/*var x = d3.scale.linear()
+    .range([0, width]);
+*/
+  var y = d3.scale.linear()
+    .domain([0, 100])
+    .range([height, 0]);
+  /*var bar = povSVG.selectAll("g")
+    .data(povdump)
+    .enter().append("g")
+    .attr("transform", function(d, i) { return "translate(" + i * 25 + ",0)"; });
+  bar.append("rect")
+    .attr("class", "povBars")
+    .attr("width", 25)
+    .attr("height", y)*/
+var barPadding = 1;
+console.log(data)
+rSVG.selectAll("rect")
+     .data(racedump)
+     .enter()
+     .append("rect")
+     .attr("x", function(d, i) {
+        return i * (width / racedump.length);
+     })
+     .attr("y", function(d) { return y(d); })
+     .attr("width", width / racedump.length - barPadding)
+     .attr("height", function(d){ return height - y(d)})
+     .attr("class", function(d, i){ if (i == 0){return data.id}})
+     .attr("fill", function(d, i) {
+        if (i == 0) {
+          for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == data.id) {return colorKey[i].color} }
+        }
+        else {
+          return "rgb(136,136,136)"
+        }
+     })
+     .on("mouseover", highlight)
+     .on("mouseout", dehighlight);
+rSVG.selectAll("text")
+         .data(racedump)
+         .enter()
+         .append("text")
+         .text(function(d) {
+            return d;
+         })
+         .attr("text-anchor", "middle")
+         .attr("x", function(d, i) {
+            return i * (width / racedump.length) + (width / racedump.length - barPadding) / 2;
+         })
+         .attr("y", function(d) { return y(d) + 14; })
+         .attr("font-family", "sans-serif")
+         .attr("font-size", "11px")
+         .attr("fill", "white");
+  });
+}
+}
 function exportViewer(data){
 d3.selectAll(".clickoff").remove()
 d3.select("body")
@@ -591,7 +695,7 @@ d3.select("body")
    d3.selectAll(".viewer")
     .transition()
       .duration(1000)
-        .style({"height": "50%", "width": "25%"})
+        .style({"height": "50%", "width": "33%"})
           .each("end", function(){ 
               d3.selectAll(".viewer").append("div").attr("class", "viewerText");
               d3.selectAll(".viewerText").text("this is: "+data.name+", which exports "+data.total_waste+" tons of lead");
