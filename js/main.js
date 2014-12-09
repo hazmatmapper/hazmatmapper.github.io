@@ -39,16 +39,26 @@ function initialize(){
     .style({"background-color": "#555", "color": "white", "font-size": "24px"})
     .text("Welcome to the HazMatMapper");
   d3.select("#showHide")
-    .append("text")
+    .append("div")
     .text("Show/Hide")
     .on("click", function(){
       if (clickCheck == true) {
         d3.select("#accordion")
-          .style("display": none)
+          .style("display", "none")
         d3.select("#showHide")
-          .style({"top": "0%"})
+          .style({"top": "95%"})
+        clickCheck = false
       }
-    }
+      else {
+        d3.select("#accordion")
+          .transition()
+          .duration(750)
+          .style("display", "block")
+        d3.select("#showHide")
+          .style({"top": "60%"})
+        clickCheck = true
+      }
+    })
 
   d3.select("#accordion")
     .append("div")
