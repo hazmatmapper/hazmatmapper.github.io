@@ -22,6 +22,7 @@ var colorKey;
 var checker = false;
 var povSVG;
 var clickCheck = true;
+var exporterInfo;
 
 
 //begin script when window loads 
@@ -33,6 +34,10 @@ function initialize(){
     .append("div")
     .classed("viewer", true)
     .style("display", "inline-block");
+  d3.select("body")
+    .append("div")
+    .attr("class", "footer")
+    .html("Footers")
   d3.select(".viewer")
     .append("div")
     .attr("class", "viewerText")
@@ -65,7 +70,7 @@ function initialize(){
     .attr("class", "barWrap");
   d3.select(".barWrap")
     .append("div")
-    .text("Filter by:")
+    .text("Show on the map:")
     .attr("class", "filterSelector");
 
   width66 =  .66 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
@@ -74,39 +79,8 @@ function initialize(){
     .attr("width", width66)
     .attr("height", height33);
 
-  filterTypes = ["Site", "DisposalMethod", "Type"]
-  var form = d3.select(".filterSelector").append("form"), j = 0;
-  var labelEnter = form.selectAll("span")
-    .data(filterTypes)
-    .enter().append("span");
-  labelEnter.append("input")
-    .attr({
-      type: "radio",
-      class: "something",
-      name: "mode",
-      value: function(d, i) {return d;}
-    })
-    .property("checked", function(d, i) { 
-        return (i===j); 
-    })
-    .on("change", function(){
-     Isvg.selectAll("rect, div")
-        .transition()
-        .duration(750)
-        .style("opacity", 0)
-        .remove();
-        //.each("end", function(){
-      icicle(window[this.value])
-       // });
-     svg.selectAll("circle")
-      .style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }});
-     
-    });
-  labelEnter.append("label").text(function(d) {return d;});
-
-  //do show all exporters/importers here
+    //do show all exporters/importers here
   filterTypes = ["Importers", "Exporters"]
-  var show = d3.select(".filterSelector").append("text").text("Show on the map:");
   var form = d3.select(".filterSelector").append("form"), j = 0;
   var labelEnter = form.selectAll("span")
     .data(filterTypes)
@@ -139,6 +113,41 @@ function initialize(){
 
     });
   labelEnter.append("label").text(function(d) {return d;});
+
+  filterTypes = ["Site", "DisposalMethod", "Type"]
+    var show = d3.select(".filterSelector").append("div").html("<p>Filter by:")
+  var form = d3.select(".filterSelector").append("form"), j = 0;
+  var labelEnter = form.selectAll("div")
+    .data(filterTypes)
+    .enter().append("div")
+    .attr("class", "filtering")
+    .attr("id", function(d){return d})
+  labelEnter.append("input")
+    .attr({
+      type: "radio",
+      class: "something",
+      name: "mode",
+      value: function(d, i) {return d;}
+    })
+    .property("checked", function(d, i) { 
+        return (i===j); 
+    })
+    .on("change", function(){
+     Isvg.selectAll("rect, div")
+        .transition()
+        .duration(750)
+        .style("opacity", 0)
+        .remove();
+        //.each("end", function(){
+      icicle(window[this.value])
+       // });
+     svg.selectAll("#importer")
+      .style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }});
+     
+    });
+  labelEnter.append("label").text(function(d) {return d;});
+
+
 
   setData(); 
 }; 
@@ -240,10 +249,18 @@ var partition = d3.layout.partition()
     //.size([width, height])
     .value(function(d) { return d.size; });
 
+var tip = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-10, 0])
+  .html(function(d) { console.log(d)
+    return "<span style='color:white'>" + d.name + "</span>";
+  })
+
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
 var nodes = partition.nodes(data);
 
+Isvg.call(tip)
 colorKey=[];
 Isvg.selectAll("rects")
     .data(nodes)
@@ -255,16 +272,18 @@ Isvg.selectAll("rects")
     .attr("height", function(d) { return y(d.dy); })
     .style({"cursor": "pointer", "fill": function(d) { colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); return color((d.children ? d : d.parent).name); }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"} )
     .on("mouseover", function (d) {
+      tip.show(d);
       if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
         icicleHighlight(d)
       };  
     })
-    .on("mouseout", icicleDehighlight)
+    .on("mouseout", function(d){tip.hide(d); icicleDehighlight(d)})
     .on('click', function(d){
       clicked(d);
       icicleImporters(d);
     });
 
+/*
 Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.dx) > 50; })).enter()
      .append("foreignObject")
      .attr("x", function(d) { return x(d.x); })
@@ -273,7 +292,7 @@ Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.dx) > 
      .attr("height", function(d) { return y(d.dy); })
      .append("xhtml:div")
      .html(function(d) { return d.name; })
-     .attr("class", "textdiv")
+     .attr("class", "textdiv")*/
      
 
 function clicked(d) {
@@ -286,7 +305,7 @@ function clicked(d) {
       .attr("y", function(d) { return y(d.y); })
       .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
       .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
-
+/*
   Isvg.selectAll("div").style("opacity", 0).transition().duration(750).remove()
   Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.x + d.dx) - x(d.x) > 50; })).enter()
      .append("foreignObject")
@@ -297,7 +316,7 @@ function clicked(d) {
      .append("xhtml:div")
      .html(function(d) { return d.name; })
      .attr("class", "textdiv")
-
+*/
   };
 };
 
@@ -332,7 +351,8 @@ svg = d3.select("body").append("svg")
     .attr("width", width66)
     .attr("height", height66);
 
-projection = d3.geo.albers();
+projection = d3.geo.albers()
+  .scale(800)
 var path = d3.geo.path()
   .projection(projection);
 
@@ -402,7 +422,7 @@ function importers(data){
   min = d3.min(latlongReset, function(d) {return d.total_waste})
   var radius = d3.scale.log()
     .domain([min, max])
-    .range([10, 30]);
+    .range([5, 20]);
   
   svg.selectAll(".facility")
     .data(data)
@@ -446,15 +466,22 @@ function exporters(data){
     //begin constructing latlongs of exporters
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
   var latlongdump = [];
+  exporterInfo = [];
    for (var i=0; i<latlongs.length-1; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
       for (var k=0; k<data.length; k++){
         if (latlongs[i]["values"][j]["values"][0]["longitude"] == data[k].long) {
           latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"]}) //lat longs of the foreign waste sites
+          for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
+            exporterInfo.push({"methods": latlongs[i]["values"][j]["values"][z]["ExpectedManagementMethod"], "waste": latlongs[i]["values"][j]["values"][z]["hazWasteDesc"]})
+            console.log(exporterInfo)
+          };
         };
+
         };     
       };
     };
+
   for (var i =0; i<exporterSum.length-1; i++){
     for (var j=0; j<latlongdump.length; j++){
       if (exporterSum[i]["key"] == latlongdump[j].long){
@@ -468,7 +495,7 @@ function exporters(data){
   min = d3.min(latlongdump, function(d) {return d.total_waste})
   var radius = d3.scale.log()
     .domain([min+1, max]) //don't want min to be 0
-    .range([10, 30]);
+    .range([5, 20]);
   //add exporters to the map    
   svg.selectAll(".pin")
     .data(latlongdump)
@@ -678,6 +705,7 @@ rSVG.selectAll("text")
 }
 }
 function exportViewer(data){
+  
 d3.selectAll(".clickoff").remove()
 d3.select("body")
     .append("div")
@@ -708,6 +736,6 @@ d3.select("body")
         .style({"height": "50%", "width": "33%"})
           .each("end", function(){ 
               d3.selectAll(".viewer").append("div").attr("class", "viewerText");
-              d3.selectAll(".viewerText").text("this is: "+data.name+", which exports "+data.total_waste+" tons of lead");
+              d3.selectAll(".viewerText").html("Name:"+data.name+"<p>Exports: "+data.total_waste+"<p>Managment methods: "+exporterInfo[0]["methods"]+"<p>Waste types: "+exporterInfo[0]["waste"]+"");
             });
 };
