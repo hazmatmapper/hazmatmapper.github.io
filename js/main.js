@@ -153,7 +153,7 @@ function initialize(){
 }; 
 
 function setData(){
-d3.csv("data/sites_geocoded_t3.csv", function(data) {
+d3.csv("data/sites_v4.csv", function(data) {
   data.forEach(function(d){
     d.totalQuantityinShipment = +d.totalQuantityinShipment // convert the quantity of waste from string to number
     d.exporterLAT = +d.exporterLAT
