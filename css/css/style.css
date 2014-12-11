@@ -1,0 +1,149 @@
+@font-face {
+    font-family: 'BebasNeueRegular';
+    src: url('fonts/BebasNeue-webfont.eot');
+    src: url('fonts/BebasNeue-webfont.eot?#iefix') format('embedded-opentype'),
+         url('fonts/BebasNeue-webfont.woff') format('woff'),
+         url('fonts/BebasNeue-webfont.ttf') format('truetype'),
+         url('fonts/BebasNeue-webfont.svg#BebasNeueRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}   
+
+
+
+body {
+  font-family: 'BebasNeueRegular', 'Arial Narrow', Arial, sans-serif;
+  color: white;
+  background-color: #333;
+}
+
+.land {
+  fill: #d3d3d3;
+  stroke: #333;
+  fill-opacity: .3;
+}
+
+
+
+
+.viewer {
+	position: absolute;
+	left: 900px;
+	top: 100px;
+	border: none;
+	background: #555;
+  fill-opacity: .5;
+}
+
+.clickoff {
+	position: absolute;
+	left: 870px;
+	top: 100px;
+	height: 30px;
+	width: 30px;
+}
+
+
+
+.textdiv { /* text in the boxes */
+  display: inline-block;
+font-size: medium;
+text-align: center;
+width: 50%;
+vertical-align: middle;
+font-family: "Open Sans", Helvetica, Arial, sans-serif; 
+color:white;
+}
+
+h3{
+  color: red;
+  cursor: pointer;
+}
+
+.footer{
+  position: absolute;
+  bottom: 0%;
+  width: 100%;
+  background-color: #555;
+}
+
+.filtering{
+  width: 100%;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #444; 
+  border: solid black 1px;
+  height: 50px;
+}
+#showHide {
+  position:absolute;
+  top:64%;
+  width: 100%;
+  background-color: blue;
+}
+
+#accordion {
+}
+
+.barWrap{
+  position: absolute;
+  top: 66%;
+  margin-left: 16%;
+  margin-right: 16%;
+  width: 100%;
+}
+.filterSelector{
+  position: absolute;
+  width: 15%;
+  height: 20%;
+  left: -15%;
+  background-color: blue;
+  height:100%;
+}
+
+.label {
+  font: 10px sans-serif;
+  text-anchor: middle;
+  color:white;
+}
+.node {
+  fill: #ddd;
+  stroke: pink;
+  stroke-width: 10px;
+}
+
+
+
+
+.d3-tip {
+  line-height: 1;
+  font-weight: lighter;
+  padding: 12px;
+  border-width: 1px;
+  border-style: solid;
+  border-color:yellow;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}

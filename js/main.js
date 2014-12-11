@@ -23,6 +23,7 @@ var checker = false;
 var povSVG;
 var clickCheck = true;
 var exporterInfo;
+var icicleDump;
 
 
 //begin script when window loads 
@@ -60,7 +61,7 @@ function initialize(){
           .duration(750)
           .style("display", "block")
         d3.select("#showHide")
-          .style({"top": "60%"})
+          .style({"top": "64%"})
         clickCheck = true
       }
     })
@@ -97,14 +98,14 @@ function initialize(){
      var type = this.value, display = this.checked ? "on": "off";
      console.log(display);
      if (type == "Exporters"){
-        exporters(latlongRdump)
+        exporters(latlongReset)
         checker = true;
       }
      if (type == "Exporters" && display == "off"){
         svg.selectAll("#exporter").remove();
       }
      if (type == "Importers"){
-        importers(latlongRdump)
+        importers(latlongReset)
         checker = true;
       }
      if (type == "Importers" && display == "off"){
@@ -281,6 +282,7 @@ Isvg.selectAll("rects")
     .on('click', function(d){
       clicked(d);
       icicleImporters(d);
+      icicleFilter(d);
     });
 
 /*
@@ -320,6 +322,32 @@ function clicked(d) {
   };
 };
 
+function icicleFilter(data){
+  console.log(data.depth)
+  console.log(data.children[3])
+  icicleDump = [];
+  if (data.depth == 1){
+    for (var k=0; k<data.children.length; k++){
+      for (var l=0; l<data.children[k].children.length; l++){
+        icicleDump.push(data.children[k].children[l])
+     }
+    }
+    icicleImporters(icicleDump)
+  }
+  else if (data.depth === 2){
+    if (data.children.length == 1){
+        icicleDump=data.children[0]
+        icicleImporters(icicleDump)
+      }
+    else{
+    for (var k=0; k<data.children.length; k++){
+        icicleDump.push(data.children[k])
+      }
+    icicleImporters(icicleDump)
+  }
+  }
+}
+
 function icicleHighlight(data){
   Isvg.selectAll("."+data.name) //select the current id
     .style({"fill-opacity": "1"}); //yellow outline
@@ -336,8 +364,8 @@ function icicleDehighlight(data){
     .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
   svg.selectAll("."+data.name)
     .style({"stroke": "black", "stroke-width": "0px"})
-  povSVG.selectAll("."+data.id)
-    .style({"stroke": "#000", "stroke-width": "0px"});
+  //povSVG.selectAll("."+data.id)
+    //.style({"stroke": "#000", "stroke-width": "0px"});
   rSVG.selectAll("."+data.id)
     .style({"stroke": "#000", "stroke-width": "0px"});
   };
@@ -403,21 +431,27 @@ importers(latlongRdump);
 }
 
 function icicleImporters(data){
+  console.log(data)
+  var latlongRdump2=[];
+  for (var k=0; k<data.length; k++){
   for (var j=0; j<latlongRdump.length; j++){
-    if (data.name == latlongRdump[j].id){
-      latlongRdump = latlongRdump.slice([j], [j+1])
+    if (data[k].name == latlongRdump[j].id){
+      console.log(latlongRdump.slice([j], [j+1])[0]) 
+      latlongRdump2.push(latlongRdump.slice([j], [j+1])[0])
     };
-  };
+  }};
+  console.log(latlongRdump2)
   if (data.name == "total") {
-      latlongRdump = latlongReset;
+      latlongRdump2 = latlongReset;
   };
 
   var circle = d3.selectAll("circle") //reset map
     circle.remove();
-  importers(latlongRdump); //project filtered lat/longs
+  importers(latlongRdump2); //project filtered lat/longs
 };
 
 function importers(data){
+  console.log(data)
   var max = d3.max(latlongReset, function(d) {return d.total_waste}),
   min = d3.min(latlongReset, function(d) {return d.total_waste})
   var radius = d3.scale.log()
@@ -463,6 +497,7 @@ function dehighlight(data){
 
 
 function exporters(data){
+  console.log(data.length)
     //begin constructing latlongs of exporters
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
   var latlongdump = [];
@@ -503,7 +538,7 @@ function exporters(data){
     .attr("r", function(d) {return radius(d.total_waste); })
     .attr("id", "exporter")
     .attr("class", function (d) { return d.id})
-    .style({"fill": "#3d3d3d", "fill-opacity": ".5"})
+    .style({"fill": "none", "stroke": "black", "stroke-width": "3px"})
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", highlight)
