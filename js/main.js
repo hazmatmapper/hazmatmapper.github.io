@@ -497,19 +497,18 @@ function dehighlight(data){
 
 
 function exporters(data){
-  console.log(data.length)
+  
     //begin constructing latlongs of exporters
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
   var latlongdump = [];
   exporterInfo = [];
+  for (var k=0; k<data.length; k++){
    for (var i=0; i<latlongs.length-1; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
-      for (var k=0; k<data.length; k++){
         if (latlongs[i]["values"][j]["values"][0]["longitude"] == data[k].long) {
           latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"]}) //lat longs of the foreign waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
             exporterInfo.push({"methods": latlongs[i]["values"][j]["values"][z]["ExpectedManagementMethod"], "waste": latlongs[i]["values"][j]["values"][z]["hazWasteDesc"]})
-            console.log(exporterInfo)
           };
         };
 
@@ -538,7 +537,7 @@ function exporters(data){
     .attr("r", function(d) {return radius(d.total_waste); })
     .attr("id", "exporter")
     .attr("class", function (d) { return d.id})
-    .style({"fill": "none", "stroke": "black", "stroke-width": "3px"})
+    .style({"fill": "#3d3d3d", "fill-opacity": ".7", "stroke": "black", "stroke-width": "3px"})
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", highlight)
