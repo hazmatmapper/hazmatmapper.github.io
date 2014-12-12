@@ -18,6 +18,7 @@ var height33;
 var Site;
 var DisposalMethod;
 var povertydata = [];
+var colorDump;
 var colorKey;
 var checker = false;
 var povSVG;
@@ -27,6 +28,7 @@ var exporterInfo;
 var icicleDump;
 var fullWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
 var fullHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+var filterDomain;
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -37,7 +39,7 @@ function initialize(){
     .append("div")
     .attr("class", "footer")
     .html("Footers")
-  d3.select("body")
+ /* d3.select("body")
     .append("div")
     .attr('class', "greyedOut")
     .style({"background-color": "#333", "opacity": ".2"})
@@ -51,7 +53,8 @@ function initialize(){
       d3.select(".viewerText").remove()
       d3.select(".greyedOut").remove()
       setControls();
-      })
+      })*/
+setControls();
 }
 function setControls(){
   d3.select("body")
@@ -92,7 +95,7 @@ function setControls(){
   width66 =  .66 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
   height33 = .3 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
   Isvg = d3.select(".barWrap").append("svg")
-    .attr("width", width66)
+    .attr("width", width66+200)
     .attr("height", height33);
 
     //do show all exporters/importers here
@@ -149,16 +152,18 @@ function setControls(){
         return (i===j); 
     })
     .on("change", function(){
-     Isvg.selectAll("rect, div")
+     Isvg.selectAll("rect, div, g")
         .transition()
-        .duration(750)
+        .duration(500)
         .style("opacity", 0)
         .remove();
         //.each("end", function(){
+      filterDomain = this.value
       icicle(window[this.value])
+      
        // });
-     svg.selectAll("#importer")
-      .style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }});
+     //svg.selectAll("#importer")
+      //.style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }});
      
     });
   labelEnter.append("label").text(function(d) {return d;}); 
@@ -166,7 +171,7 @@ setData();
 }
 
 function setData(){
-d3.csv("data/sites_v4.csv", function(data) {
+d3.csv("data/sites_subset_v2.csv", function(data) {
   data.forEach(function(d){
     d.totalQuantityinShipment = +d.totalQuantityinShipment // convert the quantity of waste from string to number
     d.exporterLAT = +d.exporterLAT
@@ -174,12 +179,13 @@ d3.csv("data/sites_v4.csv", function(data) {
     d.receivingLat = +d.latitude
     d.receivingLong = +d.longitude
     d.receivingFacilityZipCode = +d.receivingfacilityzipcode
-    d.hazWasteDesc.indexOf("LEAD") > -1 ? d.hazWasteDesc = "lead" : d.hazWasteDesc = d.hazWasteDesc; //convert everything with lead to lead in waste description; // this is where we can do work creating waste categories...
+    d.hazWasteDesc = d.hazWasteDesc
+    /*d.hazWasteDesc.indexOf("LEAD") > -1 ? d.hazWasteDesc = "lead" : d.hazWasteDesc = d.hazWasteDesc; //convert everything with lead to lead in waste description; // this is where we can do work creating waste categories...
     d.hazWasteDesc.indexOf("MERCURY") > -1 ? d.hazWasteDesc = "mercury" : d.hazWasteDesc = d.hazWasteDesc;
     d.hazWasteDesc.indexOf("TOLULENE") > -1 ? d.hazWasteDesc = "toluene" : d.hazWasteDesc = d.hazWasteDesc;
     d.hazWasteDesc.indexOf("BATTER") > -1 ? d.hazWasteDesc = "batteries" : d.hazWasteDesc = d.hazWasteDesc;
     d.hazWasteDesc.indexOf("PAINT") > -1 ? d.hazWasteDesc = "paint" : d.hazWasteDesc = d.hazWasteDesc;
-    d.hazWasteDesc.indexOf("CHLOROETHYLENE") > -1 ? d.hazWasteDesc = "Tri/dichloroethlene" : d.hazWasteDesc = d.hazWasteDesc;
+    d.hazWasteDesc.indexOf("CHLOROETHYLENE") > -1 ? d.hazWasteDesc = "Tri/dichloroethlene" : d.hazWasteDesc = d.hazWasteDesc;*/
   });
 
   Site = d3.nest()
@@ -250,6 +256,7 @@ d3.csv("data/sites_v4.csv", function(data) {
 }
 
 function icicle(data){
+console.log(data)
 var x = d3.scale.linear()
     .range([0, width66]);
 
@@ -275,6 +282,7 @@ var nodes = partition.nodes(data);
 
 Isvg.call(tip)
 colorKey=[];
+
 Isvg.selectAll("rects")
     .data(nodes)
   .enter().append("rect")
@@ -293,10 +301,49 @@ Isvg.selectAll("rects")
     .on("mouseout", function(d){tip.hide(d); icicleDehighlight(d)})
     .on('click', function(d){
       clicked(d);
-      icicleImporters(d);
+      //icicleImporters(d);
       icicleFilter(d);
     });
 
+//domain calculator
+console.log(filterDomain)
+var site = ["total", "sites", "type", "management method"]
+var type = ["total", "type", "management method", "sites"]
+var method = ["total", "management method", "type", "sites"]
+var domain;
+if (filterDomain == undefined){
+  domain = site 
+} else if (filterDomain == "Site") {
+  domain = site
+} else if (filterDomain == "Type") {
+  domain = type
+} else if (filterDomain == "DisposalMethod") {
+  domain = method
+}
+console.log(domain)
+var yax  = d3.scale.ordinal()
+    .domain(domain)
+    .rangePoints([0, height33-50]);
+
+var yAxis = d3.svg.axis()
+    .scale(yax)
+    .orient("right");
+/*var formatPercent = d3.format(".0%");
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .tickFormat(formatPercent)
+    .orient("bottom");
+
+Isvg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height33-20 + ")")
+      .call(xAxis);*/
+
+//need to update on clicked
+Isvg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate("+width66+22+","+15+")")
+      .call(yAxis);
 /*
 Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.dx) > 50; })).enter()
      .append("foreignObject")
@@ -335,29 +382,32 @@ function clicked(d) {
 };
 
 function icicleFilter(data){
-  console.log(data.depth)
-  console.log(data.children[3])
+  console.log(data)
+  name = data.name
   icicleDump = [];
-  if (data.depth == 1){
+  if (data.depth == 0) {colorize(latlongReset, name)}
+  else if (data.depth == 1){
     for (var k=0; k<data.children.length; k++){
       for (var l=0; l<data.children[k].children.length; l++){
         icicleDump.push(data.children[k].children[l])
      }
     }
-    icicleImporters(icicleDump)
+    console.log(icicleDump)
+    icicleImporters(icicleDump, name)
   }
-  else if (data.depth === 2){
+  else if (data.depth == 2){
     if (data.children.length == 1){
         icicleDump=data.children[0]
-        icicleImporters(icicleDump)
+        icicleImporters(icicleDump, name)
       }
     else{
     for (var k=0; k<data.children.length; k++){
         icicleDump.push(data.children[k])
       }
-    icicleImporters(icicleDump)
+    icicleImporters(icicleDump, name)
   }
   }
+  else if (data.depth == 3){icicleImporters(icicleDump=[data], name)}
 }
 
 function icicleHighlight(data){
@@ -442,39 +492,42 @@ icicle(Site);
 importers(latlongRdump);
 }
 
-function icicleImporters(data){
+function icicleImporters(data, name){
+  console.log(data, name)
   var latlongRdump2=[];
   if (data.length != undefined) {
+      console.log("1")
       for (var k=0; k<data.length; k++){
-      for (var j=0; j<latlongRdump.length; j++){
-        if (data[k].name == latlongRdump[j].id){
+        for (var j=0; j<latlongRdump.length; j++){
+          //console.log(data[k].name, latlongRdump[j].id)
+        if (data[k].name == latlongRdump[j].id || name == latlongRdump[j].id){
+          console.log(latlongRdump.slice([j], [j+1])[0])
           latlongRdump2.push(latlongRdump.slice([j], [j+1])[0])
         };
-    }};
-  }
-  if (data.length == undefined) {
+    }} colorize(latlongRdump2, name);
+  /*} else if (data.length == undefined) {
     for (var j=0; j<latlongRdump.length; j++){
-      console.log(data.name, latlongRdump[j].id)
+      //console.log(data.name, latlongRdump[j].id)
     if (data.name == latlongRdump[j].id){
-      alert("success")
+      //alert("success")
       latlongRdump2.push(latlongRdump.slice([j], [j+1])[0])
-      console.log(latlongRdump2)
+      //console.log(latlongRdump2)
     };
 
-  }
-}
-  console.log(latlongRdump2)
-  if (data.name == "total") {
+  }*/
+} 
+if (data.name == "total") {
       latlongRdump2 = latlongReset;
+      colorize(latlongRdump2);
   }
     
-  var circle = d3.selectAll("circle") //reset map
-    circle.remove();
-  importers(latlongRdump2); //project filtered lat/longs
+  //var circle = d3.selectAll("circle") //reset map
+    //circle.remove();
+   //project filtered lat/longs
 };
 
 function importers(data){
-  console.log(data)
+  //console.log(data)
   var max = d3.max(latlongReset, function(d) {return d.total_waste}),
   min = d3.min(latlongReset, function(d) {return d.total_waste})
   var radius = d3.scale.log()
@@ -486,10 +539,10 @@ function importers(data){
     .enter().append("circle")
     .attr("class", function(d) {return d.id})
     .attr("id", "importer")
-    .style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }})
+    .style("fill", "#1f77b4")
     .style("fill-opacity", ".75")
     .attr("r", function(d) { return radius(d.total_waste); })
-    .attr("cx", function(d) {console.log(projection([d.long, d.lat])[0]); return projection([d.long, d.lat])[0]; }) 
+    .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", function(d){
       viewer(d);
@@ -500,6 +553,18 @@ function importers(data){
       clicker = true;
       viewer(d)}); 
 };
+
+function colorize(data, name){
+  //match data with colorkey
+  var colorDump=[]
+  //get color key 
+  for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == name) {colorDump.push(colorKey[i].color)}}
+  //svg.selectAll("circle")
+    //.style({"fill": "#1f77b4"})
+  svg.selectAll("circle")
+    .data(latlongReset).filter(function(d) {for (var r = 0; r<data.length; r++) { if (data[r].id == d.id){console.log(d); return d}}})
+    .style({"fill": colorDump[0]})
+}
 
 function highlight(data){
   svg.selectAll("."+data.id) //select the current province in the DOM
@@ -525,7 +590,7 @@ function dehighlight(data){
 
 
 function exporters(data){
-  
+  svg.selectAll("#exporter").remove();
     //begin constructing latlongs of exporters
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
   var latlongdump = [];
@@ -605,9 +670,9 @@ function viewer(data){
   
   if (clicker == true){
   clicker = false;
-  var circles = svg.selectAll("circle")
-  circles.filter(function(d){return d.name != data.name})
-    .remove()
+  //var circles = svg.selectAll("circle")
+  //circles.filter(function(d){return d.name != data.name})
+    //.remove()
   exporters(data);
   }
 
@@ -652,7 +717,6 @@ var curr_height = document.getElementsByClassName("viewer")[0].clientHeight;
     .attr("width", 25)
     .attr("height", y)*/
 var barPadding = 1;
-console.log(data)
 povSVG.selectAll("rect")
      .data(povdump)
      .enter()
@@ -666,7 +730,7 @@ povSVG.selectAll("rect")
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
         if (i == 0) {
-          for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == data.id) {return colorKey[i].color} }
+          return document.getElementsByClassName(data.id)["importer"].style.fill
         }
         else {
           return "rgb(136,136,136)"
@@ -759,7 +823,7 @@ rSVG.selectAll("rect")
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
         if (i == 0) {
-          for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == data.id) {return colorKey[i].color} }
+          return document.getElementsByClassName(data.id)["importer"].style.fill
         }
         else {
           return "rgb(136,136,136)"

@@ -178,3 +178,17 @@ h3{
   top: 100%;
   left: 0;
 }
+
+
+
+.axis text{
+  font-family: 'BebasNeueRegular', 'Arial Narrow', Arial, sans-serif;
+  fill: white;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
