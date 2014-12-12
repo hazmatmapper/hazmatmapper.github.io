@@ -22,9 +22,11 @@ var colorKey;
 var checker = false;
 var povSVG;
 var clickCheck = true;
+var clicker = false;
 var exporterInfo;
 var icicleDump;
-
+var fullWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+var fullHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -33,17 +35,30 @@ window.onload = initialize();
 function initialize(){
   d3.select("body")
     .append("div")
-    .classed("viewer", true)
-    .style("display", "inline-block");
-  d3.select("body")
-    .append("div")
     .attr("class", "footer")
     .html("Footers")
-  d3.select(".viewer")
+  d3.select("body")
+    .append("div")
+    .attr('class', "greyedOut")
+    .style({"background-color": "#333", "opacity": ".2"})
+  d3.select("body")
     .append("div")
     .attr("class", "viewerText")
     .style({"background-color": "#555", "color": "white", "font-size": "24px"})
-    .text("Welcome to the HazMatMapper");
+    .html("Welcome to the HazMatMapper <span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
+    .append("button").attr("class","introButton").text("Click here to begin")
+    .on("click", function(){
+      d3.select(".viewerText").remove()
+      d3.select(".greyedOut").remove()
+      setControls();
+      })
+}
+function setControls(){
+  d3.select("body")
+    .append("div")
+    .classed("viewer", true)
+    .html("<span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
+    //.style("display", "inline-block");
   d3.select("#showHide")
     .append("div")
     .text("Show/Hide")
@@ -146,12 +161,9 @@ function initialize(){
       .style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }});
      
     });
-  labelEnter.append("label").text(function(d) {return d;});
-
-
-
-  setData(); 
-}; 
+  labelEnter.append("label").text(function(d) {return d;}); 
+setData(); 
+}
 
 function setData(){
 d3.csv("data/sites_v4.csv", function(data) {
@@ -274,9 +286,9 @@ Isvg.selectAll("rects")
     .style({"cursor": "pointer", "fill": function(d) { colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); return color((d.children ? d : d.parent).name); }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"} )
     .on("mouseover", function (d) {
       tip.show(d);
-      if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
-        icicleHighlight(d)
-      };  
+      //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
+        icicleHighlight(d);
+      //};  
     })
     .on("mouseout", function(d){tip.hide(d); icicleDehighlight(d)})
     .on('click', function(d){
@@ -352,22 +364,22 @@ function icicleHighlight(data){
   Isvg.selectAll("."+data.name) //select the current id
     .style({"fill-opacity": "1"}); //yellow outline
   svg.selectAll("."+data.name)
-    .style({"stroke": "black", "stroke-width": "5px"})
+    .style({"stroke": "yellow", "stroke-width": "5px"})
   povSVG.selectAll("."+data.id)
-    .style({"stroke": "black", "stroke-width": "2px"});
+    .style({"stroke": "yellow", "stroke-width": "2px"});
   rSVG.selectAll("."+data.id)
-    .style({"stroke": "black", "stroke-width": "2px"});
+    .style({"stroke": "yellow", "stroke-width": "2px"});
 }; 
 
 function icicleDehighlight(data){
   Isvg.selectAll("."+data.name) //designate selector variable for brevity
     .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
   svg.selectAll("."+data.name)
-    .style({"stroke": "black", "stroke-width": "0px"})
+    .style({"stroke-width": "0px"})
   //povSVG.selectAll("."+data.id)
     //.style({"stroke": "#000", "stroke-width": "0px"});
   rSVG.selectAll("."+data.id)
-    .style({"stroke": "#000", "stroke-width": "0px"});
+    .style({"stroke-width": "0px"});
   };
 
 
@@ -431,20 +443,31 @@ importers(latlongRdump);
 }
 
 function icicleImporters(data){
-  console.log(data)
   var latlongRdump2=[];
-  for (var k=0; k<data.length; k++){
-  for (var j=0; j<latlongRdump.length; j++){
-    if (data[k].name == latlongRdump[j].id){
-      console.log(latlongRdump.slice([j], [j+1])[0]) 
+  if (data.length != undefined) {
+      for (var k=0; k<data.length; k++){
+      for (var j=0; j<latlongRdump.length; j++){
+        if (data[k].name == latlongRdump[j].id){
+          latlongRdump2.push(latlongRdump.slice([j], [j+1])[0])
+        };
+    }};
+  }
+  if (data.length == undefined) {
+    for (var j=0; j<latlongRdump.length; j++){
+      console.log(data.name, latlongRdump[j].id)
+    if (data.name == latlongRdump[j].id){
+      alert("success")
       latlongRdump2.push(latlongRdump.slice([j], [j+1])[0])
+      console.log(latlongRdump2)
     };
-  }};
+
+  }
+}
   console.log(latlongRdump2)
   if (data.name == "total") {
       latlongRdump2 = latlongReset;
-  };
-
+  }
+    
   var circle = d3.selectAll("circle") //reset map
     circle.remove();
   importers(latlongRdump2); //project filtered lat/longs
@@ -458,41 +481,46 @@ function importers(data){
     .domain([min, max])
     .range([5, 20]);
   
-  svg.selectAll(".facility")
+  svg.selectAll("circle")
     .data(data)
-    .enter().append("circle", ".facility")
+    .enter().append("circle")
     .attr("class", function(d) {return d.id})
     .attr("id", "importer")
     .style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }})
     .style("fill-opacity", ".75")
     .attr("r", function(d) { return radius(d.total_waste); })
-    .attr("cx", function(d) { return projection([d.long, d.lat])[0]; }) 
+    .attr("cx", function(d) {console.log(projection([d.long, d.lat])[0]); return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
-    .on("mouseover", highlight)
+    .on("mouseover", function(d){
+      viewer(d);
+      highlight(d);
+    })
     .on("mouseout", dehighlight)
-    .on("click", viewer); 
+    .on("click", function (d){
+      clicker = true;
+      viewer(d)}); 
 };
 
 function highlight(data){
   svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "black", "stroke-width": "5px"}); //yellow outline
+    .style({"stroke": "yellow", "stroke-width": "5px", "fill-opacity": "1"}); //yellow outline
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": "1"});
   povSVG.selectAll("."+data.id)
-    .style({"stroke": "black", "stroke-width": "2px"});
+    .style({"stroke": "yellow", "stroke-width": "2px"});
   rSVG.selectAll("."+data.id)
-    .style({"stroke": "black", "stroke-width": "2px"});
+    .style({"stroke": "yellow", "stroke-width": "2px"});
 };
 
 function dehighlight(data){
   svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"stroke": "#000", "stroke-width": "0px"}); //reset enumeration unit to orginal color
+    .style({"fill-opacity": ".75", "stroke-width": "0px"}); //reset enumeration unit to orginal color
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": ".5"});
   povSVG.selectAll("."+data.id)
-    .style({"stroke": "#000", "stroke-width": "0px"});
+    .style({"stroke-width": "0px"});
   rSVG.selectAll("."+data.id)
-    .style({"stroke": "#000", "stroke-width": "0px"});
+    .style({"stroke-width": "0px"});
 };
 
 
@@ -537,7 +565,7 @@ function exporters(data){
     .attr("r", function(d) {return radius(d.total_waste); })
     .attr("id", "exporter")
     .attr("class", function (d) { return d.id})
-    .style({"fill": "#3d3d3d", "fill-opacity": ".7", "stroke": "black", "stroke-width": "3px"})
+    .style({"fill": "#3d3d3d", "fill-opacity": "0", "stroke": "black", "stroke-width": "3px"})
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", highlight)
@@ -548,17 +576,9 @@ function exporters(data){
 function viewer(data){
    //implement function that will place locations of waste exporters on map
   //remove all other importers
-  var self = this;
-  var circles = d3.selectAll('svg circle');
-    // All other elements resize randomly.
-    circles.filter(function (x) { return self != this; })
-        .transition()
-        .remove();
-  d3.selectAll(".pin").remove();
   
-  exporters(data)
   //implement clickoff div - this creates a div that will do two things: 1) make the map more opaque, emphasizing the new info panel; 2) provide a clickable space so that when people click away from the info panel back to the map, the info panel closes
-  d3.select("body")
+  /*d3.select("body")
     .append("div")
     .text("X")
     .attr("class", "clickoff")
@@ -573,29 +593,35 @@ function viewer(data){
       d3.selectAll(".viewerText").remove()
       d3.selectAll(".clickoff").remove()
       importers(latlongReset); //removes itself so that the map can be clicked again
-    });
+    });*/
 
 
   //implement the info panel/viewer here
-  d3.selectAll(".viewerText").remove()
-  d3.selectAll(".viewer")
-    .style({"height": "0%", "width": "0%"})
-  d3.selectAll(".povertyChart").remove()
-  d3.selectAll(".viewer")
-    .transition()
-      .duration(1000)
-        .style({"height": "50%", "width": "33%"})
-          .each("end", function (d){
-            d3.selectAll(".viewer").append("div").attr("class", "viewerText");
-            d3.selectAll(".viewerText").text("this is: "+data.name+", which imports "+data.total_waste+" tons of lead");
-            demographicCharts(data);
-          });
+  d3.select(".intro").remove()
+  d3.select(".viewerText").remove()
+  d3.select(".povertyChart").remove()
+  d3.select(".viewer").append("div").attr("class", "viewerText");
+  d3.select(".viewerText").text("this is: "+data.name+", which imports "+data.total_waste+" tons of lead");
+  
+  if (clicker == true){
+  clicker = false;
+  var circles = svg.selectAll("circle")
+  circles.filter(function(d){return d.name != data.name})
+    .remove()
+  exporters(data);
+  }
+
+  demographicCharts(data);
 
 function demographicCharts(data){ 
   d3.selectAll(".viewer").append("div").attr("class", "povertyChart");
 
-  var width = 150
-  var height = 250
+var curr_width = document.getElementsByClassName("viewer")[0].clientWidth;
+var curr_height = document.getElementsByClassName("viewer")[0].clientHeight;
+
+  var width = curr_width/2
+  var height = curr_height * .9
+  console.log(curr_width)
 
   povSVG =  d3.select(".povertyChart").append("svg")
     .attr("width", width)
@@ -663,17 +689,38 @@ povSVG.selectAll("text")
          .attr("font-family", "sans-serif")
          .attr("font-size", "11px")
          .attr("fill", "white");
+povSVG.selectAll("label")
+    .data(povdump)
+         .enter()
+         .append("text")
+         .text(function(d, i) {
+            if (i == 0) {return data.id}
+            else{return "Ntl. Average"}
+         })
+         .attr("text-anchor", "middle")
+         .attr("x", function(d, i) {
+            return i * (width / povdump.length) + (width / povdump.length - barPadding) / 2;
+         })
+         .attr("y", height - 5)
+         .attr("font-family", "sans-serif")
+         .attr("font-size", "11px")
+         .attr("fill", "white")
+         .attr("font-weight", "bold");
+d3.select(".povertyChart").append("div")
+  .attr("class", "povLabel")
+  .text("% of individuals in poverty")
+
   });
 
-  var width = 150
-  var chartPadding = 50
-  var height = 250
 
+
+
+
+  //minority chart
   rSVG =  d3.select(".povertyChart").append("svg")
     .attr("width", width)
     .attr("height", height);
 
-//match zips
   d3.csv("data/minority.csv", function(racedata) {
     racedata = racedata.map(function(d) { return {"Geography": d["Geography"], "percentMinority": +d["percentMinority"] }; });
   
@@ -724,9 +771,7 @@ rSVG.selectAll("text")
          .data(racedump)
          .enter()
          .append("text")
-         .text(function(d) {
-            return d;
-         })
+         .text(function(d){return d})
          .attr("text-anchor", "middle")
          .attr("x", function(d, i) {
             return i * (width / racedump.length) + (width / racedump.length - barPadding) / 2;
@@ -735,41 +780,35 @@ rSVG.selectAll("text")
          .attr("font-family", "sans-serif")
          .attr("font-size", "11px")
          .attr("fill", "white");
+rSVG.selectAll("label")
+    .data(racedump)
+         .enter()
+         .append("text")
+         .text(function(d, i) {
+            if (i == 0) {return data.id}
+            else{return "Ntl. Average"}
+         })
+         .attr("text-anchor", "middle")
+         .attr("x", function(d, i) {
+            return i * (width / racedump.length) + (width / racedump.length - barPadding) / 2;
+         })
+         .attr("y", height - 5)
+         .attr("font-family", "sans-serif")
+         .attr("font-size", "11px")
+         .attr("fill", "white")
+        .attr("font-weight", "bold");
   });
+d3.select(".povertyChart").append("div")
+    .attr("class", "raceLabel")
+    .text("% of non-white individuals")
 }
 }
 function exportViewer(data){
-  
-d3.selectAll(".clickoff").remove()
-d3.select("body")
-    .append("div")
-    .text("X")
-    .attr("class", "clickoff")
-    .style({"background-color": "#d3d3d3"}) //need to adjust size, color, opacity of div
-    .on("click", function(){
-      if (checker != true) {d3.selectAll("circle").remove()}
-      d3.selectAll(".povertyChart").remove()
-      d3.selectAll(".viewer")
-        .transition()
-          .duration(0)
-            .style({"height": "0%", "width": "0%"})
-              .each("start", function(){ d3.selectAll(".viewerText").remove()});
-      d3.selectAll(".clickoff").remove()
-      importers(latlongReset); //removes itself so that the map can be clicked again
-    });
 
   //implement the info panel/viewer here
 
   d3.selectAll(".viewerText").remove()
-  d3.selectAll(".viewer")
-    .style({"height": "0%", "width": "0%"})
   d3.selectAll(".povertyChart").remove()
-   d3.selectAll(".viewer")
-    .transition()
-      .duration(1000)
-        .style({"height": "50%", "width": "33%"})
-          .each("end", function(){ 
-              d3.selectAll(".viewer").append("div").attr("class", "viewerText");
-              d3.selectAll(".viewerText").html("Name:"+data.name+"<p>Exports: "+data.total_waste+"<p>Managment methods: "+exporterInfo[0]["methods"]+"<p>Waste types: "+exporterInfo[0]["waste"]+"");
-            });
+  d3.selectAll(".viewer").append("div").attr("class", "viewerText");
+  d3.selectAll(".viewerText").html("Name:"+data.name+"<p>Exports: "+data.total_waste+"<p>Managment methods: "+exporterInfo[0]["methods"]+"<p>Waste types: "+exporterInfo[0]["waste"]+"");
 };
