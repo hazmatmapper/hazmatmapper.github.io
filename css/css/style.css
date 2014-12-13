@@ -19,9 +19,9 @@ body {
 }
 
 .land {
-  fill: #d3d3d3;
+  fill: #e5e5e5;
   stroke: #333;
-  fill-opacity: .3;
+  fill-opacity: .1;
 }
 
 .introButton{

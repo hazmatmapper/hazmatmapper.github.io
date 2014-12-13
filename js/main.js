@@ -13,6 +13,7 @@ var typeSum;
 var bigNest;
 var latlongReset;
 var Isvg;
+var IAsvg;
 var width66;
 var height33;
 var Site;
@@ -20,15 +21,18 @@ var DisposalMethod;
 var povertydata = [];
 var colorDump;
 var colorKey;
-var checker = false;
+var checker = false; //detect add/remove importer/exporters
 var povSVG;
-var clickCheck = true;
-var clicker = false;
+var clickCheck = true; //detect whether radio button filter control was clicked
+var clicker = false; //check if site was just hovered over or click for purposes of displaying exporters
+var clickListen = false; //detect clicking away from site to remove exporters
 var exporterInfo;
 var icicleDump;
+var domain;
 var fullWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
 var fullHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 var filterDomain;
+var margin = {top: 10, right: 10, bottom: 10, left: 10};
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -95,10 +99,14 @@ function setControls(){
   width66 =  .66 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
   height33 = .3 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
   Isvg = d3.select(".barWrap").append("svg")
-    .attr("width", width66+200)
-    .attr("height", height33);
+    .attr("width", width66)
+    .attr("height", height33)
+  
+  IAsvg = d3.select(".barWrap").append("svg")
+    .attr("width", width66/5)
+    .attr("height", height33)
 
-    //do show all exporters/importers here
+  //do show all exporters/importers here
   filterTypes = ["Importers", "Exporters"]
   var form = d3.select(".filterSelector").append("form"), j = 0;
   var labelEnter = form.selectAll("span")
@@ -152,7 +160,12 @@ function setControls(){
         return (i===j); 
     })
     .on("change", function(){
-     Isvg.selectAll("rect, div, g")
+     Isvg.selectAll("rect, div")
+        .transition()
+        .duration(500)
+        .style("opacity", 0)
+        .remove();
+    IAsvg.selectAll("g")
         .transition()
         .duration(500)
         .style("opacity", 0)
@@ -160,7 +173,7 @@ function setControls(){
         //.each("end", function(){
       filterDomain = this.value
       icicle(window[this.value])
-      
+      icicleAxis();
        // });
      //svg.selectAll("#importer")
       //.style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }});
@@ -255,6 +268,34 @@ d3.csv("data/sites_subset_v2.csv", function(data) {
 });
 }
 
+function icicleAxis(){
+  //domain calculator
+console.log(filterDomain)
+var site = ["total", "sites", "type", "management method"]
+var type = ["total", "type", "management method", "sites"]
+var method = ["total", "management method", "type", "sites"]
+if (filterDomain == undefined){
+  domain = site 
+} else if (filterDomain == "Site") {
+  domain = site
+} else if (filterDomain == "Type") {
+  domain = type
+} else if (filterDomain == "DisposalMethod") {
+  domain = method
+}
+var yax  = d3.scale.ordinal()
+    .domain(domain)
+    .range([0, 70, 140, 190]);
+
+var yAxis = d3.svg.axis()
+    .scale(yax)
+    .orient("right");
+IAsvg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate("+0+","+15+")")
+      .call(yAxis);
+}
+
 function icicle(data){
 console.log(data)
 var x = d3.scale.linear()
@@ -263,7 +304,8 @@ var x = d3.scale.linear()
 var y = d3.scale.linear()
     .range([0, height33]);
 
-var color = d3.scale.category10();
+var color = d3.scale.category10()
+  //.range(["#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b"]);
 
 var partition = d3.layout.partition()
     //.size([width, height])
@@ -291,7 +333,9 @@ Isvg.selectAll("rects")
     .attr("y", function(d) { return y(d.y); })
     .attr("width", function(d) { return x(d.dx); })
     .attr("height", function(d) { return y(d.dy); })
-    .style({"cursor": "pointer", "fill": function(d) { colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); return color((d.children ? d : d.parent).name); }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"} )
+    .style({"cursor": "pointer", "fill": function(d) { 
+      colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); 
+      if (d.name == "total"){return "#8c8c8c"} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"})
     .on("mouseover", function (d) {
       tip.show(d);
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
@@ -305,29 +349,7 @@ Isvg.selectAll("rects")
       icicleFilter(d);
     });
 
-//domain calculator
-console.log(filterDomain)
-var site = ["total", "sites", "type", "management method"]
-var type = ["total", "type", "management method", "sites"]
-var method = ["total", "management method", "type", "sites"]
-var domain;
-if (filterDomain == undefined){
-  domain = site 
-} else if (filterDomain == "Site") {
-  domain = site
-} else if (filterDomain == "Type") {
-  domain = type
-} else if (filterDomain == "DisposalMethod") {
-  domain = method
-}
-console.log(domain)
-var yax  = d3.scale.ordinal()
-    .domain(domain)
-    .rangePoints([0, height33-50]);
 
-var yAxis = d3.svg.axis()
-    .scale(yax)
-    .orient("right");
 /*var formatPercent = d3.format(".0%");
 var xAxis = d3.svg.axis()
     .scale(x)
@@ -340,10 +362,7 @@ Isvg.append("g")
       .call(xAxis);*/
 
 //need to update on clicked
-Isvg.append("g")
-      .attr("class", "axis")
-      .attr("transform", "translate("+width66+22+","+15+")")
-      .call(yAxis);
+
 /*
 Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.dx) > 50; })).enter()
      .append("foreignObject")
@@ -360,12 +379,39 @@ function clicked(d) {
   x.domain([d.x, d.x + d.dx]);
   y.domain([d.y, 1]).range([d.y ? 20 : 0, height33]);
 
+  console.log(domain[1])
+ //create temp domain for changing axis
+  //calculate range for axis based on depth
+  var range;
+  var display;
+  if (d.depth == 0) {range = [0, 70, 140, 190]; display = domain}
+  if (d.depth == 1) {range = [0, 36, 111, 176]; display = domain}
+  if (d.depth == 2) {range = [0, 56, 156]; display = [domain[1], domain[2], domain[3]]}
+  if (d.depth == 3) {range = [0, 136]; display = [domain[2], domain[3]]}
+
+  console.log(display)
+  var yax  = d3.scale.ordinal()
+    .domain(display)
+    .range(range);
+
+  var yAxis = d3.svg.axis()
+    .scale(yax)
+    .orient("right");
+
+  IAsvg.selectAll("g").transition()
+      .remove()
+  IAsvg.append("g").transition()
+      .attr("class", "axis")
+      .attr("transform", "translate("+0+","+15+")")
+      .call(yAxis);
+
   Isvg.selectAll("rect").transition()
       .duration(750)
       .attr("x", function(d) { return x(d.x); })
       .attr("y", function(d) { return y(d.y); })
       .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
       .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+
 /*
   Isvg.selectAll("div").style("opacity", 0).transition().duration(750).remove()
   Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.x + d.dx) - x(d.x) > 50; })).enter()
@@ -413,23 +459,27 @@ function icicleFilter(data){
 function icicleHighlight(data){
   Isvg.selectAll("."+data.name) //select the current id
     .style({"fill-opacity": "1"}); //yellow outline
+  if (data.name == "total"){
+  svg.selectAll("#importer")
+    .style({"stroke": "yellow", "stroke-width": "2px"})}
+  else {
   svg.selectAll("."+data.name)
-    .style({"stroke": "yellow", "stroke-width": "5px"})
-  povSVG.selectAll("."+data.id)
-    .style({"stroke": "yellow", "stroke-width": "2px"});
-  rSVG.selectAll("."+data.id)
-    .style({"stroke": "yellow", "stroke-width": "2px"});
+    .style({"stroke": "yellow", "stroke-width": "5px"})}
+  //povSVG.selectAll("."+data.id)
+   // .style({"stroke": "yellow", "stroke-width": "2px"});
+  //rSVG.selectAll("."+data.id)
+    //.style({"stroke": "yellow", "stroke-width": "2px"});
 }; 
 
 function icicleDehighlight(data){
   Isvg.selectAll("."+data.name) //designate selector variable for brevity
     .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
-  svg.selectAll("."+data.name)
-    .style({"stroke-width": "0px"})
+  svg.selectAll("#importer")
+    .style({"stroke": "yellow", "stroke-width": "0px"})
   //povSVG.selectAll("."+data.id)
     //.style({"stroke": "#000", "stroke-width": "0px"});
-  rSVG.selectAll("."+data.id)
-    .style({"stroke-width": "0px"});
+  //rSVG.selectAll("."+data.id)
+    //.style({"stroke-width": "0px"});
   };
 
 
@@ -489,6 +539,7 @@ for (var i =0; i<facilitySum.length-1; i++){
 };
 latlongReset = latlongRdump;
 icicle(Site);
+icicleAxis();
 importers(latlongRdump);
 }
 
@@ -539,8 +590,8 @@ function importers(data){
     .enter().append("circle")
     .attr("class", function(d) {return d.id})
     .attr("id", "importer")
-    .style("fill", "#1f77b4")
-    .style("fill-opacity", ".75")
+    .style("fill", "#8c8c8c")
+    .style("fill-opacity", ".5")
     .attr("r", function(d) { return radius(d.total_waste); })
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
@@ -562,8 +613,15 @@ function colorize(data, name){
   //svg.selectAll("circle")
     //.style({"fill": "#1f77b4"})
   svg.selectAll("circle")
-    .data(latlongReset).filter(function(d) {for (var r = 0; r<data.length; r++) { if (data[r].id == d.id){console.log(d); return d}}})
-    .style({"fill": colorDump[0]})
+    .data(latlongReset).filter(function(d) {for (var r = 0; r<data.length; r++) { if (data[r].id == d.id){return d}}})
+    .style("fill", function(){
+      if (name == "total"){return "#8c8c8c"}
+      else {return colorDump[0]}
+      })
+    .style("fill-opacity", function(){
+      if (name == "total"){return ".5"}
+      else {return "1"}
+      })
 }
 
 function highlight(data){
@@ -579,7 +637,7 @@ function highlight(data){
 
 function dehighlight(data){
   svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"fill-opacity": ".75", "stroke-width": "0px"}); //reset enumeration unit to orginal color
+    .style({"fill-opacity": ".3", "stroke-width": "0px"}); //reset enumeration unit to orginal color
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": ".5"});
   povSVG.selectAll("."+data.id)
@@ -668,13 +726,16 @@ function viewer(data){
   d3.select(".viewer").append("div").attr("class", "viewerText");
   d3.select(".viewerText").text("this is: "+data.name+", which imports "+data.total_waste+" tons of lead");
   
+  
   if (clicker == true){
+
   clicker = false;
   //var circles = svg.selectAll("circle")
   //circles.filter(function(d){return d.name != data.name})
     //.remove()
   exporters(data);
   }
+
 
   demographicCharts(data);
 
@@ -823,6 +884,7 @@ rSVG.selectAll("rect")
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
         if (i == 0) {
+          console.log(document.getElementsByClassName(data.id)["importer"].style.fill)
           return document.getElementsByClassName(data.id)["importer"].style.fill
         }
         else {
