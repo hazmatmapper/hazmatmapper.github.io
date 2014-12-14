@@ -2,6 +2,7 @@
 
 var latlongs;
 var svg;
+var sum;
 var projection;
 var projectionV;
 var pathV;
@@ -32,7 +33,7 @@ var domain;
 var fullWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
 var fullHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 var filterDomain;
-var margin = {top: 10, right: 10, bottom: 10, left: 10};
+var margin = {top: 10, right: 10, bottom: 40, left: 10};
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -68,7 +69,7 @@ function setControls(){
     //.style("display", "inline-block");
   d3.select("#showHide")
     .append("div")
-    .text("Show/Hide")
+    .text("Show/Hide Controls")
     .on("click", function(){
       if (clickCheck == true) {
         d3.select("#accordion")
@@ -83,7 +84,7 @@ function setControls(){
           .duration(750)
           .style("display", "block")
         d3.select("#showHide")
-          .style({"top": "64%"})
+          .style({"top": "73%"})
         clickCheck = true
       }
     })
@@ -96,8 +97,8 @@ function setControls(){
     .text("Show on the map:")
     .attr("class", "filterSelector");
 
-  width66 =  .66 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-  height33 = .3 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+  width66 =  .75 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+  height33 = .25 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
   Isvg = d3.select(".barWrap").append("svg")
     .attr("width", width66)
     .attr("height", height33)
@@ -131,16 +132,17 @@ function setControls(){
         svg.selectAll("#exporter").remove();
       }
      if (type == "Importers"){
-        importers(latlongReset)
+        svg.selectAll("#importer").style({"fill": "#8c8c8c", "fill-opacity": ".3"})
         checker = true;
       }
-     if (type == "Importers" && display == "off"){
+     /*if (type == "Importers" && display == "off"){
         svg.selectAll("#importer").remove();
-      }
+      }*/
 
     });
   labelEnter.append("label").text(function(d) {return d;});
 
+  //filter types selector
   filterTypes = ["Site", "DisposalMethod", "Type"]
     var show = d3.select(".filterSelector").append("div").html("<p>Filter by:")
   var form = d3.select(".filterSelector").append("form"), j = 0;
@@ -149,18 +151,9 @@ function setControls(){
     .enter().append("div")
     .attr("class", "filtering")
     .attr("id", function(d){return d})
-  labelEnter.append("input")
-    .attr({
-      type: "radio",
-      class: "something",
-      name: "mode",
-      value: function(d, i) {return d;}
-    })
-    .property("checked", function(d, i) { 
-        return (i===j); 
-    })
-    .on("change", function(){
-     Isvg.selectAll("rect, div")
+    .on("click", function(d){
+      console.log(window[this.value])
+     Isvg.selectAll("rect, div, g")
         .transition()
         .duration(500)
         .style("opacity", 0)
@@ -171,8 +164,8 @@ function setControls(){
         .style("opacity", 0)
         .remove();
         //.each("end", function(){
-      filterDomain = this.value
-      icicle(window[this.value])
+      filterDomain = d
+      icicle(window[d])
       icicleAxis();
        // });
      //svg.selectAll("#importer")
@@ -200,6 +193,8 @@ d3.csv("data/sites_subset_v2.csv", function(data) {
     d.hazWasteDesc.indexOf("PAINT") > -1 ? d.hazWasteDesc = "paint" : d.hazWasteDesc = d.hazWasteDesc;
     d.hazWasteDesc.indexOf("CHLOROETHYLENE") > -1 ? d.hazWasteDesc = "Tri/dichloroethlene" : d.hazWasteDesc = d.hazWasteDesc;*/
   });
+
+  sum = d3.sum(data, function(d) {return d.totalQuantityinShipment})
 
   Site = d3.nest()
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
@@ -257,7 +252,6 @@ d3.csv("data/sites_subset_v2.csv", function(data) {
   .key(function(d) {return d.exporterLONG;})
   .entries(data);
 
-
   latlongsR = d3.nest() //rollup unique receivinglatlongs by state
   .key(function(d) { return d.importer_state; }) //EPA ID number
   .key(function(d) {return d.receivingLong;})
@@ -270,7 +264,6 @@ d3.csv("data/sites_subset_v2.csv", function(data) {
 
 function icicleAxis(){
   //domain calculator
-console.log(filterDomain)
 var site = ["total", "sites", "type", "management method"]
 var type = ["total", "type", "management method", "sites"]
 var method = ["total", "management method", "type", "sites"]
@@ -285,7 +278,7 @@ if (filterDomain == undefined){
 }
 var yax  = d3.scale.ordinal()
     .domain(domain)
-    .range([0, 70, 140, 190]);
+    .range([0, 60, 110, 160]);
 
 var yAxis = d3.svg.axis()
     .scale(yax)
@@ -302,7 +295,7 @@ var x = d3.scale.linear()
     .range([0, width66]);
 
 var y = d3.scale.linear()
-    .range([0, height33]);
+    .range([0, height33 - margin.bottom]);
 
 var color = d3.scale.category10()
   //.range(["#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b"]);
@@ -317,6 +310,7 @@ var tip = d3.tip()
   .html(function(d) { console.log(d)
     return "<span style='color:white'>" + d.name + "</span>";
   })
+
 
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
@@ -349,19 +343,25 @@ Isvg.selectAll("rects")
       icicleFilter(d);
     });
 
-
-/*var formatPercent = d3.format(".0%");
+//construct x axis
+var xscale = d3.scale.linear()
+    .range([10, width66-10]);
+var xheight = height33-margin.bottom
 var xAxis = d3.svg.axis()
-    .scale(x)
-    .tickFormat(formatPercent)
+    .scale(xscale)
+    .ticks(10)
+    .tickFormat(d3.format(".0%"))
     .orient("bottom");
-
 Isvg.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate(0," + height33-20 + ")")
-      .call(xAxis);*/
-
-//need to update on clicked
+      .attr("transform", "translate(0,"+xheight+")")
+      .call(xAxis)
+    .append("text")
+    //.attr("transform", "rotate(-90)")
+    .attr("y", margin.bottom)
+    .attr("x", width66/2)
+    .style("text-anchor", "middle")
+    .text("Proportion of Total Waste");
 
 /*
 Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.dx) > 50; })).enter()
@@ -377,19 +377,17 @@ Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.dx) > 
 
 function clicked(d) {
   x.domain([d.x, d.x + d.dx]);
-  y.domain([d.y, 1]).range([d.y ? 20 : 0, height33]);
+  y.domain([d.y, 1]).range([d.y ? 20 : 0, height33 - margin.bottom]);
 
-  console.log(domain[1])
  //create temp domain for changing axis
   //calculate range for axis based on depth
   var range;
   var display;
-  if (d.depth == 0) {range = [0, 70, 140, 190]; display = domain}
-  if (d.depth == 1) {range = [0, 36, 111, 176]; display = domain}
-  if (d.depth == 2) {range = [0, 56, 156]; display = [domain[1], domain[2], domain[3]]}
-  if (d.depth == 3) {range = [0, 136]; display = [domain[2], domain[3]]}
+  if (d.depth == 0) {range = [0, 60, 110, 160]; display = domain}
+  if (d.depth == 1) {range = [0, 36, 101, 156]; display = domain}
+  if (d.depth == 2) {range = [0, 56, 146]; display = [domain[1], domain[2], domain[3]]}
+  if (d.depth == 3) {range = [0, 116]; display = [domain[2], domain[3]]}
 
-  console.log(display)
   var yax  = d3.scale.ordinal()
     .domain(display)
     .range(range);
@@ -404,6 +402,30 @@ function clicked(d) {
       .attr("class", "axis")
       .attr("transform", "translate("+0+","+15+")")
       .call(yAxis);
+
+  //reconstruct x axis
+var xdomain = d.value/sum
+var xscale = d3.scale.linear()
+    .domain([0, xdomain])
+    .range([10, width66-10]);
+var xheight = height33-margin.bottom
+var xAxis = d3.svg.axis()
+    .scale(xscale)
+    .ticks(10)
+    .tickFormat(d3.format(".0%"))
+    .orient("bottom");
+
+Isvg.selectAll("g").transition()
+    .remove()
+Isvg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0,"+xheight+")")
+      .call(xAxis)
+  .append("text")
+    .attr("y", margin.bottom)
+    .attr("x", width66/2)
+    .style("text-anchor", "middle")
+    .text("Proportion of Total Waste");
 
   Isvg.selectAll("rect").transition()
       .duration(750)
@@ -450,7 +472,7 @@ function icicleFilter(data){
     for (var k=0; k<data.children.length; k++){
         icicleDump.push(data.children[k])
       }
-    icicleImporters(icicleDump, name)
+        icicleImporters(icicleDump, name)
   }
   }
   else if (data.depth == 3){icicleImporters(icicleDump=[data], name)}
@@ -492,7 +514,11 @@ svg = d3.select("body").append("svg")
     .attr("height", height66);
 
 projection = d3.geo.albers()
-  .scale(800)
+  .center([9,38])
+  .rotate([100,0])
+  .parallels([20,50])
+  .scale(750)
+  //.translate([width66/2, height66/2])
 var path = d3.geo.path()
   .projection(projection);
 
@@ -544,15 +570,12 @@ importers(latlongRdump);
 }
 
 function icicleImporters(data, name){
-  console.log(data, name)
   var latlongRdump2=[];
   if (data.length != undefined) {
-      console.log("1")
       for (var k=0; k<data.length; k++){
         for (var j=0; j<latlongRdump.length; j++){
           //console.log(data[k].name, latlongRdump[j].id)
         if (data[k].name == latlongRdump[j].id || name == latlongRdump[j].id){
-          console.log(latlongRdump.slice([j], [j+1])[0])
           latlongRdump2.push(latlongRdump.slice([j], [j+1])[0])
         };
     }} colorize(latlongRdump2, name);
@@ -567,14 +590,6 @@ function icicleImporters(data, name){
 
   }*/
 } 
-if (data.name == "total") {
-      latlongRdump2 = latlongReset;
-      colorize(latlongRdump2);
-  }
-    
-  //var circle = d3.selectAll("circle") //reset map
-    //circle.remove();
-   //project filtered lat/longs
 };
 
 function importers(data){

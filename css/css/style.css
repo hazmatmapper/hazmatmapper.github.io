@@ -91,17 +91,20 @@ h3{
   color: white;
 }
 
+/*this is the class for all of the filter buttons*/
 .filtering{
   width: 100%;
   text-align: center;
   vertical-align: middle;
   background-color: #444; 
   border: solid black 1px;
-  height: 50px;
+  height: 10%;
 }
+
+
 #showHide {
   position:absolute;
-  top:64%;
+  top:73%;
   width: 100%;
   background-color: #555;
 }
@@ -113,7 +116,7 @@ h3{
 
 .barWrap{
   position: absolute;
-  top: 66%;
+  top: 75%;
   margin-left: 16%;
   margin-right: 16%;
   width: 100%;
@@ -124,7 +127,6 @@ h3{
   height: 20%;
   left: -15%;
   background-color: #555;
-  height:100%;
 }
 
 .label {
@@ -189,6 +191,6 @@ h3{
 .axis path,
 .axis line {
   fill: none;
-  stroke: #000;
+  stroke: none;
   shape-rendering: crispEdges;
 }
