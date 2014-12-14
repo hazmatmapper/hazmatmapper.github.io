@@ -18,10 +18,17 @@ body {
   background-color: #333;
 }
 
-.land {
-  fill: #e5e5e5;
-  stroke: #333;
-  fill-opacity: .1;
+.importer{
+  fill: #f0f0f0;
+  stroke:#636363;
+  stroke-width: 1px;
+  fill-opacity: .7;
+}
+.exporter{
+  fill: #deebf7;
+  stroke:#bdbdbd;
+  stroke-width: 2px;
+  fill-opacity: .4;
 }
 
 .introButton{
@@ -56,13 +63,13 @@ body {
 
 .raceLabel{
   float:right;
-  width:40%;
+  width:50%;
   color: white;
   text-align: center;
 }
 .povLabel{
   float:left;
-  width:40%;
+  width:50%;
   color: white;
   text-align: center;
 }
