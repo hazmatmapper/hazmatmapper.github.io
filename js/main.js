@@ -27,13 +27,14 @@ var povSVG;
 var clickCheck = true; //detect whether radio button filter control was clicked
 var clicker = false; //check if site was just hovered over or click for purposes of displaying exporters
 var clickListen = false; //detect clicking away from site to remove exporters
+var exportCheck = false; //check to see if exporters label is checked
 var exporterInfo;
 var icicleDump;
 var domain;
 var fullWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
 var fullHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 var filterDomain;
-var margin = {top: 10, right: 10, bottom: 40, left: 10};
+var margin = {top: 10, right: 10, bottom: 30, left: 10};
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -94,57 +95,43 @@ function setControls(){
     .attr("class", "barWrap");
   d3.select(".barWrap")
     .append("div")
-    .text("Show on the map:")
+    .html("Show on the map:<br>")
     .attr("class", "filterSelector");
 
-  width66 =  .75 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+  width66 =  .7 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
   height33 = .25 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+  IAsvg = d3.select(".barWrap").append("svg")
+    .attr("width", width66/8)
+    .attr("height", height33)
+
   Isvg = d3.select(".barWrap").append("svg")
     .attr("width", width66)
     .attr("height", height33)
   
-  IAsvg = d3.select(".barWrap").append("svg")
-    .attr("width", width66/5)
-    .attr("height", height33)
+  
 
   //do show all exporters/importers here
-  filterTypes = ["Importers", "Exporters"]
-  var form = d3.select(".filterSelector").append("form"), j = 0;
-  var labelEnter = form.selectAll("span")
-    .data(filterTypes)
-    .enter().append("span");
-  labelEnter.append("input")
-    .attr({
-      type: "checkbox",
-      class: "something",
-      name: "mode",
-      value: function(d, i) {return d;}
-    })
-    .on("change", function(){
+  d3.select(".filterSelector").append("div")
+    .attr("class", "something")
+    .append("label").text("Exporters")
+    .on("click", function(){
      // add exporters and/or importers here
-     var type = this.value, display = this.checked ? "on": "off";
-     console.log(display);
-     if (type == "Exporters"){
+      if (exportCheck == false){
         exporters(latlongReset)
-        checker = true;
-      }
-     if (type == "Exporters" && display == "off"){
-        svg.selectAll("#exporter").remove();
-      }
-     if (type == "Importers"){
-        svg.selectAll("#importer").style({"fill": "#8c8c8c", "fill-opacity": ".3"})
-        checker = true;
-      }
-     /*if (type == "Importers" && display == "off"){
-        svg.selectAll("#importer").remove();
-      }*/
+        exportCheck = true;
+        d3.select(".something").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
 
+      }
+      else{
+        svg.selectAll("#exporter").remove();
+        exportCheck = false;
+        d3.select(".something").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
+      }
     });
-  labelEnter.append("label").text(function(d) {return d;});
 
   //filter types selector
   filterTypes = ["Site", "DisposalMethod", "Type"]
-    var show = d3.select(".filterSelector").append("div").html("<p>Filter by:")
+    var show = d3.select(".filterSelector").append("div").html("<br>Filter by:")
   var form = d3.select(".filterSelector").append("form"), j = 0;
   var labelEnter = form.selectAll("div")
     .data(filterTypes)
@@ -152,8 +139,9 @@ function setControls(){
     .attr("class", "filtering")
     .attr("id", function(d){return d})
     .on("click", function(d){
-      console.log(window[this.value])
-     Isvg.selectAll("rect, div, g")
+      form.selectAll("div").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
+      form.select("div #"+d).style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
+       Isvg.selectAll("rect, div, g")
         .transition()
         .duration(500)
         .style("opacity", 0)
@@ -264,9 +252,9 @@ d3.csv("data/sites_subset_v2.csv", function(data) {
 
 function icicleAxis(){
   //domain calculator
-var site = ["total", "sites", "type", "management method"]
-var type = ["total", "type", "management method", "sites"]
-var method = ["total", "management method", "type", "sites"]
+var site = ["total", "sites", "type", "method"]
+var type = ["total", "type", "method", "sites"]
+var method = ["total", "method", "type", "sites"]
 if (filterDomain == undefined){
   domain = site 
 } else if (filterDomain == "Site") {
@@ -278,14 +266,14 @@ if (filterDomain == undefined){
 }
 var yax  = d3.scale.ordinal()
     .domain(domain)
-    .range([0, 60, 110, 160]);
+    .range([0, 40, 80, 120]);
 
 var yAxis = d3.svg.axis()
     .scale(yax)
     .orient("right");
 IAsvg.append("g")
       .attr("class", "axis")
-      .attr("transform", "translate("+0+","+15+")")
+      .attr("transform", "translate("+70+","+15+")")
       .call(yAxis);
 }
 
@@ -383,10 +371,10 @@ function clicked(d) {
   //calculate range for axis based on depth
   var range;
   var display;
-  if (d.depth == 0) {range = [0, 60, 110, 160]; display = domain}
-  if (d.depth == 1) {range = [0, 36, 101, 156]; display = domain}
-  if (d.depth == 2) {range = [0, 56, 146]; display = [domain[1], domain[2], domain[3]]}
-  if (d.depth == 3) {range = [0, 116]; display = [domain[2], domain[3]]}
+  if (d.depth == 0) {range = [0, 40, 80, 120]; display = domain}
+  if (d.depth == 1) {range = [0, 30, 75, 115]; display = domain}
+  if (d.depth == 2) {range = [0, 45, 110]; display = [domain[1], domain[2], domain[3]]}
+  if (d.depth == 3) {range = [0, 80]; display = [domain[2], domain[3]]}
 
   var yax  = d3.scale.ordinal()
     .domain(display)
@@ -400,7 +388,7 @@ function clicked(d) {
       .remove()
   IAsvg.append("g").transition()
       .attr("class", "axis")
-      .attr("transform", "translate("+0+","+15+")")
+      .attr("transform", "translate("+70+","+15+")")
       .call(yAxis);
 
   //reconstruct x axis
@@ -507,7 +495,7 @@ function icicleDehighlight(data){
 
 
 function setMap(data) {
-var height66 = .66 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+var height66 = .75 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
 svg = d3.select("body").append("svg")
     .attr("width", width66)
@@ -517,8 +505,8 @@ projection = d3.geo.albers()
   .center([9,38])
   .rotate([100,0])
   .parallels([20,50])
-  .scale(750)
-  //.translate([width66/2, height66/2])
+  .scale(850)
+  .translate([width66/2, height66/2])
 var path = d3.geo.path()
   .projection(projection);
 
@@ -760,12 +748,12 @@ function demographicCharts(data){
 var curr_width = document.getElementsByClassName("viewer")[0].clientWidth;
 var curr_height = document.getElementsByClassName("viewer")[0].clientHeight;
 
-  var width = curr_width/2
-  var height = curr_height * .9
+var width = curr_width/2
+var height = curr_height * .9
   console.log(curr_width)
 
   povSVG =  d3.select(".povertyChart").append("svg")
-    .attr("width", width)
+    .attr("width", width/2)
     .attr("height", height);
 
 //match zips
@@ -858,7 +846,7 @@ d3.select(".povertyChart").append("div")
 
   //minority chart
   rSVG =  d3.select(".povertyChart").append("svg")
-    .attr("width", width)
+    .attr("width", width/2)
     .attr("height", height);
 
   d3.csv("data/minority.csv", function(racedata) {

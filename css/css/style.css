@@ -49,6 +49,10 @@ body {
   fill-opacity: .5;
 }
 
+.povertyChart{
+  position:absolute;
+  left:50%;
+}
 
 .raceLabel{
   float:right;
@@ -83,6 +87,7 @@ h3{
   bottom: 0%;
   width: 100%;
   background-color: #555;
+  color: orange;
 }
 
 .intro{
@@ -93,21 +98,32 @@ h3{
 
 /*this is the class for all of the filter buttons*/
 .filtering{
-  width: 100%;
+  width: 85%;
   text-align: center;
   vertical-align: middle;
-  background-color: #444; 
-  border: solid black 1px;
-  height: 10%;
+background-color: #555;
+border: solid 1px black;
 }
 
+#Site{
+}
+
+.something{
+  width: 85%;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #555;
+  border: solid 1px black;
+}
 
 #showHide {
   position:absolute;
-  top:73%;
+  top:66%;
   width: 100%;
   background-color: #555;
+  color: orange;
 }
+
 
 .greyedOut{
   height: 100vh;
@@ -116,17 +132,16 @@ h3{
 
 .barWrap{
   position: absolute;
-  top: 75%;
+  top: 70%;
   margin-left: 16%;
   margin-right: 16%;
   width: 100%;
 }
 .filterSelector{
   position: absolute;
-  width: 15%;
+  width: 14%;
   height: 20%;
-  left: -15%;
-  background-color: #555;
+  left: -16%;
 }
 
 .label {
@@ -142,10 +157,10 @@ h3{
 
 .viewerText{
   position: absolute;
-  top:20%;
-  left:20%;
-  width:60%;
-  height:40%;
+  top:0%;
+  left:0%;
+  width:50%;
+  height:100%;
 }
 
 
