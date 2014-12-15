@@ -36,7 +36,9 @@ var fullHeight = Math.max(document.documentElement.clientHeight, window.innerHei
 var filterDomain;
 var margin = {top: 10, right: 10, bottom: 30, left: 10};
 var name; //the name of the chart area selected
-var phase = "Solids"
+var phase = "Solids";
+var defaultColor = "#8c8c8c";
+var exporterRing = "black";
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -47,22 +49,21 @@ function initialize(){
     .append("div")
     .attr("class", "footer")
     .html("Footers")
- /* d3.select("body")
+  d3.select("body")
     .append("div")
     .attr('class', "greyedOut")
     .style({"background-color": "#333", "opacity": ".2"})
   d3.select("body")
     .append("div")
-    .attr("class", "viewerText")
+    .attr("class", "introBox")
     .style({"background-color": "#555", "color": "white", "font-size": "24px"})
-    .html("Welcome to the HazMatMapper <span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
+    .html("<span class='introTitle'>Welcome to the HazMatMapper</span><span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
     .append("button").attr("class","introButton").text("Click here to begin")
     .on("click", function(){
-      d3.select(".viewerText").remove()
+      d3.select(".introBox").remove()
       d3.select(".greyedOut").remove()
       setControls();
-      })*/
-setControls();
+      })
 }
 function setControls(){
   d3.select("body")
@@ -134,7 +135,7 @@ function setControls(){
 
     //phase switcher here
    filterTypes = ["Solids", "Liquids"]
-    var show = d3.select(".filterSelector").append("div").html("<br>Select phase:")
+    var show = d3.select(".filterSelector").append("div").html("Select phase:")
   var form = d3.select(".filterSelector").append("form"), j = 0;
   var labelEnter = form.selectAll("div")
     .data(filterTypes)
@@ -154,29 +155,27 @@ function setControls(){
         .duration(500)
         .style("opacity", 0)
         .remove();
-    svg.selectAll("#importer").remove()
-    svg.selectAll("#exporter").remove()
-      console.log(d)
-      //setData(d)
+    d3.selectAll("#mapSVG").remove()
+    setData(d)
      
     });
   labelEnter.append("label").text(function(d) {return d;}); 
-form.select("div #solid").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
+form.select("div #Solids").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
 
 
 
   //filter types selector
   filterTypes = ["Site", "DisposalMethod", "Type"]
-    var show = d3.select(".filterSelector").append("div").html("<br>Filter by:")
-  var form = d3.select(".filterSelector").append("form"), j = 0;
-  var labelEnter = form.selectAll("div")
+    var show = d3.select(".filterSelector").append("div").html("Filter by:")
+  var phaseform = d3.select(".filterSelector").append("form"), j = 0;
+  var labelEnter = phaseform.selectAll("div")
     .data(filterTypes)
     .enter().append("div")
     .attr("class", "filtering")
     .attr("id", function(d){return d})
     .on("click", function(d){
-      form.selectAll("div").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
-      form.select("div #"+d).style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
+      phaseform.selectAll("div").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
+      phaseform.select("div #"+d).style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
        Isvg.selectAll("rect, div, g")
         .transition()
         .duration(500)
@@ -197,7 +196,7 @@ form.select("div #solid").style({"border-color": "yellow", "border-width": "1px"
      
     });
   labelEnter.append("label").text(function(d) {return d;}); 
-form.select("div #Site").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
+phaseform.select("div #Site").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
 setData(phase); 
 }
 
@@ -303,7 +302,7 @@ if (filterDomain == undefined){
 }
 var yax  = d3.scale.ordinal()
     .domain(domain)
-    .range([0, 40, 80, 120]);
+    .range([0, 45, 90, 135]);
 
 var yAxis = d3.svg.axis()
     .scale(yax)
@@ -353,7 +352,7 @@ Isvg.selectAll("rects")
     .attr("height", function(d) { return y(d.dy); })
     .style({"cursor": "pointer", "fill": function(d) { 
       colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); 
-      if (d.name == "total"){return "#8c8c8c"} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"})
+      if (d.name == "total"){return defaultColor} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"})
     .on("mouseover", function (d) {
       tip.show(d);
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
@@ -407,9 +406,9 @@ function clicked(d) {
   //calculate range for axis based on depth
   var range;
   var display;
-  if (d.depth == 0) {range = [0, 40, 80, 120]; display = domain}
-  if (d.depth == 1) {range = [0, 30, 75, 115]; display = domain}
-  if (d.depth == 2) {range = [0, 45, 110]; display = [domain[1], domain[2], domain[3]]}
+  if (d.depth == 0) {range = [0, 45, 90, 135]; display = domain}
+  if (d.depth == 1) {range = [0, 30, 80, 130]; display = domain}
+  if (d.depth == 2) {range = [0, 45, 115]; display = [domain[1], domain[2], domain[3]]}
   if (d.depth == 3) {range = [0, 80]; display = [domain[2], domain[3]]}
 
   var yax  = d3.scale.ordinal()
@@ -534,14 +533,15 @@ function setMap(data) {
 var height66 = .75 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
 svg = d3.select("body").append("svg")
+    .attr("id", "mapSVG")
     .attr("width", width66)
     .attr("height", height66);
 
 projection = d3.geo.albers()
-  .center([9,38])
+  .center([9,33])
   .rotate([100,0])
-  .parallels([20,50])
-  .scale(850)
+  .parallels([20,45])
+  .scale(750)
   .translate([width66/2, height66/2])
 var path = d3.geo.path()
   .projection(projection);
@@ -576,6 +576,7 @@ function callback(error, us, can, mex){
 };
 
 function dataCrunch(data){
+  latlongRdump=[];
   //get facility data ready to project
  for (var i=0; i<latlongsR.length-1; i++) {
     for (var j=0; j<latlongsR[i]["values"].length; j++) {
@@ -634,7 +635,7 @@ function importers(data){
     .enter().append("circle")
     .attr("class", function(d) {return d.id})
     .attr("id", "importer")
-    .style("fill", "#8c8c8c")
+    .style("fill", defaultColor)
     .style("fill-opacity", ".5")
     .attr("r", function(d) { return radius(d.total_waste); })
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
@@ -659,7 +660,7 @@ function colorize(data, name){
   svg.selectAll("circle")
     .data(latlongReset).filter(function(d) {for (var r = 0; r<data.length; r++) { if (data[r].id == d.id){return d}}})
     .style("fill", function(){
-      if (name == "total"){return "#8c8c8c"}
+      if (name == "total"){return defaultColor}
       else {return colorDump[0]}
       })
     .style("fill-opacity", function(){
@@ -736,7 +737,7 @@ function exporters(data){
     .attr("r", function(d) {return radius(d.total_waste); })
     .attr("id", "exporter")
     .attr("class", function (d) { return d.id})
-    .style({"fill": "#3d3d3d", "fill-opacity": "0", "stroke": "black", "stroke-width": "3px"})
+    .style({"fill": "#3d3d3d", "fill-opacity": "0", "stroke": exporterRing, "stroke-width": "3px"})
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", highlight)
