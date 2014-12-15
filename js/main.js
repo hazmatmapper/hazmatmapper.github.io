@@ -10,6 +10,7 @@ var latlongsR;
 var latlongRdump = [];
 var facilitySum;
 var exporterSum;
+var typeByFacility;
 var typeSum;
 var bigNest;
 var latlongReset;
@@ -26,7 +27,7 @@ var checker = false; //detect add/remove importer/exporters
 var povSVG;
 var clickCheck = true; //detect whether radio button filter control was clicked
 var clicker = false; //check if site was just hovered over or click for purposes of displaying exporters
-var clickListen = false; //detect clicking away from site to remove exporters
+var clickCount = 0; //detect clicking away from site to remove exporters
 var exportCheck = false; //check to see if exporters label is checked
 var exporterInfo;
 var icicleDump;
@@ -155,7 +156,10 @@ function setControls(){
         .duration(500)
         .style("opacity", 0)
         .remove();
-    d3.selectAll("#mapSVG").remove()
+    d3.selectAll("#mapSVG") .remove();
+    filterDomain = "Site"
+    filterform.selectAll("div").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
+    filterform.select("div #Site").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
     setData(d)
      
     });
@@ -167,15 +171,15 @@ form.select("div #Solids").style({"border-color": "yellow", "border-width": "1px
   //filter types selector
   filterTypes = ["Site", "DisposalMethod", "Type"]
     var show = d3.select(".filterSelector").append("div").html("Filter by:")
-  var phaseform = d3.select(".filterSelector").append("form"), j = 0;
-  var labelEnter = phaseform.selectAll("div")
+  var filterform = d3.select(".filterSelector").append("form"), j = 0;
+  var labelEnter = filterform.selectAll("div")
     .data(filterTypes)
     .enter().append("div")
     .attr("class", "filtering")
     .attr("id", function(d){return d})
     .on("click", function(d){
-      phaseform.selectAll("div").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
-      phaseform.select("div #"+d).style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
+      filterform.selectAll("div").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
+      filterform.select("div #"+d).style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
        Isvg.selectAll("rect, div, g")
         .transition()
         .duration(500)
@@ -196,7 +200,7 @@ form.select("div #Solids").style({"border-color": "yellow", "border-width": "1px
      
     });
   labelEnter.append("label").text(function(d) {return d;}); 
-phaseform.select("div #Site").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
+filterform.select("div #Site").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
 setData(phase); 
 }
 
@@ -266,6 +270,13 @@ d3.csv("data/sites_subset_v5_"+phase+".csv", function(data) {
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by receiving facility code
   .entries(data);
 
+  typeByFacility = d3.nest()
+  .key(function(d) { return d.hazWasteDesc; })
+  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // EPA ID number
+  .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // 
+  .entries(data);
+  console.log(typeByFacility)
+
   exporterSum = d3.nest()
   .key(function(d) {return d.exporterLONG;})
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
@@ -288,9 +299,9 @@ d3.csv("data/sites_subset_v5_"+phase+".csv", function(data) {
 
 function icicleAxis(){
   //domain calculator
-var site = ["total", "sites", "type", "method"]
-var type = ["total", "type", "method", "sites"]
-var method = ["total", "method", "type", "sites"]
+var site = ["total", "site", "type", "method"]
+var type = ["total", "type", "method", "site"]
+var method = ["total", "method", "type", "site"]
 if (filterDomain == undefined){
   domain = site 
 } else if (filterDomain == "Site") {
@@ -300,9 +311,10 @@ if (filterDomain == undefined){
 } else if (filterDomain == "DisposalMethod") {
   domain = method
 }
+console.log(height33)
 var yax  = d3.scale.ordinal()
     .domain(domain)
-    .range([0, 45, 90, 135]);
+    .range([0, height33/4.5, height33*2/4.5, height33*3/4.5]);
 
 var yAxis = d3.svg.axis()
     .scale(yax)
@@ -406,7 +418,7 @@ function clicked(d) {
   //calculate range for axis based on depth
   var range;
   var display;
-  if (d.depth == 0) {range = [0, 45, 90, 135]; display = domain}
+  if (d.depth == 0) {range = [0, height33/4.5, height33*2/4.5, height33*3/4.5]; display = domain}
   if (d.depth == 1) {range = [0, 30, 80, 130]; display = domain}
   if (d.depth == 2) {range = [0, 45, 115]; display = [domain[1], domain[2], domain[3]]}
   if (d.depth == 3) {range = [0, 80]; display = [domain[2], domain[3]]}
@@ -581,7 +593,7 @@ function dataCrunch(data){
  for (var i=0; i<latlongsR.length-1; i++) {
     for (var j=0; j<latlongsR[i]["values"].length; j++) {
       if( parseFloat(latlongsR[i]["values"][j]["key"]) != 0) {
-          latlongRdump.push({"zip": latlongsR[i]["values"][j]["values"][0]["receivingFacilityZipCode"], "long": latlongsR[i]["values"][j]["values"][0]["longitude"], "lat": latlongsR[i]["values"][j]["values"][0]["latitude"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["importer_name"], "address": latlongsR[i]["values"][j]["values"][0]["importer_address"], "city": latlongsR[i]["values"][j]["values"][0]["importer_city"], "state": latlongsR[i]["values"][j]["values"][0]["importer_state"]})
+          latlongRdump.push({"zip": latlongsR[i]["values"][j]["values"][0]["receivingFacilityZipCode"], "long": latlongsR[i]["values"][j]["values"][0]["longitude"], "lat": latlongsR[i]["values"][j]["values"][0]["latitude"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["importer_name"], "address": latlongsR[i]["values"][j]["values"][0]["importer_address"], "city": latlongsR[i]["values"][j]["values"][0]["importer_city"], "state": latlongsR[i]["values"][j]["values"][0]["importer_state"], "types": [], "units": latlongsR[i]["values"][j]["values"][0]["units_final"]})
       };     
     };
   };
@@ -593,6 +605,21 @@ for (var i =0; i<facilitySum.length-1; i++){
     };
   }; 
 };
+
+//put total for each type here
+for (var i =0; i<typeByFacility.length; i++){
+  var p = typeByFacility[i]["key"]
+  for (var n =0; n<typeByFacility[i]["values"].length; n++){
+    for (var j=0; j<latlongRdump.length; j++){
+      if (typeByFacility[i]["values"][n]["key"] == latlongRdump[j].id){
+        var obj = {}
+        obj[p] = typeByFacility[i]["values"][n]["values"]["total_waste"]
+        latlongRdump[j].types.push(obj)
+      };
+    }; 
+  };
+};
+
 latlongReset = latlongRdump;
 icicle(Site);
 icicleAxis();
@@ -646,6 +673,7 @@ function importers(data){
     })
     .on("mouseout", dehighlight)
     .on("click", function (d){
+      clickCount += 1; console.log(clickCount)
       clicker = true;
       viewer(d)}); 
 };
@@ -701,21 +729,20 @@ function exporters(data){
     //begin constructing latlongs of exporters
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
   var latlongdump = [];
-  exporterInfo = [];
   for (var k=0; k<data.length; k++){
    for (var i=0; i<latlongs.length-1; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
         if (latlongs[i]["values"][j]["values"][0]["longitude"] == data[k].long) {
-          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"]}) //lat longs of the foreign waste sites
+          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"], "types": []}) //lat longs of the foreign waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
-            exporterInfo.push({"methods": latlongs[i]["values"][j]["values"][z]["ExpectedManagementMethod"], "waste": latlongs[i]["values"][j]["values"][z]["hazWasteDesc"]})
+            
+            latlongdump[0]["types"].push(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
           };
         };
 
         };     
       };
     };
-
   for (var i =0; i<exporterSum.length-1; i++){
     for (var j=0; j<latlongdump.length; j++){
       if (exporterSum[i]["key"] == latlongdump[j].long){
@@ -746,44 +773,23 @@ function exporters(data){
 };
 
 function viewer(data){
-   //implement function that will place locations of waste exporters on map
-  //remove all other importers
-  
-  //implement clickoff div - this creates a div that will do two things: 1) make the map more opaque, emphasizing the new info panel; 2) provide a clickable space so that when people click away from the info panel back to the map, the info panel closes
-  /*d3.select("body")
-    .append("div")
-    .text("X")
-    .attr("class", "clickoff")
-    .style({"background-color": "#d3d3d3"}) //need to adjust size, color, opacity of div
-    .on("click", function(){
-      if (checker != true) {d3.selectAll("circle").remove()}      
-      d3.selectAll(".povertyChart").remove()
-      d3.selectAll(".viewer")
-        .transition()
-          .duration(0)
-        .style({"height": "0%", "width": "0%"})
-      d3.selectAll(".viewerText").remove()
-      d3.selectAll(".clickoff").remove()
-      importers(latlongReset); //removes itself so that the map can be clicked again
-    });*/
-
-
   //implement the info panel/viewer here
   d3.select(".intro").remove()
   d3.select(".viewerText").remove()
   d3.select(".povertyChart").remove()
   d3.select(".viewer").append("div").attr("class", "viewerText");
-  console.log(data)
-  d3.select(".viewerText").html("Importer: "+data.name+"<p>Total waste: "+data.total_waste+"<p>Address: "+data.address+", "+data.city+", "+data.state+"");
+  r=JSON.stringify(data.types)
+  d3.select(".viewerText").html("Importer: "+data.name+"<p>Total waste: "+data.total_waste+" "+data.units+"<p>Address: "+data.address+", "+data.city+", "+data.state+"<p>Waste Types, Amount, and Expected Management Method: <br>"+r+"");
   
   
   if (clicker == true){
 
   clicker = false;
+  exporters(data);
   //var circles = svg.selectAll("circle")
   //circles.filter(function(d){return d.name != data.name})
     //.remove()
-  exporters(data);
+  if (clickCount == 2){svg.selectAll("#exporter").remove(); clickCount = 0}
   }
 
 
@@ -981,9 +987,11 @@ d3.select(".povertyChart").append("div")
 function exportViewer(data){
 
   //implement the info panel/viewer here
-
+  console.log(data)
   d3.selectAll(".viewerText").remove()
   d3.selectAll(".povertyChart").remove()
   d3.selectAll(".viewer").append("div").attr("class", "viewerText");
-  d3.selectAll(".viewerText").html("Name:"+data.name+"<p>Exports: "+data.total_waste+"<p>Managment methods: "+exporterInfo[0]["methods"]+"<p>Waste types: "+exporterInfo[0]["waste"]+"");
+  console.log(data)
+  r=JSON.stringify(data.types)
+  d3.selectAll(".viewerText").html("Name:"+data.name+"<p>Exports: "+data.total_waste+"<p>Waste types exported: "+r+"");
 };

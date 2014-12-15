@@ -134,6 +134,11 @@ border: solid 1px black;
   color: orange;
 }
 
+#showHide:hover {
+  cursor: pointer;
+}
+
+
 
 .greyedOut{
   height: 100vh;
