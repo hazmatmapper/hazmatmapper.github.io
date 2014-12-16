@@ -664,6 +664,7 @@ function importers(data){
     })
     .on("click", function (d){
       exporters(d);
+      colorize(d, name)
       //clickCount += 1; console.log(clickCount)
       clicker = true;
       viewer(d)}); 
