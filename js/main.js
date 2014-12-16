@@ -38,10 +38,8 @@ var filterDomain;
 var margin = {top: 10, right: 10, bottom: 30, left: 10};
 var name; //the name of the chart area selected
 var phase = "Solids";
-var defaultColor = "#8c8c8c";
+var defaultColor = "#e8e8e8";
 var exporterRing = "black";
-var oldFill;
-var oldFillOpacity;
 var latlongdump;
 
 //begin script when window loads 
@@ -92,7 +90,7 @@ function setControls(){
           .duration(750)
           .style("display", "block")
         d3.select("#showHide")
-          .style({"top": "68%"})
+          .style({"top": "67%"})
         clickCheck = true
       }
     })
