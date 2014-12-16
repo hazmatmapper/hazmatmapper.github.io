@@ -49,10 +49,10 @@ window.onload = initialize();
 
 //the first function called once the html is loaded 
 function initialize(){
-  d3.select("body")
+  /*d3.select("body")
     .append("div")
     .attr("class", "footer")
-    .html("Footers")
+    .html("Footers")*/
   d3.select("body")
     .append("div")
     .attr('class', "greyedOut")
@@ -83,7 +83,7 @@ function setControls(){
         d3.select("#accordion")
           .style("display", "none")
         d3.select("#showHide")
-          .style({"top": "95%"})
+          .style({"top": "97%"})
         clickCheck = false
       }
       else {
@@ -92,7 +92,7 @@ function setControls(){
           .duration(750)
           .style("display", "block")
         d3.select("#showHide")
-          .style({"top": "66%"})
+          .style({"top": "68%"})
         clickCheck = true
       }
     })
@@ -741,10 +741,8 @@ function exporters(data){
    for (var i=0; i<latlongs.length-1; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
         if (latlongs[i]["values"][j]["values"][0]["longitude"] == data[k].long) {
-          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"], "types": []}) //lat longs of the foreign waste sites
+          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"], "units": latlongs[i]["values"][j]["values"][0]["units"], "types": []}) //lat longs of the foreign waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
-            console.log(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
-            console.log(latlongdump[0])
             latlongdump[0]["types"].push(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
 
           };
@@ -978,7 +976,7 @@ rSVG.selectAll("label")
   });
 d3.select(".povertyChart").append("div")
     .attr("class", "raceLabel")
-    .text("% of non-white individuals")
+    .text("% of non-white")
 }
 }
 function exportViewer(data){
@@ -987,7 +985,5 @@ function exportViewer(data){
   d3.selectAll(".viewerText").remove()
   d3.selectAll(".povertyChart").remove()
   d3.selectAll(".viewer").append("div").attr("class", "viewerText");
-  console.log(data)
-  r=JSON.stringify(data.types)
-  d3.selectAll(".viewerText").html("Name:"+data.name+"<p>Exports: "+data.total_waste+"<p>Waste types exported: "+r+"");
+  d3.selectAll(".viewerText").html("Name:"+data.name+"<p>Exports: "+data.total_waste+" "+data.units+"<p>Waste types exported: "+data.types[0]+"");
 };
