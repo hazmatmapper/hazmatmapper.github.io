@@ -128,7 +128,7 @@ border: solid 1px black;
 
 #showHide {
   position:absolute;
-  top:68%;
+  top:67%;
   width: 100%;
   background-color: #555;
   color: orange;
@@ -147,7 +147,7 @@ border: solid 1px black;
 
 .barWrap{
   position: absolute;
-  top: 71%;
+  top: 70%;
   margin-left: 16%;
   margin-right: 16%;
   width: 100%;
