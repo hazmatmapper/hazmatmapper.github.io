@@ -497,13 +497,15 @@ function icicleHighlight(data){
   svg.selectAll("."+data.name)
     .style({"stroke": "yellow", "stroke-width": "5px"})}
   if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){ //if sites and at bottom of barchart
-  console.log(data)
   icicleTranslate(data);
-  oldFill = document.getElementsByClassName(data.name)["importer"].style.fill
+  /*oldFill = document.getElementsByClassName(data.name)["importer"].style.fill
   oldFillOpacity = document.getElementsByClassName(data.name)["importer"].style.opacity
+  console.log(document.getElementsByClassName(data.parent.name))
+  var colorRect = document.getElementsByClassName(data.name)[0].style.fill
+  if (data.depth == 3){colorRect = document.getElementsByClassName(data.parent.name)[0].style.fill}
   var colorRect = document.getElementsByClassName(data.name)[0].style.fill
   svg.selectAll("."+data.name)
-    .style({"fill": colorRect, "fill-opacity": "1"})}
+    .style({"fill": colorRect, "fill-opacity": "1"})*/}
 }; 
 
 function icicleDehighlight(data){
@@ -511,10 +513,10 @@ function icicleDehighlight(data){
     .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
   svg.selectAll("#importer")
     .style({"stroke": "yellow", "stroke-width": "0px"})
-  if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){
+  /*if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){
     //console.log(document.getElementsByClassName(data.name))
     svg.selectAll("."+data.name)
-    .style({"fill": oldFill, "opacity": oldFillOpacity})}
+    .style({"fill": oldFill, "opacity": oldFillOpacity})}*/
   };
 
 function icicleTranslate(data){
@@ -606,7 +608,6 @@ for (var i =0; i<typeByFacility.length; i++){
     }; 
   };
 };
-
 latlongReset = latlongRdump;
 icicle(Site);
 icicleAxis();
@@ -650,7 +651,7 @@ function importers(data){
     .attr("class", function(d) {return d.id})
     .attr("id", "importer")
     .style("fill", defaultColor)
-    .style("opacity", ".75")
+    .style("fill-opacity", ".75")
     .attr("r", function(d) { return radius(d.total_waste); })
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
@@ -664,6 +665,7 @@ function importers(data){
       Importer2ExporterMouseOut(d);
     })
     .on("click", function (d){
+      exporters(d);
       //clickCount += 1; console.log(clickCount)
       clicker = true;
       viewer(d)}); 
@@ -685,7 +687,9 @@ function Importer2ExporterMouseOver (data){
 function Importer2ExporterMouseOut (data) {
   if (exportCheck == true){
     svg.selectAll("#exporter").style({"stroke": exporterRing, "stroke-width": "3px"})
-  } else{
+  } 
+  if (clicker == true){}
+  if (exportCheck == false && clicker == false) {
     svg.selectAll("#exporter").remove();
   }
 }
@@ -702,7 +706,7 @@ function colorize(data, name){
       if (name == "total"){return defaultColor}
       else {return colorDump[0]}
       })
-    .style("opacity", function(){
+    .style("fill-opacity", function(){
       if (name == "total"){return ".75"}
       else {return "1"}
       })
@@ -718,16 +722,17 @@ function highlight(data){
 function dehighlight(data){
   if (data.id == name){
    svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"opacity": "1", "stroke-width": "0px"})}
+    .style({"fill-opacity": "1", "stroke-width": "0px"})}
   else{
   svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"opacity": ".75", "stroke-width": "0px"})};//reset enumeration unit to orginal color
+    .style({"fill-opacity": ".75", "stroke-width": "0px"})};//reset enumeration unit to orginal color
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": ".5"});
 };
 
 
 function exporters(data){
+
   svg.selectAll("#exporter").remove();
     //begin constructing latlongs of exporters
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
@@ -738,8 +743,10 @@ function exporters(data){
         if (latlongs[i]["values"][j]["values"][0]["longitude"] == data[k].long) {
           latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"], "types": []}) //lat longs of the foreign waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
-            
+            console.log(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
+            console.log(latlongdump[0])
             latlongdump[0]["types"].push(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
+
           };
         };
 
@@ -782,19 +789,7 @@ function viewer(data){
   d3.select(".povertyChart").remove()
   d3.select(".viewer").append("div").attr("class", "viewerText");
   r=JSON.stringify(data.types)
-  d3.select(".viewerText").html("Importer: "+data.name+"<p>Total waste: "+data.total_waste+" "+data.units+"<p>Address: "+data.address+", "+data.city+", "+data.state+"<p>Waste Types, Amount, and Expected Management Method: <br>"+r+"");
-  
- /* 
-  if (clicker == true){
-
-  clicker = false;
-  exporters(data);
-  //var circles = svg.selectAll("circle")
-  //circles.filter(function(d){return d.name != data.name})
-    //.remove()
-  if (clickCount == 2){svg.selectAll("#exporter").remove(); clickCount = 0}
-  }*/
-
+  d3.select(".viewerText").html("Importer: "+data.name+"<p>Total waste: "+data.total_waste+" "+data.units+"<p>Address: "+data.address+", "+data.city+", "+data.state+"<p>Waste Types and Amount: <br>"+r+"");
 
   demographicCharts(data);
 
@@ -987,7 +982,6 @@ d3.select(".povertyChart").append("div")
 }
 }
 function exportViewer(data){
-
   //implement the info panel/viewer here
   console.log(data)
   d3.selectAll(".viewerText").remove()
