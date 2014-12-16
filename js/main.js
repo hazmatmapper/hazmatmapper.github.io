@@ -671,13 +671,7 @@ function importers(data){
 function Importer2ExporterMouseOver (data){
   console.log(data)
   if (exportCheck == true){
-     svg.selectAll("#exporter")
-    .data(latlongs).filter(function(d) {
-      for (var i=0; i<d.values.length; i++) {
-        console.log(d.values[i])
-        if (d.values[i].values[0]["longitude"] == data.long){console.log(d);return d}
-      }})   //filter where latlongdump = data
-    .style({"stroke": "yellow"})
+    
   } else {
     exporters(data);
   }
