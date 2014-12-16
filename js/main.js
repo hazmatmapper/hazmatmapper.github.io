@@ -40,6 +40,9 @@ var name; //the name of the chart area selected
 var phase = "Solids";
 var defaultColor = "#8c8c8c";
 var exporterRing = "black";
+var oldFill;
+var oldFillOpacity;
+var latlongdump;
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -180,24 +183,21 @@ form.select("div #Solids").style({"border-color": "yellow", "border-width": "1px
     .on("click", function(d){
       filterform.selectAll("div").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
       filterform.select("div #"+d).style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
-       Isvg.selectAll("rect, div, g")
+      Isvg.selectAll("rect, div, g")
         .transition()
         .duration(500)
         .style("opacity", 0)
         .remove();
-    IAsvg.selectAll("g")
+      IAsvg.selectAll("g")
         .transition()
         .duration(500)
         .style("opacity", 0)
         .remove();
-        //.each("end", function(){
+      svg.selectAll("#importer")
+        .style({"fill": defaultColor, "fill-opacity": ".5"})
       filterDomain = d
       icicle(window[d])
       icicleAxis();
-       // });
-     //svg.selectAll("#importer")
-      //.style("fill", function(d) {for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == d.id) {return colorKey[i].color} }});
-     
     });
   labelEnter.append("label").text(function(d) {return d;}); 
 filterform.select("div #Site").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
@@ -205,7 +205,7 @@ setData(phase);
 }
 
 function setData(phase){
-d3.csv("data/sites_subset_v5_"+phase+".csv", function(data) {
+d3.csv("data/sites_subset_v10_"+phase+".csv", function(data) {
   data.forEach(function(d){
     d.totalQuantityinShipment = +d.totalQuantityinShipment // convert the quantity of waste from string to number
     d.exporterLAT = +d.exporterLAT
@@ -299,9 +299,9 @@ d3.csv("data/sites_subset_v5_"+phase+".csv", function(data) {
 
 function icicleAxis(){
   //domain calculator
-var site = ["total", "site", "type", "method"]
-var type = ["total", "type", "method", "site"]
-var method = ["total", "method", "type", "site"]
+var site = ["total", "sites", "types", "methods"]
+var type = ["total", "types", "methods", "sites"]
+var method = ["total", "methods", "types", "sites"]
 if (filterDomain == undefined){
   domain = site 
 } else if (filterDomain == "Site") {
@@ -342,7 +342,7 @@ var partition = d3.layout.partition()
 var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
-  .html(function(d) { console.log(d)
+  .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
@@ -368,7 +368,7 @@ Isvg.selectAll("rects")
     .on("mouseover", function (d) {
       tip.show(d);
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
-        icicleHighlight(d);
+      icicleHighlight(d);
       //};  
     })
     .on("mouseout", function(d){tip.hide(d); icicleDehighlight(d)})
@@ -397,18 +397,6 @@ Isvg.append("g")
     .attr("x", width66/2)
     .style("text-anchor", "middle")
     .text("Proportion of Total Waste");
-
-/*
-Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.dx) > 50; })).enter()
-     .append("foreignObject")
-     .attr("x", function(d) { return x(d.x); })
-     .attr("y", function(d) { return y(d.y); })
-     .attr("width", function(d) { return x(d.dx); })
-     .attr("height", function(d) { return y(d.dy); })
-     .append("xhtml:div")
-     .html(function(d) { return d.name; })
-     .attr("class", "textdiv")*/
-     
 
 function clicked(d) {
   x.domain([d.x, d.x + d.dx]);
@@ -468,19 +456,6 @@ Isvg.append("g")
       .attr("y", function(d) { return y(d.y); })
       .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
       .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
-
-/*
-  Isvg.selectAll("div").style("opacity", 0).transition().duration(750).remove()
-  Isvg.selectAll("foreignObject").data(nodes.filter(function(d) {return x(d.x + d.dx) - x(d.x) > 50; })).enter()
-     .append("foreignObject")
-     .attr("x", function(d) { return x(d.x); })
-     .attr("y", function(d) { return y(d.y); })
-     .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
-     .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); })
-     .append("xhtml:div")
-     .html(function(d) { return d.name; })
-     .attr("class", "textdiv")
-*/
   };
 };
 
@@ -495,7 +470,6 @@ function icicleFilter(data){
         icicleDump.push(data.children[k].children[l])
      }
     }
-    console.log(icicleDump)
     icicleImporters(icicleDump, name)
   }
   else if (data.depth == 2){
@@ -515,17 +489,21 @@ function icicleFilter(data){
 
 function icicleHighlight(data){
   Isvg.selectAll("."+data.name) //select the current id
-    .style({"fill-opacity": "1"}); //yellow outline
+    .style({"fill-opacity": "1"}); 
   if (data.name == "total"){
   svg.selectAll("#importer")
-    .style({"stroke": "yellow", "stroke-width": "2px"})}
+    .style({"stroke": "yellow", "stroke-width": "2px"})} //yellow outline
   else {
   svg.selectAll("."+data.name)
     .style({"stroke": "yellow", "stroke-width": "5px"})}
-  //povSVG.selectAll("."+data.id)
-   // .style({"stroke": "yellow", "stroke-width": "2px"});
-  //rSVG.selectAll("."+data.id)
-    //.style({"stroke": "yellow", "stroke-width": "2px"});
+  if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){ //if sites and at bottom of barchart
+  console.log(data)
+  icicleTranslate(data);
+  oldFill = document.getElementsByClassName(data.name)["importer"].style.fill
+  oldFillOpacity = document.getElementsByClassName(data.name)["importer"].style.opacity
+  var colorRect = document.getElementsByClassName(data.name)[0].style.fill
+  svg.selectAll("."+data.name)
+    .style({"fill": colorRect, "fill-opacity": "1"})}
 }; 
 
 function icicleDehighlight(data){
@@ -533,13 +511,22 @@ function icicleDehighlight(data){
     .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
   svg.selectAll("#importer")
     .style({"stroke": "yellow", "stroke-width": "0px"})
-  //povSVG.selectAll("."+data.id)
-    //.style({"stroke": "#000", "stroke-width": "0px"});
-  //rSVG.selectAll("."+data.id)
-    //.style({"stroke-width": "0px"});
+  if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){
+    //console.log(document.getElementsByClassName(data.name))
+    svg.selectAll("."+data.name)
+    .style({"fill": oldFill, "opacity": oldFillOpacity})}
   };
 
-
+function icicleTranslate(data){
+  //slice latlongReset where data = latlongReset, then call viewer
+  var temp;
+  for (var u = 0; u<latlongReset.length; u++){
+    if (data.name == latlongReset[u].id){
+      temp = latlongReset.slice([u], [u+1])[0]
+      viewer(temp);
+    }
+  }
+}
 
 function setMap(data) {
 var height66 = .75 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
@@ -663,21 +650,45 @@ function importers(data){
     .attr("class", function(d) {return d.id})
     .attr("id", "importer")
     .style("fill", defaultColor)
-    .style("fill-opacity", ".5")
+    .style("opacity", ".75")
     .attr("r", function(d) { return radius(d.total_waste); })
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", function(d){
       viewer(d);
       highlight(d);
+      Importer2ExporterMouseOver(d);
     })
-    .on("mouseout", dehighlight)
+    .on("mouseout", function(d){
+      dehighlight(d);
+      Importer2ExporterMouseOut(d);
+    })
     .on("click", function (d){
-      clickCount += 1; console.log(clickCount)
+      //clickCount += 1; console.log(clickCount)
       clicker = true;
       viewer(d)}); 
 };
-
+function Importer2ExporterMouseOver (data){
+  console.log(data)
+  if (exportCheck == true){
+     svg.selectAll("#exporter")
+    .data(latlongs).filter(function(d) {
+      for (var i=0; i<d.values.length; i++) {
+        console.log(d.values[i])
+        if (d.values[i].values[0]["longitude"] == data.long){console.log(d);return d}
+      }})   //filter where latlongdump = data
+    .style({"stroke": "yellow"})
+  } else {
+    exporters(data);
+  }
+}
+function Importer2ExporterMouseOut (data) {
+  if (exportCheck == true){
+    svg.selectAll("#exporter").style({"stroke": exporterRing, "stroke-width": "3px"})
+  } else{
+    svg.selectAll("#exporter").remove();
+  }
+}
 function colorize(data, name){
   //match data with colorkey
   var colorDump=[]
@@ -691,36 +702,28 @@ function colorize(data, name){
       if (name == "total"){return defaultColor}
       else {return colorDump[0]}
       })
-    .style("fill-opacity", function(){
-      if (name == "total"){return ".5"}
+    .style("opacity", function(){
+      if (name == "total"){return ".75"}
       else {return "1"}
       })
 }
 
 function highlight(data){
   svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "5px", "fill-opacity": "1"}); //yellow outline
+    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": "1"});
-  povSVG.selectAll("."+data.id)
-    .style({"stroke": "yellow", "stroke-width": "2px"});
-  rSVG.selectAll("."+data.id)
-    .style({"stroke": "yellow", "stroke-width": "2px"});
 };
 
 function dehighlight(data){
   if (data.id == name){
    svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"fill-opacity": "1", "stroke-width": "0px"})}
+    .style({"opacity": "1", "stroke-width": "0px"})}
   else{
   svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"fill-opacity": ".5", "stroke-width": "0px"})};//reset enumeration unit to orginal color
+    .style({"opacity": ".75", "stroke-width": "0px"})};//reset enumeration unit to orginal color
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": ".5"});
-  povSVG.selectAll("."+data.id)
-    .style({"stroke-width": "0px"});
-  rSVG.selectAll("."+data.id)
-    .style({"stroke-width": "0px"});
 };
 
 
@@ -728,7 +731,7 @@ function exporters(data){
   svg.selectAll("#exporter").remove();
     //begin constructing latlongs of exporters
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
-  var latlongdump = [];
+  latlongdump = [];
   for (var k=0; k<data.length; k++){
    for (var i=0; i<latlongs.length-1; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
@@ -781,7 +784,7 @@ function viewer(data){
   r=JSON.stringify(data.types)
   d3.select(".viewerText").html("Importer: "+data.name+"<p>Total waste: "+data.total_waste+" "+data.units+"<p>Address: "+data.address+", "+data.city+", "+data.state+"<p>Waste Types, Amount, and Expected Management Method: <br>"+r+"");
   
-  
+ /* 
   if (clicker == true){
 
   clicker = false;
@@ -790,7 +793,7 @@ function viewer(data){
   //circles.filter(function(d){return d.name != data.name})
     //.remove()
   if (clickCount == 2){svg.selectAll("#exporter").remove(); clickCount = 0}
-  }
+  }*/
 
 
   demographicCharts(data);
@@ -939,7 +942,6 @@ rSVG.selectAll("rect")
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
         if (i == 0) {
-          console.log(document.getElementsByClassName(data.id)["importer"].style.fill)
           return document.getElementsByClassName(data.id)["importer"].style.fill
         }
         else {
