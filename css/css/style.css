@@ -62,6 +62,9 @@ body {
 .povertyChart{
   position:absolute;
   left:50%;
+  margin: 10px;
+  margin-right: 0px;
+  margin-left: 0px;
 }
 
 .raceLabel{
@@ -176,6 +179,7 @@ border: solid 1px black;
   left:0%;
   width:50%;
   height:100%;
+  margin:10px;
 }
 
 .introBox{

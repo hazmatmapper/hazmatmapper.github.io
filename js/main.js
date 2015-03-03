@@ -51,7 +51,8 @@ function initialize(){
     .append("div")
     .attr("class", "footer")
     .html("Footers")*/
-  d3.select("body")
+  setControls();
+  /*d3.select("body")
     .append("div")
     .attr('class', "greyedOut")
     .style({"background-color": "#333", "opacity": ".2"})
@@ -65,7 +66,7 @@ function initialize(){
       d3.select(".introBox").remove()
       d3.select(".greyedOut").remove()
       setControls();
-      })
+      })*/
 }
 function setControls(){
   d3.select("body")
@@ -540,7 +541,7 @@ projection = d3.geo.albers()
   .center([9,33])
   .rotate([100,0])
   .parallels([20,45])
-  .scale(750)
+  .scale(700)
   .translate([width66/2, height66/2])
 var path = d3.geo.path()
   .projection(projection);
@@ -549,7 +550,7 @@ var path = d3.geo.path()
 queue()
   .defer(d3.json, "data/usa008.topojson")
   .defer(d3.json, "data/can008.topojson")
-  .defer(d3.json, "data/mex009.topojson")
+  .defer(d3.json, "data/mex10.topojson")
   .await(callback);
 
 function callback(error, us, can, mex){
@@ -567,6 +568,7 @@ function callback(error, us, can, mex){
     .datum(topojson.feature(mex, mex.objects.mex))
     .attr("class", "exporter")
     .attr("d", path);
+
 
   dataCrunch();
 
@@ -654,13 +656,14 @@ function importers(data){
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", function(d){
-      viewer(d);
+      //viewer(d);
       highlight(d);
       Importer2ExporterMouseOver(d);
     })
     .on("mouseout", function(d){
       dehighlight(d);
       Importer2ExporterMouseOut(d);
+      drawLinesOut(d);
     })
     .on("click", function (d){
       exporters(d);
@@ -669,6 +672,56 @@ function importers(data){
       clicker = true;
       viewer(d)}); 
 };
+
+
+function drawLinesOver(data, base){
+  console.log(data[0].long)
+  console.log(base[0].long)
+  var arcGroup = svg.append('g');
+  var path = d3.geo.path()
+    .projection(projection);
+  var links = [];
+for(var i=0, len=data.length; i<len; i++){
+    // (note: loop until length - 1 since we're getting the next
+    //  item with i+1)
+        links.push({
+            type: "LineString",
+            coordinates: [
+                [ base[0].long, base[0].lat ],
+                [ data[i].long, data[i].lat ]
+            ]
+        });
+    }
+var pathArcs = arcGroup.selectAll(".arc")
+            .data(links);
+
+        //enter
+        pathArcs.enter()
+            .append("path").attr({
+                'class': 'arc'
+            }).style({ 
+                fill: 'none',
+            });
+
+        //update
+        pathArcs.attr({
+                //d is the points attribute for this path, we'll draw
+                //  an arc between the points using the arc function
+                d: path
+            })
+            .style({
+                stroke: '#0000ff',
+                'stroke-width': '2px'
+            })
+
+
+}
+
+function drawLinesOut(data){
+d3.selectAll(".arc").remove();
+}
+
+
 function Importer2ExporterMouseOver (data){
   console.log(data)
   if (exportCheck == true){
@@ -677,10 +730,11 @@ function Importer2ExporterMouseOver (data){
     exporters(data);
   }
 }
+
 function Importer2ExporterMouseOut (data) {
-  if (exportCheck == true){
+ /* if (exportCheck == true){
     svg.selectAll("#exporter").style({"stroke": exporterRing, "stroke-width": "3px"})
-  } 
+  } */
   if (clicker == true){}
   if (exportCheck == false && clicker == false) {
     svg.selectAll("#exporter").remove();
@@ -765,22 +819,26 @@ function exporters(data){
     .attr("r", function(d) {return radius(d.total_waste); })
     .attr("id", "exporter")
     .attr("class", function (d) { return d.id})
-    .style({"fill": "#3d3d3d", "fill-opacity": "0", "stroke": exporterRing, "stroke-width": "3px"})
+    .style({"fill": "#3d3d3d", "fill-opacity": ".5"/*, "stroke": exporterRing, "stroke-width": "3px"*/})
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", highlight)
     .on("mouseout", dehighlight)
     .on("click", exportViewer);
+  viewer(data, latlongdump);
+  drawLinesOver(latlongdump, data);
 };
 
-function viewer(data){
+function viewer(data, latlongdump){
   //implement the info panel/viewer here
+  console.log(data)
+  data = data[0]
   d3.select(".intro").remove()
   d3.select(".viewerText").remove()
   d3.select(".povertyChart").remove()
   d3.select(".viewer").append("div").attr("class", "viewerText");
   r=JSON.stringify(data.types)
-  d3.select(".viewerText").html("Importer: "+data.name+"<p>Total waste: "+data.total_waste+" "+data.units+"<p>Address: "+data.address+", "+data.city+", "+data.state+"<p>Waste Types and Amount: <br>"+r+"");
+  d3.select(".viewerText").html("Importer: "+data.name+"<p>Total waste: "+data.total_waste+" "+data.units+"<p>Address: <a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>"+data.address+" "+data.city+" "+data.state+"</a><p>Receiving From: "+latlongdump[0].name+"<p>Waste Types and Amount: <br>"+r+"");
 
   demographicCharts(data);
 
