@@ -47,10 +47,21 @@ window.onload = initialize();
 
 //the first function called once the html is loaded 
 function initialize(){
-  /*d3.select("body")
+  d3.select("body")
     .append("div")
     .attr("class", "footer")
-    .html("Footers")*/
+    .html(" <span class='aboutFooter'>About</span>")
+    .on("click", function(){
+      d3.select("body")
+      .append("div")
+      .attr("class", "about")
+      .html("<span class='aboutText'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.<p>Data Sources and Limitations</p><p>Waste Category Meanings</p></span>")
+      .append("div").attr("class", "exitAbout").text("Exit")
+      .on("click", function(){
+        d3.select(".about").remove()
+        d3.select(".exitAbout").remove()
+      })
+    })
   setControls();
   /*d3.select("body")
     .append("div")
@@ -71,6 +82,10 @@ function initialize(){
 function setControls(){
   d3.select("body")
     .append("div")
+    .attr("class", "title")
+    .html("HazMatMapper")
+  d3.select("body")
+    .append("div")
     .classed("viewer", true)
     .html("<span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
     //.style("display", "inline-block");
@@ -82,7 +97,7 @@ function setControls(){
         d3.select("#accordion")
           .style("display", "none")
         d3.select("#showHide")
-          .style({"top": "97%"})
+          .style({"top": "95%"})
         clickCheck = false
       }
       else {
@@ -542,7 +557,7 @@ projection = d3.geo.albers()
   .rotate([100,0])
   .parallels([20,45])
   .scale(700)
-  .translate([width66/2, height66/2])
+  .translate([width66/2.5, height66/2])
 var path = d3.geo.path()
   .projection(projection);
 
@@ -675,20 +690,48 @@ function importers(data){
 
 
 function drawLinesOver(data, base){
-  console.log(data[0].long)
-  console.log(base[0].long)
+
+  //based on: http://bl.ocks.org/enoex/6201948
   var arcGroup = svg.append('g');
   var path = d3.geo.path()
     .projection(projection);
-  var links = [];
+
+// --- Helper functions (for tweening the path)
+        var lineTransition = function lineTransition(path) {
+            path.transition()
+                //NOTE: Change this number (in ms) to make lines draw faster or slower
+                .duration(1500)
+                .attrTween("stroke-dasharray", tweenDash)
+                .each("end", function(d,i) { 
+                    ////Uncomment following line to re-transition
+                    //d3.select(this).call(transition); 
+                    
+                    //We might want to do stuff when the line reaches the target,
+                    //  like start the pulsating or add a new point or tell the
+                    //  NSA to listen to this guy's phone calls
+                    //doStuffWhenLineFinishes(d,i);
+                });
+        };
+        var tweenDash = function tweenDash() {
+            //This function is used to animate the dash-array property, which is a
+            //  nice hack that gives us animation along some arbitrary path (in this
+            //  case, makes it look like a line is being drawn from point A to B)
+            var len = this.getTotalLength(),
+                interpolate = d3.interpolateString("0," + len, len + "," + len);
+
+            return function(t) { return interpolate(t); };
+        };
+
+
+var links = [];
 for(var i=0, len=data.length; i<len; i++){
     // (note: loop until length - 1 since we're getting the next
     //  item with i+1)
         links.push({
             type: "LineString",
             coordinates: [
-                [ base[0].long, base[0].lat ],
-                [ data[i].long, data[i].lat ]
+                [ data[i].long, data[i].lat ],
+                [ base[0].long, base[0].lat ]
             ]
         });
     }
@@ -699,7 +742,8 @@ var pathArcs = arcGroup.selectAll(".arc")
         pathArcs.enter()
             .append("path").attr({
                 'class': 'arc'
-            }).style({ 
+            })
+            .style({ 
                 fill: 'none',
             });
 
@@ -709,10 +753,12 @@ var pathArcs = arcGroup.selectAll(".arc")
                 //  an arc between the points using the arc function
                 d: path
             })
+
             .style({
                 stroke: '#0000ff',
                 'stroke-width': '2px'
             })
+            .call(lineTransition); 
 
 
 }
@@ -831,25 +877,36 @@ function exporters(data){
 
 function viewer(data, latlongdump){
   //implement the info panel/viewer here
-  console.log(data)
   data = data[0]
   d3.select(".intro").remove()
   d3.select(".viewerText").remove()
   d3.select(".povertyChart").remove()
   d3.select(".viewer").append("div").attr("class", "viewerText");
+  var names=[]
+  for (i=0;i<latlongdump.length;i++){names.push(latlongdump[i].name)}
+    console.log(names)
+  z=JSON.stringify(names)
   r=JSON.stringify(data.types)
-  d3.select(".viewerText").html("Importer: "+data.name+"<p>Total waste: "+data.total_waste+" "+data.units+"<p>Address: <a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>"+data.address+" "+data.city+" "+data.state+"</a><p>Receiving From: "+latlongdump[0].name+"<p>Waste Types and Amount: <br>"+r+"");
+  d3.select(".viewerText").html("<span class='importerName'>"+data.name+"</span><p><span class = 'viewerCategory'>Total imports</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"</span><p><span class = 'viewerCategory'>Receiving From</span><br><span class ='viewerData'>"+z+"</span><p><span class = 'viewerCategory'>Waste Types and Amount</span><br><span class ='viewerData'>"+r+"</span><p><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+" "+data.city+" "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>");
 
   demographicCharts(data);
 
 function demographicCharts(data){ 
   d3.selectAll(".viewer").append("div").attr("class", "povertyChart");
 
+d3.select(".povertyChart").append("div")
+  .attr("class", "povLabel")
+  .text("% in poverty")
+
+d3.select(".povertyChart").append("div")
+    .attr("class", "raceLabel")
+    .text("% non-white")
+
 var curr_width = document.getElementsByClassName("viewer")[0].clientWidth;
 var curr_height = document.getElementsByClassName("viewer")[0].clientHeight;
 
-var width = curr_width/4
-var height = curr_height * .9
+var width = curr_width/3
+var height = curr_height/5
   console.log(curr_width)
 
   povSVG =  d3.select(".povertyChart").append("svg")
@@ -865,9 +922,10 @@ var height = curr_height * .9
         povdump = [povertydata[i].percentPoverty, povertydata[0].percentPoverty]
       };
     }; 
-/*var x = d3.scale.linear()
+var x = d3.scale.linear()
+    .domain([100, 0])
     .range([0, width]);
-*/
+/*
   var y = d3.scale.linear()
     .domain([0, 100])
     .range([height, 0]);
@@ -884,12 +942,12 @@ povSVG.selectAll("rect")
      .data(povdump)
      .enter()
      .append("rect")
-     .attr("x", function(d, i) {
-        return i * (width / povdump.length);
+     .attr("y", function(d, i) {
+        return i * (height / povdump.length);
      })
-     .attr("y", function(d) { return y(d); })
-     .attr("width", width / povdump.length - barPadding)
-     .attr("height", function(d){ return height - y(d)})
+     .attr("x", function(d) { return 0; })
+     .attr("height", height / povdump.length - barPadding)
+     .attr("width", function(d){ return width - x(d)})
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
         if (i == 0) {
@@ -909,33 +967,32 @@ povSVG.selectAll("text")
             return d3.round(d, 1)+"%";
          })
          .attr("text-anchor", "middle")
-         .attr("x", function(d, i) {
-            return i * (width / povdump.length) + (width / povdump.length - barPadding) / 2;
+         .attr("y", function(d, i) {
+            return i * (height / povdump.length) + (height / povdump.length - barPadding) / 2;
          })
-         .attr("y", function(d) { return y(d) + 14; })
+         .attr("x", function(d) { return 16; })
          .attr("font-family", "sans-serif")
          .attr("font-size", "11px")
-         .attr("fill", "white");
+         .attr("fill", "black")
+         .attr("font-weight", "bold");
 povSVG.selectAll("label")
     .data(povdump)
          .enter()
          .append("text")
          .text(function(d, i) {
-            if (i == 0) {return "This site"}
+            if (i == 0) {return "Site zipcode"}
             else{return "Ntl. Average"}
          })
          .attr("text-anchor", "middle")
-         .attr("x", function(d, i) {
-            return i * (width / povdump.length) + (width / povdump.length - barPadding) / 2;
+         .attr("y", function(d, i) {
+            return i * (height / povdump.length) + (height / povdump.length - barPadding) / 2;
          })
-         .attr("y", height - 5)
+         .attr("x", width - 50)
          .attr("font-family", "sans-serif")
          .attr("font-size", "11px")
          .attr("fill", "white")
          .attr("font-weight", "bold");
-d3.select(".povertyChart").append("div")
-  .attr("class", "povLabel")
-  .text("% in poverty")
+
 
   });
 
@@ -957,9 +1014,10 @@ d3.select(".povertyChart").append("div")
         racedump = [racedata[i].percentMinority, racedata[0].percentMinority]
       };
     }; 
-/*var x = d3.scale.linear()
+var x = d3.scale.linear()
+    .domain([100,0])
     .range([0, width]);
-*/
+/*
   var y = d3.scale.linear()
     .domain([0, 100])
     .range([height, 0]);
@@ -977,12 +1035,12 @@ rSVG.selectAll("rect")
      .data(racedump)
      .enter()
      .append("rect")
-     .attr("x", function(d, i) {
-        return i * (width / racedump.length);
+     .attr("y", function(d, i) {
+        return i * (height / racedump.length);
      })
-     .attr("y", function(d) { return y(d); })
-     .attr("width", width / racedump.length - barPadding)
-     .attr("height", function(d){ return height - y(d)})
+     .attr("x", function(d) { return 0; })
+     .attr("height", height / racedump.length - barPadding)
+     .attr("width", function(d){ return width-x(d)})
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
         if (i == 0) {
@@ -1000,14 +1058,15 @@ rSVG.selectAll("text")
          .append("text")
          .text(function(d){return d3.round(d, 1)+"%"})
          .attr("text-anchor", "middle")
-         .attr("x", function(d, i) {
-            return i * (width / racedump.length) + (width / racedump.length - barPadding) / 2;
+         .attr("y", function(d, i) {
+            return i * (height / racedump.length) + (height / racedump.length - barPadding) / 2;
          })
-         .attr("y", function(d) { return y(d) + 14; })
+         .attr("x", function(d) { return 16; })
          .attr("font-family", "sans-serif")
          .attr("font-size", "11px")
-         .attr("fill", "white");
-rSVG.selectAll("label")
+         .attr("fill", "black")
+         .attr("font-weight", "bold");
+/*rSVG.selectAll("label")
     .data(racedump)
          .enter()
          .append("text")
@@ -1016,18 +1075,16 @@ rSVG.selectAll("label")
             else{return "Ntl. Average"}
          })
          .attr("text-anchor", "middle")
-         .attr("x", function(d, i) {
-            return i * (width / racedump.length) + (width / racedump.length - barPadding) / 2;
+         .attr("y", function(d, i) {
+            return i * (height / racedump.length) + (height / racedump.length - barPadding) / 2;
          })
-         .attr("y", height - 5)
+         .attr("x", width - 5)
          .attr("font-family", "sans-serif")
          .attr("font-size", "11px")
          .attr("fill", "white")
-        .attr("font-weight", "bold");
+        .attr("font-weight", "bold");*/
   });
-d3.select(".povertyChart").append("div")
-    .attr("class", "raceLabel")
-    .text("% of non-white")
+
 }
 }
 function exportViewer(data){

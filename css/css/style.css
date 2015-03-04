@@ -16,17 +16,39 @@ body {
   font-family: 'BebasNeueRegular', 'Arial Narrow', Arial, sans-serif;
   color: white;
   background-color: #333;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+a{
+  color: red;
+}
+
+.title{
+  color: orange;
+  font-size: 32px;
+  position: absolute;
+  left: 100vh;
+  top: 5vh;
+  height: 5%;
+  width: 10%;
+  border: none;
 }
 
 .importer{
-  fill: #f0f0f0;
+  fill: #606060;
   stroke:#636363;
   stroke-width: 1px;
   fill-opacity: .7;
 }
 .exporter{
-  fill: #deebf7;
-  stroke:#bdbdbd;
+  fill: #b1bcc5;
+  stroke:#838383;
   stroke-width: 2px;
   fill-opacity: .4;
 }
@@ -43,41 +65,82 @@ body {
   border:none;
   box-shadow:none;
   color: white;
+
 }
 .introButton:hover{
   border: solid orange 2px;
+  cursor: pointer;
+}
+
+#importer{
+  cursor: pointer;
+}
+
+.aboutFooter{
+  cursor: pointer;
+  color: orange;
+}
+
+.aboutText{
+  color:white;
+}
+.about{
+  position: absolute;
+  left: 10vh;
+  top: 5vh;
+  height: 75%;
+  width: 90%;
+  border: none;
+  background-color: #333;
+}
+
+.exitAbout{
+  cursor: pointer;
 }
 
 .viewer {
 	position: absolute;
-	left: 100vh;
-	top: 20vh;
+	left: 85vh;
+	top: 13vh;
   height: 40%;
-  width: 40%;
+  width: 50%;
 	border: none;
-	background: #555;
-  fill-opacity: .5;
+}
+
+.importerName{
+  font-size: 25px;
+  color: #e8e8e8;
+}
+
+.viewerCategory{
+  font-size: 18px;
+  color: #c2c2c2;
+}
+
+.viewerData{
+  font-size: 14px;
+  color: #e8e8e8;
 }
 
 .povertyChart{
   position:absolute;
-  left:50%;
+  left:0%;
+  top: 90%;
   margin: 10px;
-  margin-right: 0px;
-  margin-left: 0px;
 }
 
 .raceLabel{
-  float:right;
-  width:50%;
-  color: white;
+  float:left;
+  width:65%;
   text-align: center;
+  font-size: 18px;
+  color: #c2c2c2;
 }
 .povLabel{
   float:left;
-  width:50%;
-  color: white;
   text-align: center;
+    font-size: 18px;
+  color: #c2c2c2;
 }
 
 .textdiv { /* text in the boxes */
@@ -107,6 +170,7 @@ h3{
   font-size: small;
   font-family: arial;
   color: white;
+  margin: 100px;
 }
 
 /*this is the class for all of the filter buttons*/
@@ -177,7 +241,7 @@ border: solid 1px black;
   position: absolute;
   top:0%;
   left:0%;
-  width:50%;
+  width:80%;
   height:100%;
   margin:10px;
 }
