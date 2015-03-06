@@ -40,6 +40,7 @@ a{
   border: none;
 }
 
+
 .importer{
   fill: #606060;
   stroke:#636363;
@@ -51,6 +52,12 @@ a{
   stroke:#838383;
   stroke-width: 2px;
   fill-opacity: .4;
+}
+
+.borders{
+  fill: none;
+  stroke: black;
+  stroke-width: 2px
 }
 
 .introTitle{
@@ -73,6 +80,10 @@ a{
 }
 
 #importer{
+  cursor: pointer;
+}
+
+#exporter{
   cursor: pointer;
 }
 
@@ -131,7 +142,7 @@ a{
 
 .raceLabel{
   float:left;
-  width:65%;
+  width:50%;
   text-align: center;
   font-size: 18px;
   color: #c2c2c2;
@@ -182,8 +193,6 @@ background-color: #555;
 border: solid 1px black;
 }
 
-#Site{
-}
 
 .something{
   width: 85%;
@@ -255,10 +264,21 @@ border: solid 1px black;
 }
 
 
+.background {
+  fill: none;
+  pointer-events: all;
+}
+
+.box{
+  background-color: red;
+  border-width: 1px;
+  border-style: solid;
+  border-color:yellow;
+}
 .d3-tip {
   line-height: 1;
   font-weight: lighter;
-  padding: 12px;
+  padding: 6px;
   border-width: 1px;
   border-style: solid;
   border-color:yellow;
