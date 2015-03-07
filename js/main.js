@@ -4,8 +4,7 @@ var latlongs;
 var svg;
 var sum;
 var projection;
-var projectionV;
-var pathV;
+var projectionDefault;
 var latlongsR;
 var latlongRdump = [];
 var facilitySum;
@@ -18,16 +17,17 @@ var Isvg;
 var IAsvg;
 var width66;
 var height33;
+var height66;
 var Site;
 var DisposalMethod;
 var povertydata = [];
 var colorDump;
 var colorKey;
-var checker = false; //detect add/remove importer/exporters
+var checker = false; //checks to see whether we've run initial data crunching, essentially
 var povSVG;
 var clickCheck = true; //detect whether radio button filter control was clicked
-var clicker = false; //check if site was just hovered over or click for purposes of displaying exporters
-var clickCount = 0; //detect clicking away from site to remove exporters
+var zoomed = false; //are we zoomed into rust belt?
+var switcher = false; //detect clicking away from site to remove exporters
 var exportCheck = false; //check to see if exporters label is checked
 var exporterInfo;
 var icicleDump;
@@ -42,6 +42,8 @@ var defaultColor = "#e8e8e8";
 var exporterRing = "black";
 var latlongdump;
 var tooltip;
+var defaultStroke = {"stroke": "red", "stroke-width": ".5px"}
+
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -126,6 +128,17 @@ function setControls(){
 
   width66 =  .7 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
   height33 = .25 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+  height66 = .75 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+  projection = d3.geo.albers()
+  .center([9,33])
+  .rotate([100,0])
+  .parallels([20,45])
+  .scale(700)
+  .translate([width66/2.5, height66/2]);
+
+  projectionDefault = projection;
+
   IAsvg = d3.select(".barWrap").append("svg")
     .attr("width", width66/8)
     .attr("height", height33)
@@ -173,17 +186,17 @@ function setControls(){
         .duration(500)
         .style("opacity", 0)
         .remove();
-    IAsvg.selectAll("g")
+      IAsvg.selectAll("g")
         .transition()
         .duration(500)
         .style("opacity", 0)
         .remove();
-    d3.selectAll("#mapSVG") .remove();
-    filterDomain = "Site"
-    filterform.selectAll("div").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
-    filterform.select("div #Site").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
-    setData(d)
-     
+      d3.selectAll("#mapSVG").remove();
+      filterDomain = "Site"
+      filterform.selectAll("div").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
+      filterform.select("div #Site").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
+      switcher=true;
+      setData(d)  
     });
   labelEnter.append("label").text(function(d) {return d;}); 
 form.select("div #Solids").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
@@ -213,7 +226,7 @@ form.select("div #Solids").style({"border-color": "yellow", "border-width": "1px
         .style("opacity", 0)
         .remove();
       svg.selectAll("#importer")
-        .style({"fill": defaultColor, "fill-opacity": ".5"})
+        .style({"fill": defaultColor, "fill-opacity": ".75"})
       filterDomain = d
       icicle(window[d])
       icicleAxis();
@@ -233,6 +246,7 @@ d3.csv("data/sites_subset_v10_"+phase+".csv", function(data) {
     d.receivingLong = +d.longitude
     d.receivingFacilityZipCode = +d.receivingfacilityzipcode
     d.hazWasteDesc = d.hazWasteDesc
+    d.exporter_key = d.exporter_key
     /*d.hazWasteDesc.indexOf("LEAD") > -1 ? d.hazWasteDesc = "lead" : d.hazWasteDesc = d.hazWasteDesc; //convert everything with lead to lead in waste description; // this is where we can do work creating waste categories...
     d.hazWasteDesc.indexOf("MERCURY") > -1 ? d.hazWasteDesc = "mercury" : d.hazWasteDesc = d.hazWasteDesc;
     d.hazWasteDesc.indexOf("TOLULENE") > -1 ? d.hazWasteDesc = "toluene" : d.hazWasteDesc = d.hazWasteDesc;
@@ -528,7 +542,7 @@ function icicleDehighlight(data){
   Isvg.selectAll("."+data.name) //designate selector variable for brevity
     .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
   svg.selectAll("#importer")
-    .style({"stroke": "yellow", "stroke-width": "0px"})
+    .style(defaultStroke)
   /*if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){
     //console.log(document.getElementsByClassName(data.name))
     svg.selectAll("."+data.name)
@@ -547,19 +561,10 @@ function icicleDehighlight(data){
 }*/
 
 function setMap(data) {
-var height66 = .75 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-
 svg = d3.select("body").append("svg")
     .attr("id", "mapSVG")
     .attr("width", width66)
     .attr("height", height66);
-
-projection = d3.geo.albers()
-  .center([9,33])
-  .rotate([100,0])
-  .parallels([20,45])
-  .scale(700)
-  .translate([width66/2.5, height66/2])
 var path = d3.geo.path()
   .projection(projection);
 
@@ -592,7 +597,11 @@ function callback(error, us, can, mex, borders){
     .attr("class", "borders")
     .attr("d", path);
 
-  dataCrunch();
+if(checker == true && switcher == false){importers(data)} else{dataCrunch()}
+ //if checker false and switch true, data crunch
+ //if checker false and switch not true, data crunch
+ //if checker true and switch true, data crunch
+ //if checker true and switch not true, importers
 
 
   };
@@ -604,7 +613,7 @@ function dataCrunch(data){
  for (var i=0; i<latlongsR.length; i++) {
     for (var j=0; j<latlongsR[i]["values"].length; j++) {
       if( parseFloat(latlongsR[i]["values"][j]["key"]) != 0) {
-          latlongRdump.push({"zip": latlongsR[i]["values"][j]["values"][0]["receivingFacilityZipCode"], "long": latlongsR[i]["values"][j]["values"][0]["longitude"], "lat": latlongsR[i]["values"][j]["values"][0]["latitude"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["importer_name"], "address": latlongsR[i]["values"][j]["values"][0]["importer_address"], "city": latlongsR[i]["values"][j]["values"][0]["importer_city"], "state": latlongsR[i]["values"][j]["values"][0]["importer_state"], "types": [], "units": latlongsR[i]["values"][j]["values"][0]["units_final"]})
+          latlongRdump.push({"zip": latlongsR[i]["values"][j]["values"][0]["receivingFacilityZipCode"], "long": latlongsR[i]["values"][j]["values"][0]["longitude"], "lat": latlongsR[i]["values"][j]["values"][0]["latitude"], "id": latlongsR[i]["values"][j]["values"][0]["ReceivingFacilityEPAIDNumber"], "name": latlongsR[i]["values"][j]["values"][0]["importer_name"], "address": latlongsR[i]["values"][j]["values"][0]["importer_address"], "city": latlongsR[i]["values"][j]["values"][0]["importer_city"], "state": latlongsR[i]["values"][j]["values"][0]["importer_state"], "rank": [], "types": [], "units": latlongsR[i]["values"][j]["values"][0]["units_final"]})
       };     
     };
   };
@@ -617,7 +626,7 @@ for (var i =0; i<facilitySum.length; i++){
   }; 
 };
 
-console.log(latlongRdump)
+
 //put total for each type here
 for (var i =0; i<typeByFacility.length; i++){
   var p = typeByFacility[i]["key"]
@@ -631,9 +640,16 @@ for (var i =0; i<typeByFacility.length; i++){
     }; 
   };
 };
+
+//do sort and rank here
+latlongRdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
+for (var j=0; j<latlongRdump.length; j++){
+  latlongRdump[j].rank = j+1+"/"+latlongRdump.length}
+
 latlongReset = latlongRdump;
 icicle(Site);
 icicleAxis();
+
 importers(latlongRdump);
 }
 
@@ -661,12 +677,58 @@ function icicleImporters(data, name){
 };
 
 function importers(data){
+
+  //controls for zooming to the rust belt:
+  if (zoomed == false) { //if not zoomed in, draw zoom box
+  svg.append("rect")
+    .attr("class", "zoomBox")
+    .attr("x", 390)
+    .attr("y", 90)
+    .attr("width", 190)
+    .attr("height", 125)
+    //.attr("fill-color", "red")
+    //.attr("points", "390,235, 390,90, 580,90, 580,235") // x,y points
+    //.on("click", function(){alert("yowza")})
+    .on("click", function(){
+      d3.selectAll("#mapSVG")
+        .remove();
+      projection = d3.geo.mercator()
+        .center([14.5,45])
+        .rotate([100,0])
+        //.parallels([40,50])
+        .scale(15000)
+        .translate([width66/5, height66/5])
+      checker = true;
+      zoomed = true;
+      switcher = false;
+      setMap(data)
+    })
+}
+    if (zoomed == true) { //if zoomed in, draw zoom out box
+  svg.append("polygon")
+    .attr("class", "zoomBox")
+    .attr("points", "70,475, 70,10, 750,10, 750,475") // x,y points
+    //.on("click", function(){alert("yowza")})
+    .on("click", function(){
+      d3.selectAll("#mapSVG")
+        .remove();
+      projection = projectionDefault
+      zoomed = false;
+      setMap(data)
+    })
+}
+
+
   //console.log(data)
   var max = d3.max(latlongReset, function(d) {return d.total_waste}),
   min = d3.min(latlongReset, function(d) {return d.total_waste})
-  var radius = d3.scale.log()
-    .domain([min, max])
-    .range([5, 20]);
+  var radius; 
+  if (zoomed == false) {radius= d3.scale.log()
+    .domain([min+1, max]) //don't want min to be 0
+    .range([5, 20])}
+  if (zoomed == true) {radius = d3.scale.log()
+    .domain([min+1, max]) //don't want min to be 0
+    .range([10, 30])}
   
   tooltip = d3.tip()
   .attr('class', 'd3-tip')
@@ -676,9 +738,6 @@ function importers(data){
   })
 
   svg.call(tooltip)
-
-
-
 
   svg.selectAll("circle")
     .data(data)
@@ -703,61 +762,8 @@ function importers(data){
       drawLinesOut(d);
       exportThis(d);
     })
-  clicky();
   exporters();
 };
-
-function clicky(){
-  var path = d3.geo.path()
-  .projection(projection);
-var width = width66,
-    height = height33,
-    centered;
- 
-svg.append("rect")
-    .attr("class", "background")
-    .attr("width", width66)
-    .attr("height", height33)
-    .on("click", clicked);
-
-
-var g = svg.append("g");
-
-g.append("rect")
-    .attr("d", path)
-    .attr("class", "box")
-    .attr("width", 100)
-    .attr("height", 100)
-    .attr("transform", "translate("+70+","+15+")")
-    .on("click", clicked);
-
-function clicked(d) {
-  var x, y, k;
-
-  if (d && centered !== d) {
-    var centroid = path.centroid(d);
-    x = centroid[0];
-    y = centroid[1];
-    k = 4;
-    centered = d;
-  } else {
-    x = width / 2;
-    y = height / 2;
-    k = 1;
-    centered = null;
-  }
-
-  g.selectAll("path")
-      .classed("active", centered && function(d) { return d === centered; });
-
-  g.transition()
-      .duration(750)
-      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
-      .style("stroke-width", 1.5 / k + "px");
-}
-
-
-}
 
 function exportThis(data){
   //change latlongdump to site-specific latlongdump
@@ -894,7 +900,6 @@ function colorize(data, name){
 }
 
 function highlight(data){
-  console.log(data)
   svg.selectAll("."+data.id) //select the current province in the DOM
     .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline
   Isvg.selectAll("."+data.id) //select the current province in the DOM
@@ -904,13 +909,16 @@ function highlight(data){
 function dehighlight(data){
   if (data.id == name){
    svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"fill-opacity": "1", "stroke-width": "0px"})}
+    .style({"fill-opacity": "1"})
+    .style(defaultStroke)
+  }
   else{
   svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"fill-opacity": ".75", "stroke-width": "0px"})};//reset enumeration unit to orginal color
+    .style({"fill-opacity": ".75"})//reset enumeration unit to orginal color
+    .style(defaultStroke)
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": ".5"});
-};
+}};
 
 //show all exporters
 function exporters(){
@@ -918,12 +926,12 @@ function exporters(){
     //begin constructing latlongs of exporters
   //if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
 
-  console.log(latlongs)
   latlongdump = [];
   
    for (var i=0; i<latlongs.length-1; i++) {
-    for (var j=0; j<latlongs[i]["values"].length; j++) {      
-          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_key"], "address": latlongs[i]["values"][j]["values"][0]["exporter_address"], "city": latlongs[i]["values"][j]["values"][0]["exporter_city"], "state": latlongs[i]["values"][j]["values"][0]["exporter_state"],"units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": []}) //lat longs of the foreign waste sites
+    for (var j=0; j<latlongs[i]["values"].length; j++) {   
+          //console.log(latlongs[i]["values"][j]["values"][0])   
+          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_key"], "address": latlongs[i]["values"][j]["values"][0]["exporter_address"], "city": latlongs[i]["values"][j]["values"][0]["exporter_city"], "state": latlongs[i]["values"][j]["values"][0]["exporter_state"],"units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": [], "rank": []}) //lat longs of the foreign waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
             latlongdump[0]["types"].push(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
           };
@@ -937,12 +945,24 @@ function exporters(){
     }; 
   };
 
+  //do sort and rank here
+
+latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
+for (var j=0; j<latlongdump.length; j++){
+  latlongdump[j].rank = j+1+"/"+latlongdump.length}
+
   //scale exporter symbolization
   var max = d3.max(latlongdump, function(d) {return d.total_waste}),
   min = d3.min(latlongdump, function(d) {return d.total_waste})
-  var radius = d3.scale.log()
+  
+  //scale according to zoom
+  var radius; 
+  if (zoomed == false) {radius= d3.scale.log()
     .domain([min+1, max]) //don't want min to be 0
-    .range([5, 20]);
+    .range([5, 20])}
+  if (zoomed == true) {radius = d3.scale.log()
+    .domain([min+1, max]) //don't want min to be 0
+    .range([10, 30])}
   //add exporters to the map    
   svg.selectAll(".pin")
     .data(latlongdump)
@@ -970,10 +990,9 @@ function viewer(data, latlongdump){
   d3.select(".viewer").append("div").attr("class", "viewerText");
   var names=[]
   for (i=0;i<latlongdump.length;i++){names.push(latlongdump[i].name)}
-    console.log(names)
   z=JSON.stringify(names)
   r=JSON.stringify(data.types)
-  d3.select(".viewerText").html("<span class='importerName'>"+data.name+"</span><p><span class = 'viewerCategory'>Total imports</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"</span><p><span class = 'viewerCategory'>Receiving From</span><br><span class ='viewerData'>"+z+"</span><p><span class = 'viewerCategory'>Waste Types and Amount</span><br><span class ='viewerData'>"+r+"</span><p><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>");
+  d3.select(".viewerText").html("<span class='importerName'>"+data.name+"</span><p><span class = 'viewerCategory'>Total imports and rank</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"</span><p><span class = 'viewerCategory'>Receiving From</span><br><span class ='viewerData'>"+z+"</span><p><span class = 'viewerCategory'>Waste Types and Amount</span><br><span class ='viewerData'>"+r+"</span><p><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>");
 
   demographicCharts(data);
 
@@ -1183,11 +1202,32 @@ function exportViewer(data, latlongdump){
   for (i=0;i<latlongdump.length;i++){names.push(latlongdump[i].name)}
   z=JSON.stringify(names)
   names=[]
-console.log(latlongdump[0].types[0])
-for (i=0;i<latlongdump[0].types.length;i++){names.push(latlongdump[0].types[i])}
+  for (i=0;i<latlongdump[0].types.length;i++){names.push(latlongdump[0].types[i])}
   r=JSON.stringify(names)
-  d3.selectAll(".viewerText").html("<span class='importerName'>"+data.name+"</span><p><span class = 'viewerCategory'>Total exports</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"</span><p><span class = 'viewerCategory'>Exporting To</span><br><span class ='viewerData'>"+z+"</span><p><span class = 'viewerCategory'>Waste Types and Amount</span><br><span class ='viewerData'>"+r+"</span><p><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>")
+  
+  //sort data
+  //Largest chemical
+  // Create items array
+  console.log(latlongdump[0].types)
+  latlongdump[0].types.sort(function(a,b) {return b.type-a.type;})
+  console.log(latlongdump)
+  //console.log(latlongdump[0].types.type[1])
+
+
+
+  //combine and rank
+  /*var ExportTypeSum = d3.nest()
+  .key(function(d) { return latlongdump[0].types; }) // set type as key
+  .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} })
+  .entries(data);*/
+
+  d3.selectAll(".viewerText").html("<span class='importerName'>"+data.name+"</span><p><span class = 'viewerCategory'>Total exports and rank</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"</span><p><span class = 'viewerCategory'>Exporting To</span><br><span class ='viewerData'>"+z+"</span><p><span class = 'viewerCategory'>Waste Types and Amount</span><br><span class ='viewerData'>"+r+"</span><p><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>")
 };
+
+function printThis(latlongdump){
+  console.log(latlongdump.length)
+  for (i=0;i<latlongdump.length;i++){document.write(latlongdump[i].name)}
+}
 
 function importThis(data){
   //change latlongdump to site-specific latlongdump
@@ -1200,7 +1240,12 @@ function importThis(data){
         if (latlongs[i]["values"][j]["values"][0]["exporterLONG"] == data[k].long) {
           latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongs[i]["values"][j]["values"][0]["receivingLat"], "name": latlongs[i]["values"][j]["values"][0]["importer_name"], "id": latlongs[i]["values"][j]["values"][0]["importer_name"], "units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": []}) //lat longs of the importing waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
-            latlongdump[0]["types"].push(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
+            for (var x=0;x<latlongdump.length;x++){
+              var a = "type"
+              var obj = {}
+              obj[a] = latlongs[i]["values"][j]["values"][z]["totalQuantityinShipment"]
+              latlongdump[x]["types"].push(obj, latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
+            };
           };
           
         };
@@ -1208,7 +1253,6 @@ function importThis(data){
         };     
       };
     };
-  console.log(latlongdump)
   exportViewer(data, latlongdump)
   //draw lines between exporters and this site
   exDrawLinesOver(latlongdump, data);

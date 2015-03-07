@@ -33,7 +33,7 @@ a{
   color: orange;
   font-size: 32px;
   position: absolute;
-  left: 100vh;
+  left: 122vh;
   top: 5vh;
   height: 5%;
   width: 10%;
@@ -42,16 +42,17 @@ a{
 
 
 .importer{
-  fill: #606060;
+  fill: #b1bcc5;
+  stroke:#838383;
+  stroke-width: 1px;
+  fill-opacity: .4;
+}
+.exporter{
+    fill: #606060;
   stroke:#636363;
   stroke-width: 1px;
   fill-opacity: .7;
-}
-.exporter{
-  fill: #b1bcc5;
-  stroke:#838383;
-  stroke-width: 2px;
-  fill-opacity: .4;
+
 }
 
 .borders{
@@ -80,10 +81,14 @@ a{
 }
 
 #importer{
+  stroke: red;
+  stroke-width:.5px;
   cursor: pointer;
 }
 
 #exporter{
+  stroke: red;
+  stroke-width:.5px;
   cursor: pointer;
 }
 
@@ -94,6 +99,7 @@ a{
 
 .aboutText{
   color:white;
+  font-family: 'Arial Narrow', Arial, sans-serif;
 }
 .about{
   position: absolute;
@@ -101,8 +107,9 @@ a{
   top: 5vh;
   height: 75%;
   width: 90%;
-  border: none;
+  border: solid 1px yellow;
   background-color: #333;
+
 }
 
 .exitAbout{
@@ -111,10 +118,10 @@ a{
 
 .viewer {
 	position: absolute;
-	left: 85vh;
+	left: 100vh;
 	top: 13vh;
   height: 40%;
-  width: 50%;
+  width: 40%;
 	border: none;
 }
 
@@ -181,7 +188,7 @@ h3{
   font-size: small;
   font-family: arial;
   color: white;
-  margin: 100px;
+  width:200px;
 }
 
 /*this is the class for all of the filter buttons*/
@@ -263,6 +270,20 @@ border: solid 1px black;
   height:35%;
 }
 
+.zoomBox{
+  stroke: black;
+  stroke-width: 1px;
+  stroke-dasharray: 5,5;
+  fill: transparent;
+}
+
+.zoomBox:hover{
+  stroke: yellow;
+  stroke-width: 5px;
+  cursor: pointer;
+  fill: #d3d3d3;
+  fill-opacity: .2;
+}
 
 .background {
   fill: none;
