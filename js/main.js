@@ -309,10 +309,17 @@ d3.csv("data/sites_subset_v10_"+phase+".csv", function(data) {
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // 
   .entries(data);
 
+  quantByExporter =d3.nest()
+  .key(function(d) { return d.exporter_key; }) // EPA ID number
+  .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // 
+  .entries(data);
+  
+
   exporterSum = d3.nest()
   .key(function(d) {return d.exporterLONG;})
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
   .entries(data);
+console.log(exporterSum)
 
   latlongs = d3.nest() //rollup unique exportlatlongs
   .key(function(d) {return d.importer_state;}) // state code
@@ -633,8 +640,7 @@ for (var i =0; i<typeByFacility.length; i++){
   for (var n =0; n<typeByFacility[i]["values"].length; n++){
     for (var j=0; j<latlongRdump.length; j++){
       if (typeByFacility[i]["values"][n]["key"] == latlongRdump[j].id){
-        var obj = {}
-        obj[p] = typeByFacility[i]["values"][n]["values"]["total_waste"]
+        var obj = [p, typeByFacility[i]["values"][n]["values"]["total_waste"]]
         latlongRdump[j].types.push(obj)
       };
     }; 
@@ -791,7 +797,6 @@ function exportThis(data){
       };
     }; 
   };
-
   //send data off to viewer
   viewer(data, latlongdump);
 
@@ -984,6 +989,7 @@ for (var j=0; j<latlongdump.length; j++){
 function viewer(data, latlongdump){
   //implement the info panel/viewer here
   data = data[0]
+  
   d3.select(".intro").remove()
   d3.select(".viewerText").remove()
   d3.select(".povertyChart").remove()
@@ -991,8 +997,18 @@ function viewer(data, latlongdump){
   var names=[]
   for (i=0;i<latlongdump.length;i++){names.push(latlongdump[i].name)}
   z=JSON.stringify(names)
-  r=JSON.stringify(data.types)
-  d3.select(".viewerText").html("<span class='importerName'>"+data.name+"</span><p><span class = 'viewerCategory'>Total imports and rank</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"</span><p><span class = 'viewerCategory'>Receiving From</span><br><span class ='viewerData'>"+z+"</span><p><span class = 'viewerCategory'>Waste Types and Amount</span><br><span class ='viewerData'>"+r+"</span><p><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>");
+  
+
+  // Sort the array based on the second element
+  data.types.sort(function(a, b)
+  {
+    return b[1] - a[1];
+  });
+
+  //biggest export partner
+  latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;})
+
+  d3.select(".viewerText").html("<span class='importerName'>"+data.name+"</span><p><span class = 'viewerCategory'>Total imports and rank</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"</span><p><span class = 'viewerCategory'>Main Export Partner</span><br><span class ='viewerData'>"+latlongdump[0].name+"</span><p><span class = 'viewerCategory'>Top Import Type</span><br><span class ='viewerData'>"+data.types[0][0]+": "+data.types[0][1]+" "+data.units+"</span><p><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>");
 
   demographicCharts(data);
 
@@ -1208,11 +1224,17 @@ function exportViewer(data, latlongdump){
   //sort data
   //Largest chemical
   // Create items array
-  console.log(latlongdump[0].types)
   latlongdump[0].types.sort(function(a,b) {return b.type-a.type;})
-  console.log(latlongdump)
   //console.log(latlongdump[0].types.type[1])
-
+  console.log(latlongdump[0].types)
+  stuff=[]
+  for (var x=0;x<latlongdump.length;x++){
+  latlongdump[x].types.sort(function(a,b) {return b[1]-a[1];})
+  stuff.push(latlongdump[x].types[0])
+  }
+  stuff.sort(function(a,b){return b[1]-a[1]})
+  console.log(stuff)
+  
 
 
   //combine and rank
@@ -1221,7 +1243,7 @@ function exportViewer(data, latlongdump){
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} })
   .entries(data);*/
 
-  d3.selectAll(".viewerText").html("<span class='importerName'>"+data.name+"</span><p><span class = 'viewerCategory'>Total exports and rank</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"</span><p><span class = 'viewerCategory'>Exporting To</span><br><span class ='viewerData'>"+z+"</span><p><span class = 'viewerCategory'>Waste Types and Amount</span><br><span class ='viewerData'>"+r+"</span><p><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>")
+  d3.selectAll(".viewerText").html("<span class='importerName'>"+data.name+"</span><p><span class = 'viewerCategory'>Total exports and rank</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"</span><p><span class = 'viewerCategory'>Largest Shipment: </span><br><span class ='viewerData'>"+stuff[0][0]+": "+stuff[0][1]+" "+data.units+"</span><p><span class = 'viewerCategory'>Sent To: </span><br><span class ='viewerData'>"+stuff[0][2]+"</span><p><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>")
 };
 
 function printThis(latlongdump){
@@ -1241,10 +1263,7 @@ function importThis(data){
           latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongs[i]["values"][j]["values"][0]["receivingLat"], "name": latlongs[i]["values"][j]["values"][0]["importer_name"], "id": latlongs[i]["values"][j]["values"][0]["importer_name"], "units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": []}) //lat longs of the importing waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
             for (var x=0;x<latlongdump.length;x++){
-              var a = "type"
-              var obj = {}
-              obj[a] = latlongs[i]["values"][j]["values"][z]["totalQuantityinShipment"]
-              latlongdump[x]["types"].push(obj, latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
+              latlongdump[x]["types"].push([latlongs[i]["values"][j]["values"][z]["hazWasteDesc"],latlongs[i]["values"][j]["values"][z]["totalQuantityinShipment"], latlongs[i]["values"][j]["values"][0]["importer_name"]])
             };
           };
           
