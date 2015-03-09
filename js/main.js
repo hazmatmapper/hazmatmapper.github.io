@@ -691,7 +691,7 @@ function importers(data){
     .attr("x", width66*.4)
     .attr("y", height66*.18)
     .attr("width", width66*.16)
-    .attr("height", height66*.16)
+    .attr("height", height66*.18)
     //.attr("fill-color", "red")
     //.attr("points", "390,235, 390,90, 580,90, 580,235") // x,y points
     //.on("click", function(){alert("yowza")})
