@@ -92,6 +92,7 @@ a{
   cursor: pointer;
 }
 
+
 .aboutFooter{
   cursor: pointer;
   color: orange;
@@ -116,6 +117,9 @@ a{
   cursor: pointer;
 }
 
+.data{
+  text-align: right;
+}
 .viewer {
 	position: absolute;
 	left: 100vh;

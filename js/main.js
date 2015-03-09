@@ -53,12 +53,12 @@ function initialize(){
   d3.select("body")
     .append("div")
     .attr("class", "footer")
-    .html(" <span class='aboutFooter'>About</span>")
+    .html(" <span class='aboutFooter'>&nbsp;About</span>")
     .on("click", function(){
       d3.select("body")
       .append("div")
       .attr("class", "about")
-      .html("<span class='aboutText'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.<p>Data Sources and Limitations</p><p>Waste Category Meanings</p></span>")
+      .html("<span class='aboutText'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method.</p></span>")
       .append("div").attr("class", "exitAbout").text("Exit")
       .on("click", function(){
         d3.select(".about").remove()
@@ -68,7 +68,7 @@ function initialize(){
   d3.select(".footer")
   .append("text")
   .attr("class", "data")
-  .text("Data last updated: 3/5/15")
+  .html("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Data last updated: 3/5/15")
   
   setControls();
   /*d3.select("body")
@@ -99,7 +99,7 @@ function setControls(){
     //.style("display", "inline-block");
   d3.select("#showHide")
     .append("div")
-    .text("Show/Hide Controls")
+    .text(" Show/Hide Controls")
     .on("click", function(){
       if (clickCheck == true) {
         d3.select("#accordion")
@@ -1088,13 +1088,12 @@ povSVG.selectAll("text")
          })
          .attr("text-anchor", "middle")
          .attr("y", function(d, i) {
-            return i * (height / povdump.length) + (height / povdump.length - barPadding) / 2;
+            return i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.5;
          })
          .attr("x", function(d) { return 16; })
-         .attr("font-family", "sans-serif")
+         .attr("font-family", "BebasNeueRegular")
          .attr("font-size", "11px")
          .attr("fill", "black")
-         .attr("font-weight", "bold");
 povSVG.selectAll("label")
     .data(povdump)
          .enter()
@@ -1104,14 +1103,15 @@ povSVG.selectAll("label")
             else{return "Ntl. Average"}
          })
          .attr("text-anchor", "middle")
+
          .attr("y", function(d, i) {
             return i * (height / povdump.length) + (height / povdump.length - barPadding) / 2;
          })
          .attr("x", width - 50)
-         .attr("font-family", "sans-serif")
+         .attr("font-family", "BebasNeueRegular")
          .attr("font-size", "11px")
          .attr("fill", "white")
-         .attr("font-weight", "bold");
+         //.attr("font-weight", "bold");
 
 
   });
@@ -1179,13 +1179,13 @@ rSVG.selectAll("text")
          .text(function(d){return d3.round(d, 1)+"%"})
          .attr("text-anchor", "middle")
          .attr("y", function(d, i) {
-            return i * (height / racedump.length) + (height / racedump.length - barPadding) / 2;
+            return i * (height / racedump.length) + (height / racedump.length - barPadding) / 1.5;
          })
          .attr("x", function(d) { return 16; })
-         .attr("font-family", "sans-serif")
+         .attr("font-family", "BebasNeueRegular")
          .attr("font-size", "11px")
          .attr("fill", "black")
-         .attr("font-weight", "bold");
+         //.attr("font-weight", "bold");
 /*rSVG.selectAll("label")
     .data(racedump)
          .enter()
