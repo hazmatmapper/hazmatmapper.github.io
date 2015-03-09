@@ -134,7 +134,7 @@ function setControls(){
   .center([9,33])
   .rotate([100,0])
   .parallels([20,45])
-  .scale(800)
+  .scale(700)
   .translate([width66/2.5, height66/2]);
 
   projectionDefault = projection;
