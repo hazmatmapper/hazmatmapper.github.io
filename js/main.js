@@ -690,8 +690,8 @@ function importers(data){
     .attr("class", "zoomBox")
     .attr("x", width66*.4)
     .attr("y", height66*.15)
-    .attr("width", 190)
-    .attr("height", 125)
+    .attr("width", width66*.18)
+    .attr("height", height66*.2)
     //.attr("fill-color", "red")
     //.attr("points", "390,235, 390,90, 580,90, 580,235") // x,y points
     //.on("click", function(){alert("yowza")})
