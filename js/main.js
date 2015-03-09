@@ -713,7 +713,7 @@ function importers(data){
     if (zoomed == true) { //if zoomed in, draw zoom out box
   svg.append("polygon")
     .attr("class", "zoomBox")
-    .attr("points", "70,490, 70,20, 850,20, 850,490") // x,y points
+    .attr("points", "70,490, 70,25, 850,25, 850,490") // x,y points
     //.on("click", function(){alert("yowza")})
     .on("click", function(){
       d3.selectAll("#mapSVG")
