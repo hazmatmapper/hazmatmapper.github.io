@@ -128,7 +128,7 @@ function setControls(){
 
   width66 =  .7 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
   height33 = .25 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-  height66 = .75 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+  height66 = .66 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
   projection = d3.geo.albers()
   .center([9,33])
