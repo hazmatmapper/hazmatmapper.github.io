@@ -688,8 +688,8 @@ function importers(data){
   if (zoomed == false) { //if not zoomed in, draw zoom box
   svg.append("rect")
     .attr("class", "zoomBox")
-    .attr("x", 390)
-    .attr("y", 90)
+    .attr("x", width66*.4)
+    .attr("y", height66*.15)
     .attr("width", 190)
     .attr("height", 125)
     //.attr("fill-color", "red")
