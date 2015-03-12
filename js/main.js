@@ -757,27 +757,38 @@ function importers(data){
       //drawLinesOut(d);
     })
    .on("click", function (d){
-      console.log(d)
       drawLinesOut(d);
       exportThis(d);
     })
   
+  exporters();
 
+  var cxLeft = document.getElementsByClassName("OHD00816629")[1].attributes[3].value //get svg coords of Cincinatti site to set bounds
+  var cyLeft = document.getElementsByClassName("OHD00816629")[1].attributes[4].value
+  console.log(cxLeft,cyLeft)
+
+  var cxRight = document.getElementsByClassName("E5A2228737")[1].attributes[3].value
+  var cyRight = document.getElementsByClassName("E5A2228737")[1].attributes[4].value
+
+  var mar = 40
+  var w = cxRight - cxLeft + 2*mar
+  var h = cyLeft - cyRight
+  console.log(w,h)
    //controls for zooming to the rust belt:
   if (zoomed == false) { //if not zoomed in, draw zoom box
   svg.append("rect")
     .attr("class", "zoomBox")
-    .attr("x", width66*.4)
-    .attr("y", height66*.18)
-    .attr("width", width66*.16)
-    .attr("height", height66*.18)
+    .attr("x", cxLeft - mar)
+    .attr("y", cyRight - mar)
+    .attr("width",w)
+    .attr("height", h + mar)
   }
   if (zoomed == true) { //if zoomed in, draw zoom out box
   svg.append("polygon")
     .attr("class", "zoomBox")
     .attr("points", "70,490, 70,25, 850,25, 850,490") // x,y points
   } 
-  exporters();
+  
 };
 
 function exportThis(data){
@@ -992,7 +1003,7 @@ for (var j=0; j<latlongdump.length; j++){
       highlight(d);
     }) 
     .on("mouseout", function(d){tooltip.hide(d); dehighlight(d)}) 
-    .on("click", function(d){drawLinesOut(d);importThis(d)})
+    .on("click", function(d){console.log(d); drawLinesOut(d);importThis(d)})
 };
 
 function viewer(data, latlongdump){
