@@ -763,12 +763,12 @@ function importers(data){
   
   exporters();
 
-  var cxLeft = document.getElementsByClassName("OHD00816629")[1].attributes[3].value //get svg coords of Cincinatti site to set bounds
-  var cyLeft = document.getElementsByClassName("OHD00816629")[1].attributes[4].value
+  var cxLeft = document.getElementsByClassName("OHD00816629")[1].attributes[3].nodeValue //get svg coords of Cincinatti site to set bounds
+  var cyLeft = document.getElementsByClassName("OHD00816629")[1].attributes[4].nodeValue
   console.log(cxLeft,cyLeft)
 
-  var cxRight = document.getElementsByClassName("E5A2228737")[1].attributes[3].value
-  var cyRight = document.getElementsByClassName("E5A2228737")[1].attributes[4].value
+  var cxRight = document.getElementsByClassName("E5A2228737")[1].attributes[3].nodeValue
+  var cyRight = document.getElementsByClassName("E5A2228737")[1].attributes[4].nodeValue
 
   var mar = 40
   var w = cxRight - cxLeft + 2*mar
