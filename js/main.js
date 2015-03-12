@@ -684,18 +684,17 @@ function icicleImporters(data, name){
 
 function importers(data){
 
-  //controls for zooming to the rust belt:
-  if (zoomed == false) { //if not zoomed in, draw zoom box
   svg.append("rect")
-    .attr("class", "zoomBox")
-    .attr("x", width66*.4)
-    .attr("y", height66*.18)
-    .attr("width", width66*.16)
-    .attr("height", height66*.18)
+    .attr("class", "background")
+    .attr("x", width66*.33)
+    .attr("y", height66*.1)
+    .attr("width", width66*.5)
+    .attr("height", height66*.5)
     //.attr("fill-color", "red")
     //.attr("points", "390,235, 390,90, 580,90, 580,235") // x,y points
     //.on("click", function(){alert("yowza")})
     .on("click", function(){
+     if (zoomed == false){
       d3.selectAll("#mapSVG")
         .remove();
       projection = d3.geo.mercator()
@@ -708,24 +707,17 @@ function importers(data){
       zoomed = true;
       switcher = false;
       setMap(data)
-    })
-}
-    if (zoomed == true) { //if zoomed in, draw zoom out box
-  svg.append("polygon")
-    .attr("class", "zoomBox")
-    .attr("points", "70,490, 70,25, 850,25, 850,490") // x,y points
-    //.on("click", function(){alert("yowza")})
-    .on("click", function(){
-      d3.selectAll("#mapSVG")
-        .remove();
+      }
+     else { //if zoomed in and click, zoom out
+        d3.selectAll("#mapSVG")
+          .remove();
       projection = projectionDefault
       zoomed = false;
       setMap(data)
+    }; 
     })
-}
+    
 
-
-  //console.log(data)
   var max = d3.max(latlongReset, function(d) {return d.total_waste}),
   min = d3.min(latlongReset, function(d) {return d.total_waste})
   var radius; 
@@ -765,9 +757,26 @@ function importers(data){
       //drawLinesOut(d);
     })
    .on("click", function (d){
+      console.log(d)
       drawLinesOut(d);
       exportThis(d);
     })
+  
+
+   //controls for zooming to the rust belt:
+  if (zoomed == false) { //if not zoomed in, draw zoom box
+  svg.append("rect")
+    .attr("class", "zoomBox")
+    .attr("x", width66*.4)
+    .attr("y", height66*.18)
+    .attr("width", width66*.16)
+    .attr("height", height66*.18)
+  }
+  if (zoomed == true) { //if zoomed in, draw zoom out box
+  svg.append("polygon")
+    .attr("class", "zoomBox")
+    .attr("points", "70,490, 70,25, 850,25, 850,490") // x,y points
+  } 
   exporters();
 };
 
@@ -1013,7 +1022,7 @@ function viewer(data, latlongdump){
   demographicCharts(data);
 
 function demographicCharts(data){ 
-  d3.selectAll(".viewer").append("div").attr("class", "povertyChart");
+  d3.selectAll(".viewerText").append("div").attr("class", "povertyChart");
 
 d3.select(".povertyChart").append("div")
   .attr("class", "povLabel")

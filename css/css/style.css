@@ -147,8 +147,8 @@ a{
 .povertyChart{
   position:absolute;
   left:0%;
-  top: 95%;
-  margin: 10px;
+  top: 100%;
+  margin: 0px;
 }
 
 .raceLabel{
@@ -278,20 +278,17 @@ border: solid 1px black;
   stroke: black;
   stroke-width: 1px;
   stroke-dasharray: 5,5;
-  fill: transparent;
-}
-
-.zoomBox:hover{
-  stroke: yellow;
-  stroke-width: 5px;
-  cursor: pointer;
-  fill: #d3d3d3;
-  fill-opacity: .2;
+  fill: none;
 }
 
 .background {
-  fill: none;
-  pointer-events: all;
+    fill: transparent;
+}
+
+.background:hover{
+  cursor: pointer;
+  fill: #d3d3d3;
+  fill-opacity: .2;
 }
 
 .box{
