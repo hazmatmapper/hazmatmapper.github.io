@@ -684,46 +684,7 @@ function icicleImporters(data, name){
 
 function importers(data){
 
-  svg.append("rect")
-    .attr("class", "background")
-    .attr("x", width66*.33)
-    .attr("y", height66*.1)
-    .attr("width", width66*.5)
-    .attr("height", height66*.5)
-    //.attr("fill-color", "red")
-    //.attr("points", "390,235, 390,90, 580,90, 580,235") // x,y points
-    //.on("click", function(){alert("yowza")})
-    .on("mouseover", function(){
-      d3.select(".zoomBox")
-        .style({"stroke": "yellow", "fill": "#d3d3d3", "fill-opacity": ".2"})
-    })
-    .on("mouseout", function(){
-      d3.select(".zoomBox")
-        .style({"stroke": "black", "fill": "none"})
-    })
-    .on("click", function(){
-     if (zoomed == false){
-      d3.selectAll("#mapSVG")
-        .remove();
-      projection = d3.geo.mercator()
-        .center([14.5,45])
-        .rotate([100,0])
-        //.parallels([40,50])
-        .scale(15000)
-        .translate([width66/5, height66/5])
-      checker = true;
-      zoomed = true;
-      switcher = false;
-      setMap(data)
-      }
-     else { //if zoomed in and click, zoom out
-        d3.selectAll("#mapSVG")
-          .remove();
-      projection = projectionDefault
-      zoomed = false;
-      setMap(data)
-    }; 
-    })
+
     
 
   var max = d3.max(latlongReset, function(d) {return d.total_waste}),
@@ -781,16 +742,40 @@ function importers(data){
   var mar = 40
   var w = cxRight - cxLeft + 2*mar
   var h = cyLeft - cyRight
-  console.log(w,h)
+
    //controls for zooming to the rust belt:
   if (zoomed == false) { //if not zoomed in, draw zoom box
-  svg.append("rect")
-    .attr("class", "zoomBox")
-    .attr("x", cxLeft - mar)
-    .attr("y", cyRight - mar)
-    .attr("width",w)
-    .attr("height", h + mar)
+    svg.append("rect")
+      .attr("class", "zoomBox")
+      .attr("x", cxLeft - mar)
+      .attr("y", cyRight - mar)
+      .attr("width",w)
+      .attr("height", h + mar)
+      .on("mouseover", function(){
+        d3.select(".zoomBox")
+          .style({"stroke": "yellow", "fill": "#d3d3d3", "fill-opacity": ".2"})
+      })
+      .on("mouseout", function(){
+        d3.select(".zoomBox")
+          .style({"stroke": "black", "fill": "none"})
+      })
+      .on("click", function(){
+        d3.selectAll("#mapSVG")
+          .remove();
+        projection = d3.geo.mercator()
+          .center([14.5,45])
+          .rotate([100,0])
+          //.parallels([40,50])
+          .scale(12000)
+          .translate([width66/5, height66/5])
+        checker = true;
+        zoomed = true;
+        switcher = false;
+        setMap(data)
+      })
   }
+
+
   if (zoomed == true) { //if zoomed in, draw zoom out box
      svg.append("rect")
     .attr("class", "zoomBox")
@@ -798,10 +783,21 @@ function importers(data){
     .attr("y", cyRight - mar)
     .attr("width",w)
     .attr("height", h + mar)
-  /*svg.append("polygon")
-    .attr("class", "zoomBox")
-    .attr("points", "70,490, 70,25, 850,25, 850,490") // x,y points*/
-      } 
+    .on("mouseover", function(){
+        d3.select(".zoomBox")
+          .style({"stroke": "yellow", "fill": "#d3d3d3", "fill-opacity": ".2"})
+      })
+    .on("mouseout", function(){
+        d3.select(".zoomBox")
+          .style({"stroke": "black", "fill": "none"})
+      })
+    .on("click", function(){d3.selectAll("#mapSVG")
+          .remove();
+      projection = projectionDefault
+      zoomed = false;
+      setMap(data)
+    })
+  }   
   
 };
 

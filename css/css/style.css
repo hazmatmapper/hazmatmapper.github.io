@@ -276,9 +276,12 @@ border: solid 1px black;
 
 .zoomBox{
   stroke: black;
-  stroke-width: 1px;
-  stroke-dasharray: 5,5;
+  stroke-width: 3px;
   fill: none;
+}
+
+.zoomBox:hover{
+  cursor:pointer;
 }
 
 .background {
