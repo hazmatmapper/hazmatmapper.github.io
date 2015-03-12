@@ -693,6 +693,14 @@ function importers(data){
     //.attr("fill-color", "red")
     //.attr("points", "390,235, 390,90, 580,90, 580,235") // x,y points
     //.on("click", function(){alert("yowza")})
+    .on("mouseover", function(){
+      d3.select(".zoomBox")
+        .style({"stroke": "yellow", "fill": "#d3d3d3", "fill-opacity": ".2"})
+    })
+    .on("mouseout", function(){
+      d3.select(".zoomBox")
+        .style({"stroke": "black", "fill": "none"})
+    })
     .on("click", function(){
      if (zoomed == false){
       d3.selectAll("#mapSVG")
@@ -763,12 +771,12 @@ function importers(data){
   
   exporters();
 
-  var cxLeft = document.getElementsByClassName("OHD00816629")[1].attributes[3].nodeValue //get svg coords of Cincinatti site to set bounds
-  var cyLeft = document.getElementsByClassName("OHD00816629")[1].attributes[4].nodeValue
+  var cxLeft = document.getElementsByClassName("OHD00816629")[1].attributes[3].value //get svg coords of Cincinatti site to set bounds
+  var cyLeft = document.getElementsByClassName("OHD00816629")[1].attributes[4].value
   console.log(cxLeft,cyLeft)
 
-  var cxRight = document.getElementsByClassName("E5A2228737")[1].attributes[3].nodeValue
-  var cyRight = document.getElementsByClassName("E5A2228737")[1].attributes[4].nodeValue
+  var cxRight = document.getElementsByClassName("E5A2228737")[1].attributes[3].value
+  var cyRight = document.getElementsByClassName("E5A2228737")[1].attributes[4].value
 
   var mar = 40
   var w = cxRight - cxLeft + 2*mar
@@ -784,10 +792,16 @@ function importers(data){
     .attr("height", h + mar)
   }
   if (zoomed == true) { //if zoomed in, draw zoom out box
-  svg.append("polygon")
+     svg.append("rect")
     .attr("class", "zoomBox")
-    .attr("points", "70,490, 70,25, 850,25, 850,490") // x,y points
-  } 
+    .attr("x", cxLeft - mar)
+    .attr("y", cyRight - mar)
+    .attr("width",w)
+    .attr("height", h + mar)
+  /*svg.append("polygon")
+    .attr("class", "zoomBox")
+    .attr("points", "70,490, 70,25, 850,25, 850,490") // x,y points*/
+      } 
   
 };
 

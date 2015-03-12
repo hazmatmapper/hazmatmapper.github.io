@@ -287,8 +287,7 @@ border: solid 1px black;
 
 .background:hover{
   cursor: pointer;
-  fill: #d3d3d3;
-  fill-opacity: .2;
+
 }
 
 .box{
