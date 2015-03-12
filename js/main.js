@@ -27,8 +27,8 @@ var checker = false; //checks to see whether we've run initial data crunching, e
 var povSVG;
 var clickCheck = true; //detect whether radio button filter control was clicked
 var zoomed = false; //are we zoomed into rust belt?
-var switcher = false; //detect clicking away from site to remove exporters
-var exportCheck = false; //check to see if exporters label is checked
+var switcher = false; //have we switched phases? if so, need to crunch data
+//var exportCheck = false; //check to see if exporters label is checked
 var exporterInfo;
 var icicleDump;
 var domain;
@@ -43,6 +43,10 @@ var exporterRing = "black";
 var latlongdump;
 var tooltip;
 var defaultStroke = {"stroke": "red", "stroke-width": ".5px"}
+var cxLeft;
+var cyLeft;
+var cxRight;
+var cyRight;
 
 
 //begin script when window loads 
@@ -605,6 +609,8 @@ function callback(error, us, can, mex, borders){
     .attr("d", path);
 
 if(checker == true && switcher == false){importers(data)} else{dataCrunch()}
+  //switcher is whether we've switched phases
+  //checker is whether we've crunched data
  //if checker false and switch true, data crunch
  //if checker false and switch not true, data crunch
  //if checker true and switch true, data crunch
@@ -683,7 +689,8 @@ function icicleImporters(data, name){
 };
 
 function importers(data){
-
+  console.log("swithcer"+switcher)
+  console.log("checker"+checker)
 
     
 
@@ -732,12 +739,11 @@ function importers(data){
   
   exporters();
 
-  var cxLeft = document.getElementsByClassName("OHD00816629")[1].attributes[3].value //get svg coords of Cincinatti site to set bounds
-  var cyLeft = document.getElementsByClassName("OHD00816629")[1].attributes[4].value
-  console.log(cxLeft,cyLeft)
+  cxLeft = document.getElementsByClassName("OHD00816629")[1].attributes[3].value //get svg coords of Cincinatti site to set bounds
+  cyLeft = document.getElementsByClassName("OHD00816629")[1].attributes[4].value
 
-  var cxRight = document.getElementsByClassName("E5A2228737")[1].attributes[3].value
-  var cyRight = document.getElementsByClassName("E5A2228737")[1].attributes[4].value
+  cxRight = document.getElementsByClassName("E5A4318314")[1].attributes[3].value
+  cyRight = document.getElementsByClassName("E5A4318314")[1].attributes[4].value
 
   var mar = 40
   var w = cxRight - cxLeft + 2*mar
@@ -776,7 +782,7 @@ function importers(data){
   }
 
 
-  if (zoomed == true) { //if zoomed in, draw zoom out box
+  else if (zoomed == true) { //if zoomed in, draw zoom out box
      svg.append("rect")
     .attr("class", "zoomBox")
     .attr("x", cxLeft - mar)
