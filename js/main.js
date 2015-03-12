@@ -738,13 +738,13 @@ function importers(data){
     })
   
   exporters();
+  cxLeft = document.getElementsByClassName("OHD00816629")["importer"].attributes[3].value //get svg coords of Cincinatti site to set bounds
+  cyLeft = document.getElementsByClassName("OHD00816629")["importer"].attributes[4].value
 
-  cxLeft = document.getElementsByClassName("OHD00816629")[1].attributes[3].value //get svg coords of Cincinatti site to set bounds
-  cyLeft = document.getElementsByClassName("OHD00816629")[1].attributes[4].value
 
-  cxRight = document.getElementsByClassName("E5A4318314")[1].attributes[3].value
-  cyRight = document.getElementsByClassName("E5A4318314")[1].attributes[4].value
-
+  cxRight = document.getElementsByClassName("E5A4318314")[0].attributes[3].value
+  cyRight = document.getElementsByClassName("E5A4318314")[0].attributes[4].value
+  console.log(cyLeft,cyRight)
   var mar = 40
   var w = cxRight - cxLeft + 2*mar
   var h = cyLeft - cyRight
