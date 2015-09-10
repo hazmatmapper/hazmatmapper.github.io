@@ -47,6 +47,7 @@ var cxLeft;
 var cyLeft;
 var cxRight;
 var cyRight;
+var icicleViewerHelp;
 
 
 //begin script when window loads 
@@ -408,7 +409,34 @@ Isvg.selectAll("rects")
       colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); 
       if (d.name == "total"){return defaultColor} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"})
     .on("mouseover", function (d) {
-      tip.show(d);
+      //look up facility name
+      var facilityName = {"name": ""}
+      if (filterDomain ==  "Site" && d.depth == 1 || filterDomain == undefined && d.depth == 1){
+        for (var c = 0; c<latlongRdump.length; c++){
+        if (d.name == latlongRdump[c].id){
+          facilityName.name = latlongRdump[c].name
+          icicleViewerHelp = true
+          }
+        }
+        tip.show(facilityName); 
+      } else if (filterDomain ==  "Type" && d.depth == 3) {
+        for (var c = 0; c<latlongRdump.length; c++){
+        if (d.name == latlongRdump[c].id){
+          facilityName.name = latlongRdump[c].name
+          icicleViewerHelp = true
+          }
+        }
+        tip.show(facilityName); 
+      } else if (filterDomain ==  "DisposalMethod" && d.depth == 3) {
+        for (var c = 0; c<latlongRdump.length; c++){
+        if (d.name == latlongRdump[c].id){
+          facilityName.name = latlongRdump[c].name
+          icicleViewerHelp = true
+          }
+        }
+        tip.show(facilityName); 
+      } else {tip.show(d); icicleViewerHelp = false}
+      
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
       icicleHighlight(d);
       //};  
@@ -418,6 +446,15 @@ Isvg.selectAll("rects")
       clicked(d);
       //icicleImporters(d);
       icicleFilter(d);
+      if (icicleViewerHelp == true){
+        for (var c = 0; c<latlongRdump.length; c++){
+        if (d.name == latlongRdump[c].id){
+          drawLinesOut();
+          exportThis(latlongRdump[c]);
+          
+          }
+        }
+      }
     });
 
 //construct x axis
@@ -525,7 +562,7 @@ function icicleFilter(data){
         icicleImporters(icicleDump, name)
   }
   }
-  else if (data.depth == 3){icicleImporters(icicleDump=[data], name)}
+  else if (data.depth == 3){console.log(data, name);icicleImporters(icicleDump=[data], name)}
 }
 
 function icicleHighlight(data){
@@ -689,8 +726,6 @@ function icicleImporters(data, name){
 };
 
 function importers(data){
-  console.log("swithcer"+switcher)
-  console.log("checker"+checker)
 
     
 
@@ -733,7 +768,7 @@ function importers(data){
       //drawLinesOut(d);
     })
    .on("click", function (d){
-      drawLinesOut(d);
+      drawLinesOut();
       exportThis(d);
     })
   
@@ -916,7 +951,7 @@ var pathArcs = arcGroup.selectAll(".arc")
 
 }
 
-function drawLinesOut(data){
+function drawLinesOut(){
 d3.selectAll(".arc").remove();
 }
 
@@ -1283,7 +1318,6 @@ function exportViewer(data, latlongdump){
 };
 
 function printThis(latlongdump){
-  console.log(latlongdump.length)
   for (i=0;i<latlongdump.length;i++){document.write(latlongdump[i].name)}
 }
 
