@@ -124,11 +124,10 @@ a{
 	position: absolute;
 	left: 100vh;
 	top: 13vh;
-  height: 60%;
+  height: 55%;
   width: 40%;
 	border: none;
 }
-
 .importerName{
   font-size: 25px;
   color: #e8e8e8;
@@ -146,9 +145,11 @@ a{
 
 .povertyChart{
   position:absolute;
-  left:0%;
-  top: 85%;
-  height: 20%;
+  left:50%;
+  top: 15%;
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 
 .raceLabel{
@@ -164,6 +165,16 @@ a{
     font-size: 18px;
   color: #c2c2c2;
 }
+
+.Manifests{
+  text-align: left;
+    font-size: 18px;
+  color: #c2c2c2;
+  border: none;
+  width:50%;
+  height: 30%;
+}
+
 
 .textdiv { /* text in the boxes */
   display: inline-block;
@@ -204,6 +215,10 @@ background-color: #555;
 border: solid 1px black;
 }
 
+.filtering:hover {
+  cursor: pointer;
+}
+
 
 .something{
   width: 85%;
@@ -211,18 +226,6 @@ border: solid 1px black;
   vertical-align: middle;
   background-color: #555;
   border: solid 1px black;
-}
-
-#showHide {
-  position:absolute;
-  top:67%;
-  width: 100%;
-  background-color: #555;
-  color: orange;
-}
-
-#showHide:hover {
-  cursor: pointer;
 }
 
 
@@ -250,7 +253,9 @@ border: solid 1px black;
   font: 10px sans-serif;
   text-anchor: middle;
   color:white;
+
 }
+
 .node {
   fill: #ddd;
   stroke: pink;

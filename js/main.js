@@ -28,7 +28,6 @@ var povSVG;
 var clickCheck = true; //detect whether radio button filter control was clicked
 var zoomed = false; //are we zoomed into rust belt?
 var switcher = false; //have we switched phases? if so, need to crunch data
-//var exportCheck = false; //check to see if exporters label is checked
 var exporterInfo;
 var icicleDump;
 var domain;
@@ -47,7 +46,7 @@ var cxLeft;
 var cyLeft;
 var cxRight;
 var cyRight;
-var icicleViewerHelp;
+var siteViewerHelp = false;
 
 
 //begin script when window loads 
@@ -102,7 +101,8 @@ function setControls(){
     .classed("viewer", true)
     .html("<span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
     //.style("display", "inline-block");
-  d3.select("#showHide")
+
+/*  d3.select("#showHide")
     .append("div")
     .text(" Show/Hide Controls")
     .on("click", function(){
@@ -123,6 +123,7 @@ function setControls(){
         clickCheck = true
       }
     })
+*/
 
   d3.select("#accordion")
     .append("div")
@@ -139,7 +140,7 @@ function setControls(){
   .center([9,33])
   .rotate([100,0])
   .parallels([20,45])
-  .scale(700)
+  .scale(600)
   .translate([width66/2.5, height66/2]);
 
   projectionDefault = projection;
@@ -343,9 +344,9 @@ console.log(exporterSum)
 
 function icicleAxis(){
   //domain calculator
-var site = ["total", "sites", "types", "methods"]
-var type = ["total", "types", "methods", "sites"]
-var method = ["total", "methods", "types", "sites"]
+var site = ["total", "importers", "types", "methods"]
+var type = ["total", "types", "methods", "importers"]
+var method = ["total", "methods", "types", "importers"]
 if (filterDomain == undefined){
   domain = site 
 } else if (filterDomain == "Site") {
@@ -361,10 +362,10 @@ var yax  = d3.scale.ordinal()
 
 var yAxis = d3.svg.axis()
     .scale(yax)
-    .orient("right");
+    .orient("left");
 IAsvg.append("g")
       .attr("class", "axis")
-      .attr("transform", "translate("+70+","+15+")")
+      .attr("transform", "translate("+110+","+15+")")
       .call(yAxis);
 }
 
@@ -415,7 +416,7 @@ Isvg.selectAll("rects")
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
           facilityName.name = latlongRdump[c].name
-          icicleViewerHelp = true
+          siteViewerHelp = true
           }
         }
         tip.show(facilityName); 
@@ -423,7 +424,7 @@ Isvg.selectAll("rects")
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
           facilityName.name = latlongRdump[c].name
-          icicleViewerHelp = true
+          siteViewerHelp = true
           }
         }
         tip.show(facilityName); 
@@ -431,11 +432,11 @@ Isvg.selectAll("rects")
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
           facilityName.name = latlongRdump[c].name
-          icicleViewerHelp = true
+          siteViewerHelp = true
           }
         }
         tip.show(facilityName); 
-      } else {tip.show(d); icicleViewerHelp = false}
+      } else {tip.show(d); siteViewerHelp = false}
       
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
       icicleHighlight(d);
@@ -443,19 +444,36 @@ Isvg.selectAll("rects")
     })
     .on("mouseout", function(d){tip.hide(d); icicleDehighlight(d)})
     .on('click', function(d){
-      clicked(d);
-      //icicleImporters(d);
-      icicleFilter(d);
-      if (icicleViewerHelp == true){
+      console.log(filterDomain)
+      if (filterDomain ==  "DisposalMethod" && d.depth == 1 || filterDomain ==  "Type" && d.depth == 2 || filterDomain ==  "Site" && d.depth == 3 || filterDomain ==  undefined && d.depth == 3){
+        //show details of method here
+        d3.select(".intro").remove()
+        d3.select(".viewerText").remove()
+        d3.select(".povertyChart").remove()
+        drawLinesOut()
+        ViewerHelp(d);
+      }
+      if (filterDomain ==  "DisposalMethod" && d.depth == 2 || filterDomain ==  "Type" && d.depth == 1 || filterDomain ==  "Site" && d.depth == 2 || filterDomain ==  undefined && d.depth == 2){
+        //show details of type here
+        drawLinesOut();
+        d3.select(".intro").remove()
+        d3.select(".viewerText").remove()
+        d3.select(".povertyChart").remove()
+        ViewerHelp(d);
+      }
+      if (siteViewerHelp == true){
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
           drawLinesOut();
           exportThis(latlongRdump[c]);
-          
           }
         }
-      }
-    });
+      } 
+
+      clicked(d);
+      //icicleImporters(d);
+      icicleFilter(d);
+});
 
 //construct x axis
 var xscale = d3.scale.linear()
@@ -485,7 +503,11 @@ function clicked(d) {
   //calculate range for axis based on depth
   var range;
   var display;
-  if (d.depth == 0) {range = [0, height33/4.5, height33*2/4.5, height33*3/4.5]; display = domain}
+  if (d.depth == 0) {range = [0, height33/4.5, height33*2/4.5, height33*3/4.5]; display = domain; // remove viewer and lines
+    d3.select(".viewerText").remove()
+    d3.select(".povertyChart").remove()
+    drawLinesOut()
+  }
   if (d.depth == 1) {range = [0, 30, 80, 130]; display = domain}
   if (d.depth == 2) {range = [0, 45, 115]; display = [domain[1], domain[2], domain[3]]}
   if (d.depth == 3) {range = [0, 80]; display = [domain[2], domain[3]]}
@@ -496,13 +518,13 @@ function clicked(d) {
 
   var yAxis = d3.svg.axis()
     .scale(yax)
-    .orient("right");
+    .orient("left");
 
   IAsvg.selectAll("g").transition()
       .remove()
   IAsvg.append("g").transition()
       .attr("class", "axis")
-      .attr("transform", "translate("+70+","+15+")")
+      .attr("transform", "translate("+110+","+10+")")
       .call(yAxis);
 
   //reconstruct x axis
@@ -562,7 +584,7 @@ function icicleFilter(data){
         icicleImporters(icicleDump, name)
   }
   }
-  else if (data.depth == 3){console.log(data, name);icicleImporters(icicleDump=[data], name)}
+  else if (data.depth == 3){icicleImporters(icicleDump=[data], name)}
 }
 
 function icicleHighlight(data){
@@ -732,12 +754,12 @@ function importers(data){
   var max = d3.max(latlongReset, function(d) {return d.total_waste}),
   min = d3.min(latlongReset, function(d) {return d.total_waste})
   var radius; 
-  if (zoomed == false) {radius= d3.scale.log()
-    .domain([min+1, max]) //don't want min to be 0
-    .range([5, 20])}
-  if (zoomed == true) {radius = d3.scale.log()
+  if (zoomed == false) {radius= d3.scale.sqrt()
     .domain([min+1, max]) //don't want min to be 0
     .range([10, 30])}
+  if (zoomed == true) {radius = d3.scale.sqrt()
+    .domain([min+1, max]) //don't want min to be 0
+    .range([15, 50])}
   
   tooltip = d3.tip()
   .attr('class', 'd3-tip')
@@ -945,6 +967,7 @@ var pathArcs = arcGroup.selectAll(".arc")
             .style({
                 stroke: '#0000ff',
                 'stroke-width': '2px'
+                //'stroke-dasharray': '5'
             })
             .call(lineTransition); 
 
@@ -1033,12 +1056,12 @@ for (var j=0; j<latlongdump.length; j++){
   
   //scale according to zoom
   var radius; 
-  if (zoomed == false) {radius= d3.scale.log()
-    .domain([min+1, max]) //don't want min to be 0
-    .range([5, 20])}
-  if (zoomed == true) {radius = d3.scale.log()
+  if (zoomed == false) {radius= d3.scale.sqrt()
     .domain([min+1, max]) //don't want min to be 0
     .range([10, 30])}
+  if (zoomed == true) {radius = d3.scale.sqrt()
+    .domain([min+1, max]) //don't want min to be 0
+    .range([15, 50])}
   //add exporters to the map    
   svg.selectAll(".pin")
     .data(latlongdump)
@@ -1056,6 +1079,13 @@ for (var j=0; j<latlongdump.length; j++){
     .on("mouseout", function(d){tooltip.hide(d); dehighlight(d)}) 
     .on("click", function(d){console.log(d); drawLinesOut(d);importThis(d)})
 };
+
+function ViewerHelp(data){
+  console.log(data)
+  d3.select(".viewer").append("div").attr("class", "viewerText");
+  d3.select(".viewerText").html("<span class = 'importerName'>"+data.name+"")
+}
+
 
 function viewer(data, latlongdump){
   //implement the info panel/viewer here
@@ -1221,7 +1251,6 @@ var x = d3.scale.linear()
     .attr("width", 25)
     .attr("height", y)*/
 var barPadding = 1;
-console.log(data)
 rSVG.selectAll("rect")
      .data(racedump)
      .enter()
@@ -1275,6 +1304,10 @@ rSVG.selectAll("text")
          .attr("fill", "white")
         .attr("font-weight", "bold");*/
   });
+
+d3.select(".povertyChart").append("div")
+    .attr("class", "Manifests")
+    .html("<p>Manifests")
 
 }
 }
