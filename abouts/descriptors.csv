@@ -1,0 +1,18 @@
+type,description
+BATTERY,loren ipsum
+CHLOROETHYLENE,loren ipsum ch
+MERUCRY,loren ipsum hg
+PAINT,loren ipsum paint
+TOLUENE,loren ipsum
+LEAD,pb
+Destruction_Incineration,Destruction_Incineration xxx
+Transfer_Stored_Bulk,Transfer_Stored_Bulk xxxx
+Recovery_Fuel_Blending,Recovery_Fuel_Blending xxx
+Destruction_Stabalization,Destruction_Stabalization xx
+Disposal_Land_Treatment,Disposal_Land_Treatmentxxxx
+Disposal_Landfill,Disposal_Landfillxxx
+Recovery_Energy,Recovery_Energyxxx
+Recovery_Fuel_Blending,Recovery_Fuel_Blendingxxx
+Recovery_Metals,Recovery_Metalsxxx
+Recovery_Other,Recovery_Otherxxx
+Recovery_Solvents,Recovery_Solventsxxx

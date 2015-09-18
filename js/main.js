@@ -47,6 +47,8 @@ var cyLeft;
 var cxRight;
 var cyRight;
 var siteViewerHelp = false;
+var footerText;
+var descriptors = {};
 
 
 //begin script when window loads 
@@ -54,6 +56,11 @@ window.onload = initialize();
 
 //the first function called once the html is loaded 
 function initialize(){
+  d3.csv("/abouts/descriptors.csv", function (csv) {
+  for (var i = 0; i < csv.length; i++){descriptors[csv[i].type] = csv[i].description;}
+  console.log(descriptors["Destruction_Stabalization"])
+  }) // load waste descriptors
+  d3.text("/abouts/footer.txt", function (text) {footerText = text}) //load footer text
   d3.select("body")
     .append("div")
     .attr("class", "footer")
@@ -62,7 +69,9 @@ function initialize(){
       d3.select("body")
       .append("div")
       .attr("class", "about")
-      .html("<span class='aboutText'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method.</p></span>")
+      //.text(footerText)
+      //.style({"color":"white", "font-family": 'Arial Narrow, Arial, sans-serif'})
+      .html("<span class='aboutText'>"+footerText+"") //<p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method.</p></span>")
       .append("div").attr("class", "exitAbout").text("Exit")
       .on("click", function(){
         d3.select(".about").remove()
@@ -99,7 +108,7 @@ function setControls(){
   d3.select("body")
     .append("div")
     .classed("viewer", true)
-    .html("<span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
+    .html("<span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually now imports more than twice as much waste from Canada and Mexico than it exports to the two countries combined. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
     //.style("display", "inline-block");
 
 /*  d3.select("#showHide")
@@ -1081,9 +1090,8 @@ for (var j=0; j<latlongdump.length; j++){
 };
 
 function ViewerHelp(data){
-  console.log(data)
   d3.select(".viewer").append("div").attr("class", "viewerText");
-  d3.select(".viewerText").html("<span class = 'importerName'>"+data.name+"")
+  d3.select(".viewerText").html("<span class = 'importerName'>"+data.name+"</span><p><span class = 'viewerData'>"+descriptors[data.name]+"</span>")
 }
 
 

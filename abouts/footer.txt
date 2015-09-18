@@ -1,0 +1,5 @@
+This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually us now imports more than twice as much waste from Canada and Mexico than it exports to the two countries combined. Many of these are transnational corporations shifting between subsidiaries.
+
+<p>All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, hover over or click on a site.
+
+<p>To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method.
