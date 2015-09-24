@@ -1,12 +1,12 @@
 type,description
-BATTERY,loren ipsum
-CHLOROETHYLENE,loren ipsum ch
+"Flammable liquids, n.o.s.",loren ipsum
+"Environmentally hazardous substances, solid, n.o.s.",loren ipsum ch
 MERUCRY,loren ipsum hg
 PAINT,loren ipsum paint
 TOLUENE,loren ipsum
 LEAD,pb
-Destruction_Incineration,Destruction_Incineration xxx
-Transfer_Stored_Bulk,Transfer_Stored_Bulk xxxx
+Other recovery,other
+Neutralization only,neutral
 Recovery_Fuel_Blending,Recovery_Fuel_Blending xxx
 Destruction_Stabalization,Destruction_Stabalization xx
 Disposal_Land_Treatment,Disposal_Land_Treatmentxxxx

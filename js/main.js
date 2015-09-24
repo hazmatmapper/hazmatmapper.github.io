@@ -49,7 +49,9 @@ var cyRight;
 var siteViewerHelp = false;
 var footerText;
 var descriptors = {};
-
+var currImporter,currColor,globalMax, globalMin, exGlobalMax, exGlobalMin;
+var UNtypeKey = {};
+var mgmtTypeKey = {};
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -252,7 +254,7 @@ setData(phase);
 }
 
 function setData(phase){
-d3.csv("data/sites_subset_v10_"+phase+".csv", function(data) {
+d3.csv("data/"+phase+".csv", function(data) {
   data.forEach(function(d){
     d.totalQuantityinShipment = +d.totalQuantityinShipment // convert the quantity of waste from string to number
     d.exporterLAT = +d.exporterLAT
@@ -262,6 +264,8 @@ d3.csv("data/sites_subset_v10_"+phase+".csv", function(data) {
     d.receivingFacilityZipCode = +d.receivingfacilityzipcode
     d.hazWasteDesc = d.hazWasteDesc
     d.exporter_key = d.exporter_key
+    d.un = d.un
+    d.mgmt = d.mgmt
     /*d.hazWasteDesc.indexOf("LEAD") > -1 ? d.hazWasteDesc = "lead" : d.hazWasteDesc = d.hazWasteDesc; //convert everything with lead to lead in waste description; // this is where we can do work creating waste categories...
     d.hazWasteDesc.indexOf("MERCURY") > -1 ? d.hazWasteDesc = "mercury" : d.hazWasteDesc = d.hazWasteDesc;
     d.hazWasteDesc.indexOf("TOLULENE") > -1 ? d.hazWasteDesc = "toluene" : d.hazWasteDesc = d.hazWasteDesc;
@@ -271,26 +275,36 @@ d3.csv("data/sites_subset_v10_"+phase+".csv", function(data) {
   });
 
   sum = d3.sum(data, function(d) {return d.totalQuantityinShipment})
+  UNtypeKey ={}
+  data.forEach(function(d) {
+    console.log(d.hazWasteDesc)
+    UNtypeKey[d.un] = d.hazWasteDesc;
+  });
+  mgmtTypeKey={}
+  data.forEach(function(d) {
+    mgmtTypeKey[d.mgmt] = d.ExpectedManagementMethod;
+  });
 
   Site = d3.nest()
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
-  .key(function(d) { return d.hazWasteDesc; })
-  .key(function(d) { return d.ExpectedManagementMethod; })
+  .key(function(d) { return d.un; })
+  .key(function(d) { return d.mgmt; })
   .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
   .entries(data);
   Site={"key": "total", "values": Site};
+  console.log(Site)
 
   DisposalMethod = d3.nest()  
-  .key(function(d) { return d.ExpectedManagementMethod; })
-  .key(function(d) { return d.hazWasteDesc; })
+  .key(function(d) { return d.mgmt; })
+  .key(function(d) { return d.un; })
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
   .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
   .entries(data);
   DisposalMethod={"key": "total", "values": DisposalMethod};
 
   Type = d3.nest()
-  .key(function(d) { return d.hazWasteDesc; })
-  .key(function(d) { return d.ExpectedManagementMethod; })
+  .key(function(d) { return d.un; })
+  .key(function(d) { return d.mgmt; })
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
   .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
   .entries(data);
@@ -334,7 +348,6 @@ d3.csv("data/sites_subset_v10_"+phase+".csv", function(data) {
   .key(function(d) {return d.exporterLONG;})
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
   .entries(data);
-console.log(exporterSum)
 
   latlongs = d3.nest() //rollup unique exportlatlongs
   .key(function(d) {return d.importer_state;}) // state code
@@ -379,6 +392,7 @@ IAsvg.append("g")
 }
 
 function icicle(data){
+  console.log(data)
 var x = d3.scale.linear()
     .range([0, width66]);
 
@@ -446,7 +460,14 @@ Isvg.selectAll("rects")
         }
         tip.show(facilityName); 
       } else {tip.show(d); siteViewerHelp = false}
-      
+      if (filterDomain == "Type" && d.depth == 1 || filterDomain == "Site" && d.depth == 2 || filterDomain == "DisposalMethod" && d.depth == 2 || filterDomain == undefined && d.depth == 2){
+        var show = {"name": UNtypeKey[d.name]}
+        tip.show(show)
+      }
+      if (filterDomain == "Type" && d.depth == 2 || filterDomain == "Site" && d.depth == 3 || filterDomain == "DisposalMethod" && d.depth == 1 || filterDomain == undefined && d.depth == 3){
+        var show = {"name": mgmtTypeKey[d.name]}
+        tip.show(show)
+      }
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
       icicleHighlight(d);
       //};  
@@ -460,7 +481,8 @@ Isvg.selectAll("rects")
         d3.select(".viewerText").remove()
         d3.select(".povertyChart").remove()
         drawLinesOut()
-        ViewerHelp(d);
+        var show = {"name": mgmtTypeKey[d.name]}
+        ViewerHelp(show);
       }
       if (filterDomain ==  "DisposalMethod" && d.depth == 2 || filterDomain ==  "Type" && d.depth == 1 || filterDomain ==  "Site" && d.depth == 2 || filterDomain ==  undefined && d.depth == 2){
         //show details of type here
@@ -468,7 +490,8 @@ Isvg.selectAll("rects")
         d3.select(".intro").remove()
         d3.select(".viewerText").remove()
         d3.select(".povertyChart").remove()
-        ViewerHelp(d);
+        var show = {"name": UNtypeKey[d.name]}
+        ViewerHelp(show);
       }
       if (siteViewerHelp == true){
         for (var c = 0; c<latlongRdump.length; c++){
@@ -597,6 +620,8 @@ function icicleFilter(data){
 }
 
 function icicleHighlight(data){
+  console.log(data)
+  console.log(UNtypeKey)
   Isvg.selectAll("."+data.name) //select the current id
     .style({"fill-opacity": "1"}); 
   if (data.name == "total"){
@@ -708,6 +733,7 @@ for (var i =0; i<facilitySum.length; i++){
 };
 
 
+
 //put total for each type here
 for (var i =0; i<typeByFacility.length; i++){
   var p = typeByFacility[i]["key"]
@@ -762,6 +788,9 @@ function importers(data){
 
   var max = d3.max(latlongReset, function(d) {return d.total_waste}),
   min = d3.min(latlongReset, function(d) {return d.total_waste})
+  globalMax = max;
+  globalMin = min;
+
   var radius; 
   if (zoomed == false) {radius= d3.scale.sqrt()
     .domain([min+1, max]) //don't want min to be 0
@@ -801,6 +830,7 @@ function importers(data){
    .on("click", function (d){
       drawLinesOut();
       exportThis(d);
+      color2(d);
     })
   
   exporters();
@@ -808,8 +838,8 @@ function importers(data){
   cyLeft = document.getElementsByClassName("OHD00816629")["importer"].attributes[4].value
 
 
-  cxRight = document.getElementsByClassName("E5A4318314")[0].attributes[3].value
-  cyRight = document.getElementsByClassName("E5A4318314")[0].attributes[4].value
+  cxRight = document.getElementsByClassName("E5A43183")[0].attributes[3].value
+  cyRight = document.getElementsByClassName("E5A43183")[0].attributes[4].value
   console.log(cyLeft,cyRight)
   var mar = 40
   var w = cxRight - cxLeft + 2*mar
@@ -909,7 +939,12 @@ function exportThis(data){
 
 
 function drawLinesOver(data, base){
+  //var max = d3.max(data, function(d) {return d.total_waste}),
+  //min = d3.min(data, function(d) {return d.total_waste})
 
+  var lineStroke = d3.scale.sqrt()
+    .domain([globalMin, globalMax]) 
+    .range([2, 10])
   //based on: http://bl.ocks.org/enoex/6201948
   var arcGroup = svg.append('g');
   var path = d3.geo.path()
@@ -951,7 +986,8 @@ for(var i=0, len=data.length; i<len; i++){
             coordinates: [
                 [ data[i].long, data[i].lat ],
                 [ base[0].long, base[0].lat ]
-            ]
+            ],
+            total_waste: data[i].total_waste
         });
     }
 var pathArcs = arcGroup.selectAll(".arc")
@@ -972,14 +1008,11 @@ var pathArcs = arcGroup.selectAll(".arc")
                 //  an arc between the points using the arc function
                 d: path
             })
-
-            .style({
-                stroke: '#0000ff',
-                'stroke-width': '2px'
+            .style("stroke", '#0000ff')
+            .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
                 //'stroke-dasharray': '5'
-            })
             .call(lineTransition); 
-
+console.log(pathArcs)
 
 }
 
@@ -987,6 +1020,15 @@ function drawLinesOut(){
 d3.selectAll(".arc").remove();
 }
 
+function color2(data){
+  currColor = document.getElementsByClassName(data.id)["importer"].style["fill"]
+  svg.selectAll("."+currImporter)
+    .style({"fill": currColor, "fill-opacity": .75});
+  var rectColor = document.getElementsByClassName(data.id)[0].style["fill"]
+  svg.selectAll("."+data.id)
+    .style({"fill": rectColor, "fill-opacity": 1});
+  currImporter = data.id
+}
 
 function colorize(data, name){
   //match data with colorkey
@@ -1063,6 +1105,9 @@ for (var j=0; j<latlongdump.length; j++){
   var max = d3.max(latlongdump, function(d) {return d.total_waste}),
   min = d3.min(latlongdump, function(d) {return d.total_waste})
   
+  exGlobalMax = max;
+  exGlobalMin = min;
+
   //scale according to zoom
   var radius; 
   if (zoomed == false) {radius= d3.scale.sqrt()
@@ -1086,7 +1131,7 @@ for (var j=0; j<latlongdump.length; j++){
       highlight(d);
     }) 
     .on("mouseout", function(d){tooltip.hide(d); dehighlight(d)}) 
-    .on("click", function(d){console.log(d); drawLinesOut(d);importThis(d)})
+    .on("click", function(d){drawLinesOut(d);importThis(d)})
 };
 
 function ViewerHelp(data){
@@ -1200,7 +1245,6 @@ povSVG.selectAll("text")
             return i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.5;
          })
          .attr("x", function(d) { return 16; })
-         .attr("font-family", "BebasNeueRegular")
          .attr("font-size", "11px")
          .attr("fill", "black")
 povSVG.selectAll("label")
@@ -1217,7 +1261,6 @@ povSVG.selectAll("label")
             return i * (height / povdump.length) + (height / povdump.length - barPadding) / 2;
          })
          .attr("x", width - 50)
-         .attr("font-family", "BebasNeueRegular")
          .attr("font-size", "11px")
          .attr("fill", "white")
          //.attr("font-weight", "bold");
@@ -1290,7 +1333,6 @@ rSVG.selectAll("text")
             return i * (height / racedump.length) + (height / racedump.length - barPadding) / 1.5;
          })
          .attr("x", function(d) { return 16; })
-         .attr("font-family", "BebasNeueRegular")
          .attr("font-size", "11px")
          .attr("fill", "black")
          //.attr("font-weight", "bold");
@@ -1348,6 +1390,18 @@ function exportViewer(data, latlongdump){
   console.log(stuff)
   
 
+  console.log(data)
+  /*
+  data.types.sort(function(a, b)
+  {
+    return b[1] - a[1];
+  });
+
+  //biggest export partner
+  latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;})
+  */
+
+
 
   //combine and rank
   /*var ExportTypeSum = d3.nest()
@@ -1363,6 +1417,7 @@ function printThis(latlongdump){
 }
 
 function importThis(data){
+  console.log(data)
   //change latlongdump to site-specific latlongdump
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
   //construct object with exporters to...
@@ -1371,7 +1426,7 @@ function importThis(data){
    for (var i=0; i<latlongs.length; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
         if (latlongs[i]["values"][j]["values"][0]["exporterLONG"] == data[k].long) {
-          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongs[i]["values"][j]["values"][0]["receivingLat"], "name": latlongs[i]["values"][j]["values"][0]["importer_name"], "id": latlongs[i]["values"][j]["values"][0]["importer_name"], "units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": []}) //lat longs of the importing waste sites
+          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["receivingLong"], "lat": latlongs[i]["values"][j]["values"][0]["receivingLat"], "name": latlongs[i]["values"][j]["values"][0]["importer_name"], "id": latlongs[i]["values"][j]["values"][0]["importer_name"], "units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": [], "total_waste": 0}) //lat longs of the importing waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
             for (var x=0;x<latlongdump.length;x++){
               latlongdump[x]["types"].push([latlongs[i]["values"][j]["values"][z]["hazWasteDesc"],latlongs[i]["values"][j]["values"][z]["totalQuantityinShipment"], latlongs[i]["values"][j]["values"][0]["importer_name"]])
@@ -1383,6 +1438,14 @@ function importThis(data){
         };     
       };
     };
+  console.log(latlongdump)
+  //sum for each destination here
+  for (var h=0; h<latlongdump.length; h++){
+    //push total waste to export in latlongdump
+   latlongdump[h]["total_waste"] = d3.sum(latlongdump[h].types, function(d) { return d[1]; })
+    
+  }
+
   exportViewer(data, latlongdump)
   //draw lines between exporters and this site
   exDrawLinesOver(latlongdump, data);
@@ -1391,6 +1454,10 @@ function importThis(data){
 
 
 function exDrawLinesOver(data, base){
+  console.log(data)
+  var lineStroke = d3.scale.sqrt()
+    .domain([exGlobalMin, exGlobalMax]) 
+    .range([2, 10])
 
   //based on: http://bl.ocks.org/enoex/6201948
   var arcGroup = svg.append('g');
@@ -1433,7 +1500,8 @@ for(var i=0, len=data.length; i<len; i++){
             coordinates: [
                 [ base[0].long, base[0].lat ],
                 [ data[i].long, data[i].lat ]
-            ]
+            ],
+            total_waste: data[i].total_waste
         });
     }
 var pathArcs = arcGroup.selectAll(".arc")
@@ -1455,10 +1523,8 @@ var pathArcs = arcGroup.selectAll(".arc")
                 d: path
             })
 
-            .style({
-                stroke: '#0000ff',
-                'stroke-width': '2px'
-            })
+            .style('stroke', '#0000ff')
+            .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
             .call(lineTransition); 
 
 
