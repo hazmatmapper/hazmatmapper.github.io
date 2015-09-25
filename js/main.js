@@ -25,7 +25,7 @@ var colorDump;
 var colorKey;
 var checker = false; //checks to see whether we've run initial data crunching, essentially
 var povSVG;
-var clickCheck = true; //detect whether radio button filter control was clicked
+//var clickCheck = true; //detect whether radio button filter control was clicked
 var zoomed = false; //are we zoomed into rust belt?
 var switcher = false; //have we switched phases? if so, need to crunch data
 var exporterInfo;
@@ -49,7 +49,7 @@ var cyRight;
 var siteViewerHelp = false;
 var footerText;
 var descriptors = {};
-var currImporter,currColor,globalMax, globalMin, exGlobalMax, exGlobalMin;
+var currImporter,currColor,globalMax, globalMin, exGlobalMax, exGlobalMin, clickyCheck, iceCheck, lastImporter; //iceCheck sees if click on site was first ice then not
 var UNtypeKey = {};
 var mgmtTypeKey = {};
 
@@ -278,10 +278,9 @@ d3.csv("data/"+phase+".csv", function(data) {
   
   UNtypeKey={}
   data.forEach(function(d) {
-    console.log(d.hazWasteDesc)
     UNtypeKey[d.un] = d.hazWasteDesc;
   });
-  
+
   mgmtTypeKey={}
   data.forEach(function(d) {
     mgmtTypeKey[d.mgmt] = d.ExpectedManagementMethod;
@@ -394,7 +393,6 @@ IAsvg.append("g")
 }
 
 function icicle(data){
-  console.log(data)
 var x = d3.scale.linear()
     .range([0, width66]);
 
@@ -507,6 +505,8 @@ Isvg.selectAll("rects")
       clicked(d);
       //icicleImporters(d);
       icicleFilter(d);
+      clickyCheck = d.name
+      clicky(d);
 });
 
 //construct x axis
@@ -530,6 +530,7 @@ Isvg.append("g")
     .text("Proportion of Total Waste");
 
 function clicked(d) {
+  if (document.getElementsByClassName(d.name)["importer"]){lastImporter = d.name; iceCheck = document.getElementsByClassName(d.name)["importer"].style["fill"]}
   x.domain([d.x, d.x + d.dx]);
   y.domain([d.y, 1]).range([d.y ? 20 : 0, height33 - margin.bottom]);
 
@@ -622,8 +623,6 @@ function icicleFilter(data){
 }
 
 function icicleHighlight(data){
-  console.log(data)
-  console.log(UNtypeKey)
   Isvg.selectAll("."+data.name) //select the current id
     .style({"fill-opacity": "1"}); 
   if (data.name == "total"){
@@ -633,6 +632,7 @@ function icicleHighlight(data){
   svg.selectAll("."+data.name)
     .style({"stroke": "yellow", "stroke-width": "5px"})}
   if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){ //if sites and at bottom of barchart
+
   //icicleTranslate(data);
   /*oldFill = document.getElementsByClassName(data.name)["importer"].style.fill
   oldFillOpacity = document.getElementsByClassName(data.name)["importer"].style.opacity
@@ -645,10 +645,14 @@ function icicleHighlight(data){
 }; 
 
 function icicleDehighlight(data){
+  console.log(clickyCheck)
+
   Isvg.selectAll("."+data.name) //designate selector variable for brevity
     .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
   svg.selectAll("#importer")
     .style(defaultStroke)
+  svg.selectAll("."+clickyCheck) //select the current province in the DOM
+    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
   /*if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){
     //console.log(document.getElementsByClassName(data.name))
     svg.selectAll("."+data.name)
@@ -832,7 +836,10 @@ function importers(data){
    .on("click", function (d){
       drawLinesOut();
       exportThis(d);
+      clickyCheck = d.id;
+      clicky(d);
       color2(d);
+
     })
   
   exporters();
@@ -1023,9 +1030,12 @@ d3.selectAll(".arc").remove();
 }
 
 function color2(data){
+  console.log(iceCheck, currImporter)
   currColor = document.getElementsByClassName(data.id)["importer"].style["fill"]
   svg.selectAll("."+currImporter)
     .style({"fill": currColor, "fill-opacity": .75});
+  if(iceCheck){svg.selectAll("."+lastImporter)
+    .style({"fill": iceCheck, "fill-opacity": .75});}
   var rectColor = document.getElementsByClassName(data.id)[0].style["fill"]
   svg.selectAll("."+data.id)
     .style({"fill": rectColor, "fill-opacity": 1});
@@ -1049,6 +1059,24 @@ function colorize(data, name){
       if (name == "total"){return ".75"}
       else {return "1"}
       })
+    .style("stroke", function(){
+      if (name == "total"){return defaultStroke}
+      })
+}
+
+function clicky(data){
+    console.log(data, name)  
+  svg.selectAll("."+currImporter)
+    .style({"fill": currColor, "fill-opacity": .75});
+  svg.selectAll("circle") //select the current province in the DOM
+    //.style("fill-opacity", "1")
+    .style(defaultStroke);
+  if (data.id){ svg.selectAll("."+data.id) //select the current province in the DOM
+    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+  } else if (data.name) { svg.selectAll("."+data.name) //select the current province in the DOM
+    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+  }
+
 }
 
 function highlight(data){
@@ -1070,7 +1098,13 @@ function dehighlight(data){
     .style(defaultStroke)
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": ".5"});
-}};
+  }
+  if (data.id == clickyCheck) {
+  svg.selectAll("."+data.id) //select the current province in the DOM
+    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline  
+  }
+
+};
 
 //show all exporters
 function exporters(){
@@ -1133,7 +1167,7 @@ for (var j=0; j<latlongdump.length; j++){
       highlight(d);
     }) 
     .on("mouseout", function(d){tooltip.hide(d); dehighlight(d)}) 
-    .on("click", function(d){drawLinesOut(d);importThis(d)})
+    .on("click", function(d){drawLinesOut(d);importThis(d); clickyCheck = d.id; clicky(d)})
 };
 
 function ViewerHelp(data){
@@ -1233,8 +1267,8 @@ povSVG.selectAll("rect")
           return "rgb(136,136,136)"
         }
      })
-     .on("mouseover", highlight)
-     .on("mouseout", dehighlight);
+     //.on("mouseover", highlight)
+     //.on("mouseout", dehighlight);
 povSVG.selectAll("text")
          .data(povdump)
          .enter()
@@ -1323,8 +1357,8 @@ rSVG.selectAll("rect")
           return "rgb(136,136,136)"
         }
      })
-     .on("mouseover", highlight)
-     .on("mouseout", dehighlight);
+     //.on("mouseover", highlight)
+     //.on("mouseout", dehighlight);
 rSVG.selectAll("text")
          .data(racedump)
          .enter()
