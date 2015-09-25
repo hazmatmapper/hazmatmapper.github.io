@@ -275,11 +275,13 @@ d3.csv("data/"+phase+".csv", function(data) {
   });
 
   sum = d3.sum(data, function(d) {return d.totalQuantityinShipment})
-  UNtypeKey ={}
+  
+  UNtypeKey={}
   data.forEach(function(d) {
     console.log(d.hazWasteDesc)
     UNtypeKey[d.un] = d.hazWasteDesc;
   });
+  
   mgmtTypeKey={}
   data.forEach(function(d) {
     mgmtTypeKey[d.mgmt] = d.ExpectedManagementMethod;
