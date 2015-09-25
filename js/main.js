@@ -60,7 +60,6 @@ window.onload = initialize();
 function initialize(){
   d3.csv("/abouts/descriptors.csv", function (csv) {
   for (var i = 0; i < csv.length; i++){descriptors[csv[i].type] = csv[i].description;}
-  console.log(descriptors["Destruction_Stabalization"])
   }) // load waste descriptors
   d3.text("/abouts/footer.txt", function (text) {footerText = text}) //load footer text
   d3.select("body")
@@ -293,7 +292,6 @@ d3.csv("data/"+phase+".csv", function(data) {
   .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
   .entries(data);
   Site={"key": "total", "values": Site};
-  console.log(Site)
 
   DisposalMethod = d3.nest()  
   .key(function(d) { return d.mgmt; })
@@ -474,7 +472,6 @@ Isvg.selectAll("rects")
     })
     .on("mouseout", function(d){tip.hide(d); icicleDehighlight(d)})
     .on('click', function(d){
-      console.log(filterDomain)
       if (filterDomain ==  "DisposalMethod" && d.depth == 1 || filterDomain ==  "Type" && d.depth == 2 || filterDomain ==  "Site" && d.depth == 3 || filterDomain ==  undefined && d.depth == 3){
         //show details of method here
         d3.select(".intro").remove()
@@ -543,6 +540,8 @@ function clicked(d) {
     d3.select(".povertyChart").remove()
     drawLinesOut()
   }
+
+  //css the below
   if (d.depth == 1) {range = [0, 30, 80, 130]; display = domain}
   if (d.depth == 2) {range = [0, 45, 115]; display = [domain[1], domain[2], domain[3]]}
   if (d.depth == 3) {range = [0, 80]; display = [domain[2], domain[3]]}
@@ -645,8 +644,6 @@ function icicleHighlight(data){
 }; 
 
 function icicleDehighlight(data){
-  console.log(clickyCheck)
-
   Isvg.selectAll("."+data.name) //designate selector variable for brevity
     .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
   svg.selectAll("#importer")
@@ -849,7 +846,6 @@ function importers(data){
 
   cxRight = document.getElementsByClassName("E5A43183")[0].attributes[3].value
   cyRight = document.getElementsByClassName("E5A43183")[0].attributes[4].value
-  console.log(cyLeft,cyRight)
   var mar = 40
   var w = cxRight - cxLeft + 2*mar
   var h = cyLeft - cyRight
@@ -1021,7 +1017,6 @@ var pathArcs = arcGroup.selectAll(".arc")
             .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
                 //'stroke-dasharray': '5'
             .call(lineTransition); 
-console.log(pathArcs)
 
 }
 
@@ -1030,7 +1025,6 @@ d3.selectAll(".arc").remove();
 }
 
 function color2(data){
-  console.log(iceCheck, currImporter)
   currColor = document.getElementsByClassName(data.id)["importer"].style["fill"]
   svg.selectAll("."+currImporter)
     .style({"fill": currColor, "fill-opacity": .75});
@@ -1065,7 +1059,6 @@ function colorize(data, name){
 }
 
 function clicky(data){
-    console.log(data, name)  
   svg.selectAll("."+currImporter)
     .style({"fill": currColor, "fill-opacity": .75});
   svg.selectAll("circle") //select the current province in the DOM
@@ -1416,17 +1409,13 @@ function exportViewer(data, latlongdump){
   // Create items array
   latlongdump[0].types.sort(function(a,b) {return b.type-a.type;})
   //console.log(latlongdump[0].types.type[1])
-  console.log(latlongdump[0].types)
   stuff=[]
   for (var x=0;x<latlongdump.length;x++){
   latlongdump[x].types.sort(function(a,b) {return b[1]-a[1];})
   stuff.push(latlongdump[x].types[0])
   }
   stuff.sort(function(a,b){return b[1]-a[1]})
-  console.log(stuff)
-  
 
-  console.log(data)
   /*
   data.types.sort(function(a, b)
   {
@@ -1453,7 +1442,6 @@ function printThis(latlongdump){
 }
 
 function importThis(data){
-  console.log(data)
   //change latlongdump to site-specific latlongdump
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
   //construct object with exporters to...
@@ -1474,7 +1462,6 @@ function importThis(data){
         };     
       };
     };
-  console.log(latlongdump)
   //sum for each destination here
   for (var h=0; h<latlongdump.length; h++){
     //push total waste to export in latlongdump
@@ -1490,7 +1477,6 @@ function importThis(data){
 
 
 function exDrawLinesOver(data, base){
-  console.log(data)
   var lineStroke = d3.scale.sqrt()
     .domain([exGlobalMin, exGlobalMax]) 
     .range([2, 10])
