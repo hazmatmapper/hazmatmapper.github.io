@@ -265,6 +265,7 @@ d3.csv("data/"+phase+".csv", function(data) {
     d.exporter_key = d.exporter_key
     d.un = d.un
     d.mgmt = d.mgmt
+    d.year = d.year
     /*d.hazWasteDesc.indexOf("LEAD") > -1 ? d.hazWasteDesc = "lead" : d.hazWasteDesc = d.hazWasteDesc; //convert everything with lead to lead in waste description; // this is where we can do work creating waste categories...
     d.hazWasteDesc.indexOf("MERCURY") > -1 ? d.hazWasteDesc = "mercury" : d.hazWasteDesc = d.hazWasteDesc;
     d.hazWasteDesc.indexOf("TOLULENE") > -1 ? d.hazWasteDesc = "toluene" : d.hazWasteDesc = d.hazWasteDesc;
@@ -377,6 +378,8 @@ if (filterDomain == undefined){
 } else if (filterDomain == "DisposalMethod") {
   domain = method
 }
+
+
 var yax  = d3.scale.ordinal()
     .domain(domain)
     .range([0, height33/4.5, height33*2/4.5, height33*3/4.5]);
@@ -398,7 +401,7 @@ var y = d3.scale.linear()
     .range([0, height33 - margin.bottom]);
 
 var color = d3.scale.category10()
-  //.range(["#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b"]);
+  .range(["#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b"]);
 
 var partition = d3.layout.partition()
     //.size([width, height])
@@ -531,35 +534,7 @@ function clicked(d) {
   x.domain([d.x, d.x + d.dx]);
   y.domain([d.y, 1]).range([d.y ? 20 : 0, height33 - margin.bottom]);
 
- //create temp domain for changing axis
-  //calculate range for axis based on depth
-  var range;
-  var display;
-  if (d.depth == 0) {range = [0, height33/4.5, height33*2/4.5, height33*3/4.5]; display = domain; // remove viewer and lines
-    d3.select(".viewerText").remove()
-    d3.select(".povertyChart").remove()
-    drawLinesOut()
-  }
 
-  //css the below
-  if (d.depth == 1) {range = [0, 30, 80, 130]; display = domain}
-  if (d.depth == 2) {range = [0, 45, 115]; display = [domain[1], domain[2], domain[3]]}
-  if (d.depth == 3) {range = [0, 80]; display = [domain[2], domain[3]]}
-
-  var yax  = d3.scale.ordinal()
-    .domain(display)
-    .range(range);
-
-  var yAxis = d3.svg.axis()
-    .scale(yax)
-    .orient("left");
-
-  IAsvg.selectAll("g").transition()
-      .remove()
-  IAsvg.append("g").transition()
-      .attr("class", "axis")
-      .attr("transform", "translate("+110+","+10+")")
-      .call(yAxis);
 
   //reconstruct x axis
 var xdomain = d.value/sum
@@ -573,7 +548,7 @@ var xAxis = d3.svg.axis()
     .tickFormat(d3.format(".0%"))
     .orient("bottom");
 
-Isvg.selectAll("g").transition()
+Isvg.selectAll("g")
     .remove()
 Isvg.append("g")
       .attr("class", "x axis")
@@ -585,13 +560,45 @@ Isvg.append("g")
     .style("text-anchor", "middle")
     .text("Proportion of Total Waste");
 
-  Isvg.selectAll("rect").transition()
-      .duration(750)
+  Isvg.selectAll("rect")
       .attr("x", function(d) { return x(d.x); })
       .attr("y", function(d) { return y(d.y); })
       .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
-      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); })
+
+//create temp domain for changing axis
+  //calculate range for axis based on depth
+  var range;
+  var display;
+  var boxy = parseInt(document.getElementsByClassName(d.name)[0].attributes[2].value)
+  var boxheight = parseInt(document.getElementsByClassName(d.name)[0].attributes[4].value)
+  var midpoint = (boxy+boxheight)/2
+  if (d.depth == 0) {range = [0, height33/4.5, height33*2/4.5, height33*3/4.5]; display = domain; // remove viewer and lines
+    d3.select(".viewerText").remove()
+    d3.select(".povertyChart").remove()
+    drawLinesOut()
+  }
+  if (d.depth == 1) {range = [0, midpoint, midpoint+boxheight, midpoint+(boxheight*2)]; display = domain}
+  if (d.depth == 2) {range = [0, midpoint, midpoint+boxheight]; display = [domain[1], domain[2], domain[3]]}
+  if (d.depth == 3) {range = [0, midpoint]; display = [domain[2], domain[3]]}
+
+  var yax  = d3.scale.ordinal()
+    .domain(display)
+    .range(range);
+
+  var yAxis = d3.svg.axis()
+    .scale(yax)
+    .orient("left");
+
+  IAsvg.selectAll("g")
+      .remove()
+  IAsvg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate("+110+","+10+")")
+      .call(yAxis);
   };
+
+
 };
 
 function icicleFilter(data){

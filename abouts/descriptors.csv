@@ -5,14 +5,32 @@ MERUCRY,loren ipsum hg
 PAINT,loren ipsum paint
 TOLUENE,loren ipsum
 LEAD,pb
-Other recovery,other
-Neutralization only,neutral
-Recovery_Fuel_Blending,Recovery_Fuel_Blending xxx
-Destruction_Stabalization,Destruction_Stabalization xx
-Disposal_Land_Treatment,Disposal_Land_Treatmentxxxx
-Disposal_Landfill,Disposal_Landfillxxx
-Recovery_Energy,Recovery_Energyxxx
-Recovery_Fuel_Blending,Recovery_Fuel_Blendingxxx
-Recovery_Metals,Recovery_Metalsxxx
-Recovery_Other,Recovery_Otherxxx
-Recovery_Solvents,Recovery_Solventsxxx
+Metals recovery,"Metals recovery including retorting, smelting, chemical, etc."
+Solvents recovery,"Solvents recovery (distillation, extraction, etc)"
+Other recovery,"Other recovery or reclamation for reuse including acid regeneration, organics recovery, etc."
+Energy recovery,Energy recovery at this site - used as fuel (includes on-site fuel blending before energy recovery)
+Fuel blending,Fuel blending prior to energy recovery at another site (waste generated either on site or received from off site)
+Incineration,Incineration - thermal destruction other than use as a fuel (includes any preparation prior to burning)
+Chemical destruction,Chemical reduction with or without precipitation (includes any preparation or final processes for consolidation of residuals)
+Cyanide destruction,Cyanide destruction with or without precipitation (includes any preparation or final processes for consolidation of residuals)
+Wet air oxidation,Wet air oxidation (includes any preparation or final processes for consolidation of residuals)
+Chemical oxidation,Chemical oxidation (includes any preparation or final processes for consolidation of residuals)
+Other chemical precipitation,Other chemical precipitation with or without pre-treatment (includes processes for consolidation of residuals)
+Biological treatment,Biological treatment with or without precipitation (includes any preparation or final processes for consolidation of residuals)
+Adsorption (as the major component of treatment),Adsorption (as the major component of treatment)
+Air or steam stripping ,Air or steam stripping (as the major component of treatment)
+Sludge treatment and/or dewatering,Sludge treatment and/or dewatering (as the major component of treatment)
+Other chemical precipitation,Other chemical precipitation
+Absorption (as the major component of treatment),Absorption (as the major component of treatment)
+Stabilization or chemical fixation,Stabilization or chemical fixation prior to disposal at another site (as the major component of treatment)
+Macro-encapsulation,Macro-encapsulation prior to disposal at another site (as the major component of treatment)
+Neutralization only,Neutralization only (no other treatment)
+Evaporation,Evaporation (as the major component of treatment; not reportable as H071-H083)
+Settling or clarification,Settling or clarification (as the major component of treatment; not reportable as H071-H083)
+Phase separation,Phase separation (as the major component of treatment; not reportable as H071-H083)
+Other treatment,Other treatment (specified in comments)
+Land treatment or application,Land treatment or application (to include on-site treatment and/or stabilization)
+Landfill or surface impoundment,Landfill or surface impoundment that will be closed as landfill (to include prior treatment and/or stabilization)
+Deepwell or underground injection,Deepwell or underground injection (with or without treatment; this waste was counted as hazardous waste)
+Discharge to sewer/POTW or NPDES,Discharge to sewer/POTW or NPDES (with prior storage - with or without treatment)
+Off site treatment,"The site receiving this waste stored/bulked and transferred the waste with no treatment or recovery, fuel blending, or disposal at that receiving site."
