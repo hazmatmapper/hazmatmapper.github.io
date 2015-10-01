@@ -401,7 +401,7 @@ var y = d3.scale.linear()
     .range([0, height33 - margin.bottom]);
 
 var color = d3.scale.category10()
-  .range(["#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b"]);
+  //.range(['rgb(141,211,199)','rgb(255,255,179)','rgb(190,186,218)','rgb(251,128,114)','rgb(128,177,211)','rgb(253,180,98)','rgb(179,222,105)','rgb(252,205,229)','rgb(217,217,217)','rgb(188,128,189)','rgb(204,235,197)','rgb(255,237,111)']);
 
 var partition = d3.layout.partition()
     //.size([width, height])
