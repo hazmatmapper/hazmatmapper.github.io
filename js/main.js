@@ -1636,7 +1636,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
     } else if (data.depth == 2){
       if (mgmtTypeKey[data.name]) {data.desc = mgmtTypeKey[data.name]; data.desc2 = UNtypeKey[data.parent.name]}
       if (UNtypeKey[data.name]) {data.desc = UNtypeKey[data.name]; data.desc2 = mgmtTypeKey[data.parent.name]}
-      var stringwork2 = ["= sites with " + data.desc2+" = of those, sites with " + data.desc]
+      var stringwork2 = ["= sites with " + data.desc2+"", "= of those, sites with " + data.desc]
       var circleData = [data.parent.name, data.name]
       var result2 = colorKey.filter(function( obj ) {return obj.name == data.parent.name; });
       console.log(result2)
