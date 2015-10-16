@@ -21,7 +21,6 @@ var height66;
 var Site;
 var DisposalMethod;
 var povertydata = [];
-var colorDump;
 var colorKey;
 var checker = false; //checks to see whether we've run initial data crunching, essentially
 var povSVG;
@@ -52,6 +51,8 @@ var descriptors = {};
 var currImporter,currColor,globalMax, globalMin, exGlobalMax, exGlobalMin, clickyCheck, iceCheck, lastImporter; //iceCheck sees if click on site was first ice then not
 var UNtypeKey = {};
 var mgmtTypeKey = {};
+var displaySVG;
+var facilityName = {"name": ""}
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -150,8 +151,8 @@ function setControls(){
   .center([9,33])
   .rotate([100,0])
   .parallels([20,45])
-  .scale(600)
-  .translate([width66/2.5, height66/2]);
+  .scale(700)
+  .translate([width66/2.75, height66/1.75]);
 
   projectionDefault = projection;
 
@@ -414,12 +415,12 @@ var tip = d3.tip()
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
+Isvg.call(tip)
 
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
 var nodes = partition.nodes(data);
 
-Isvg.call(tip)
 colorKey=[];
 
 Isvg.selectAll("rects")
@@ -435,7 +436,7 @@ Isvg.selectAll("rects")
       if (d.name == "total"){return defaultColor} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"})
     .on("mouseover", function (d) {
       //look up facility name
-      var facilityName = {"name": ""}
+      
       if (filterDomain ==  "Site" && d.depth == 1 || filterDomain == undefined && d.depth == 1){
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
@@ -507,6 +508,7 @@ Isvg.selectAll("rects")
       icicleFilter(d);
       clickyCheck = d.name
       clicky(d);
+      updateDisplay(d);
 });
 
 //construct x axis
@@ -843,7 +845,7 @@ function importers(data){
       clickyCheck = d.id;
       clicky(d);
       color2(d);
-
+      updateDisplay(d);
     })
   
   exporters();
@@ -953,10 +955,19 @@ function exportThis(data){
 function drawLinesOver(data, base){
   //var max = d3.max(data, function(d) {return d.total_waste}),
   //min = d3.min(data, function(d) {return d.total_waste})
-
   var lineStroke = d3.scale.sqrt()
     .domain([globalMin, globalMax]) 
     .range([2, 10])
+
+  var tooltipFlow = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([0, 0])
+  .html(function(d) {
+    return "<span style='color:white' style='text-size:8px'>" + d.total_waste + " " + d.units + " from "+ d.name +"</span>";
+  })
+
+  svg.call(tooltipFlow)
+
   //based on: http://bl.ocks.org/enoex/6201948
   var arcGroup = svg.append('g');
   var path = d3.geo.path()
@@ -999,7 +1010,9 @@ for(var i=0, len=data.length; i<len; i++){
                 [ data[i].long, data[i].lat ],
                 [ base[0].long, base[0].lat ]
             ],
-            total_waste: data[i].total_waste
+            total_waste: data[i].total_waste,
+            name: data[i].name,
+            units: data[i].units
         });
     }
 var pathArcs = arcGroup.selectAll(".arc")
@@ -1022,6 +1035,9 @@ var pathArcs = arcGroup.selectAll(".arc")
             })
             .style("stroke", '#0000ff')
             .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
+            .style('cursor', "pointer")
+            .on("mouseover", function(d) {tooltipFlow.show(d)})
+            .on("mouseout", function(d) {tooltipFlow.hide(d)})
                 //'stroke-dasharray': '5'
             .call(lineTransition); 
 
@@ -1167,7 +1183,7 @@ for (var j=0; j<latlongdump.length; j++){
       highlight(d);
     }) 
     .on("mouseout", function(d){tooltip.hide(d); dehighlight(d)}) 
-    .on("click", function(d){drawLinesOut(d);importThis(d); clickyCheck = d.id; clicky(d)})
+    .on("click", function(d){drawLinesOut(d);importThis(d); clickyCheck = d.id; clicky(d); updateDisplay(d)})
 };
 
 function ViewerHelp(data){
@@ -1488,6 +1504,14 @@ function exDrawLinesOver(data, base){
     .domain([exGlobalMin, exGlobalMax]) 
     .range([2, 10])
 
+  var tooltipFlow = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([0, 0])
+  .html(function(d) {
+    return "<span style='color:white' style='font-size:4px'>" + d.total_waste + " " + d.units + " to "+ d.name +"</span>";
+  })
+
+  svg.call(tooltipFlow)
   //based on: http://bl.ocks.org/enoex/6201948
   var arcGroup = svg.append('g');
   var path = d3.geo.path()
@@ -1530,7 +1554,9 @@ for(var i=0, len=data.length; i<len; i++){
                 [ base[0].long, base[0].lat ],
                 [ data[i].long, data[i].lat ]
             ],
-            total_waste: data[i].total_waste
+            total_waste: data[i].total_waste,
+            name: data[i].name,
+            units: data[i].units
         });
     }
 var pathArcs = arcGroup.selectAll(".arc")
@@ -1554,7 +1580,92 @@ var pathArcs = arcGroup.selectAll(".arc")
 
             .style('stroke', '#0000ff')
             .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
+            .style('cursor', "pointer")
+            .on("mouseover", function(d) {tooltipFlow.show(d)})
+            .on("mouseout", function(d) {tooltipFlow.hide(d)})
             .call(lineTransition); 
 
 
+}
+
+function updateDisplay(data){ //function is called whether system change occurs and displays the new state of the system
+
+  d3.select(".mapDisplay").remove()
+  d3.select(".holder").remove()
+
+  d3.select("body")
+        .append("div")
+        .attr("class", "mapDisplay")
+        .text("What you're seeing: ")
+  d3.select("body")
+        .append("div")
+        .attr("class", "holder")
+        .text(""+data.name)
+  
+
+  if (data.depth && filterDomain != "Site" && filterDomain != undefined){
+    d3.select(".holder").remove()
+    d3.select("body")
+        .append("div")
+        .attr("class", "holder")
+    var result = colorKey.filter(function( obj ) {return obj.name == data.name;});
+    result = result[0];
+
+    if (data.depth == 1){
+      if (mgmtTypeKey[data.name]) {data.desc = mgmtTypeKey[data.name]}
+      if (UNtypeKey[data.name]) {data.desc = UNtypeKey[data.name]}
+      var stringwork1 = ["= sites with " + data.desc]
+      displaySVG = d3.select(".holder").append("svg")
+      displaySVG.append("circle")
+        //.attr("class", function(d) {return data.name})
+        .style("fill", result.color)
+        .style("fill-opacity", ".75")
+        .attr("r", 16)
+        .attr("cx", 16) 
+        .attr("cy", 16)
+      displaySVG.selectAll("text")
+        .data(stringwork1)
+         .enter()
+         .append("text")
+         .text(function(d){return d})
+         .attr("text-anchor", "right")
+         .attr("y", 20)
+         .attr("x", 40)
+         .attr("font-size", "16px")
+         .attr("fill", "white")
+    } else if (data.depth == 2){
+      if (mgmtTypeKey[data.name]) {data.desc = mgmtTypeKey[data.name]; data.desc2 = UNtypeKey[data.parent.name]}
+      if (UNtypeKey[data.name]) {data.desc = UNtypeKey[data.name]; data.desc2 = mgmtTypeKey[data.parent.name]}
+      var stringwork2 = ["= sites with " + data.desc2+"", "= of those, sites with " + data.desc]
+      var circleData = [data.parent.name, data.name]
+      var result2 = colorKey.filter(function( obj ) {return obj.name == data.parent.name; });
+      console.log(result2)
+      result=[result2[0], result]
+      console.log(result)
+      displaySVG = d3.select(".holder").append("svg")
+      displaySVG.selectAll("circle")
+        .data(circleData)
+        .enter()
+        .append("circle")
+        //.attr("class", function(d) {return data.parent.name})
+        .style("fill", function(d, i){ return result[i].color})
+        .style("fill-opacity", ".75")
+        .attr("r", 16)
+        .attr("cx", function(d,i){return i*400 + 16}) 
+        .attr("cy", 16)
+      displaySVG.selectAll("text")
+        .data(stringwork2)
+         .enter()
+         .append("text")
+         .text(function(d){return d})
+         .attr("text-anchor", "right")
+         .attr("y", 20)
+         .attr("x", function(d,i){return i * 400 + 40})
+         .attr("font-size", "16px")
+         .attr("fill", "white")
+    } else{
+    d3.select(".holder")
+    .text(""+facilityName.name)
+  }
+}
 }
