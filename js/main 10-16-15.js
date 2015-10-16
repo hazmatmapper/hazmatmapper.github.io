@@ -53,6 +53,9 @@ var UNtypeKey = {};
 var mgmtTypeKey = {};
 var displaySVG;
 var facilityName = {"name": ""}
+var active = d3.select(null);
+var dataHelp;
+var pathHelp;
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -359,6 +362,7 @@ d3.csv("data/"+phase+".csv", function(data) {
   .key(function(d) { return d.importer_state; }) //EPA ID number
   .key(function(d) {return d.receivingLong;})
   .entries(data);
+  dataHelp = data;
   setMap(data);
   
 
@@ -677,26 +681,38 @@ function icicleDehighlight(data){
 }*/
 
 function setMap(data) {
+data = dataHelp;
 svg = d3.select("body").append("svg")
     .attr("id", "mapSVG")
     .attr("width", width66)
     .attr("height", height66);
+
 var path = d3.geo.path()
   .projection(projection);
 
 
+var g = svg.append("g")
+    .style("stroke-width", "1.5px");
+
 queue()
-  .defer(d3.json, "data/usa008.topojson")
+  .defer(d3.json, "data/us.json")
   .defer(d3.json, "data/can008.topojson")
   .defer(d3.json, "data/mex10.topojson")
   .defer(d3.json, "data/borders.topojson")
   .await(callback);
 
 function callback(error, us, can, mex, borders){
-  var us = svg.append("path")
-    .datum(topojson.feature(us, us.objects.usa))
-    .attr("class", "importer")
-    .attr("d", path);
+  g.selectAll("path")
+      .data(topojson.feature(us, us.objects.states).features)
+    .enter().append("path")
+      .attr("d", path)
+      .attr("class", "feature")
+      .on("click", clickedMap);
+  pathHelp=path
+  /*g.append("path")
+      .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+      .attr("class", "mesh")
+      .attr("d", path);*/
 
   var can = svg.append("path")
     .datum(topojson.feature(can, can.objects.can))
@@ -724,6 +740,46 @@ if(checker == true && switcher == false){importers(data)} else{dataCrunch()}
 
   };
 };
+
+function clickedMap(d) {
+  if (active.node() === this) return reset();
+  active.classed("active", false);
+  active = d3.select(this).classed("active", true);
+  path = pathHelp
+  var bounds = path.bounds(d),
+      dx = bounds[1][0] - bounds[0][0],
+      dy = bounds[1][1] - bounds[0][1],
+      x = (bounds[0][0] + bounds[1][0]) / 2,
+      y = (bounds[0][1] + bounds[1][1]) / 2,
+      scale = .9 / Math.max(dx / width66, dy / height66),
+      translate = [width66 / 2 - scale * x, height66 / 2 - scale * y];
+
+  var center = d3.geo.centroid(d)
+  console.log(center, scale, translate)
+
+  projection = d3.geo.mercator()
+  .center(center)
+  //.rotate([100,0])
+  //.parallels([20,45])
+  .scale(12000)
+  .translate([width66/2, height66/2])
+
+  d3.select("#mapSVG").remove()
+
+  setMap(dataHelp)
+}
+
+function reset() {
+  console.log('rest')
+  active.classed("active", false);
+  active = d3.select(null);
+
+  projection = projectionDefault
+
+  d3.select("#mapSVG").remove()
+
+  setMap(dataHelp)
+}
 
 function dataCrunch(data){
   latlongRdump=[];
@@ -1636,7 +1692,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
     } else if (data.depth == 2){
       if (mgmtTypeKey[data.name]) {data.desc = mgmtTypeKey[data.name]; data.desc2 = UNtypeKey[data.parent.name]}
       if (UNtypeKey[data.name]) {data.desc = UNtypeKey[data.name]; data.desc2 = mgmtTypeKey[data.parent.name]}
-      var stringwork2 = ["= sites with " + data.desc2+" " "= of those, sites with " + data.desc]
+      var stringwork2 = ["= sites with " + data.desc2+"", "= of those, sites with " + data.desc]
       var circleData = [data.parent.name, data.name]
       var result2 = colorKey.filter(function( obj ) {return obj.name == data.parent.name; });
       console.log(result2)
