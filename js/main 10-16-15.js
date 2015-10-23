@@ -37,6 +37,7 @@ var exporterRing = "black";
 var latlongdump;
 var tooltip;
 var defaultStroke = {"stroke": "red", "stroke-width": ".5px"}
+var defaultStrokeZoomed;
 var siteViewerHelp = false;
 var footerText;
 var descriptors = {};
@@ -50,7 +51,7 @@ var pathHelp;
 var IMPradius;
 var EXPradius;
 var lineStroke
-var u, c, m, b, imp, exp, arcGroup;
+var u, c, m, b, imp, exp, arcGroup, ports;
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -247,6 +248,7 @@ form.select("div #Solids").style({"border-color": "yellow", "border-width": "1px
     });
   labelEnter.append("label").text(function(d) {return d;}); 
 filterform.select("div #Site").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
+mapDisplay();
 setData(phase); 
 }
 
@@ -748,9 +750,8 @@ dataCrunch()
 };
 
 function clickedMap(d) {
-  console.log(activePlace, d.properties.id)
-  if (d.properties.id && activePlace == d.properties.id) {activePlace = 666; reset()} else if (d.properties.id) {activePlace = d.properties.id} //mexico test
-  if (d.id && activePlace == d.id) {activePlace = 666; reset()} else if (d.id) {activePlace = d.id}
+
+  if (activePlace == d.properties.id || activePlace == d.id) {activePlace = 666; return reset()} else if (d.properties.id) {activePlace = d.properties.id}  else if (d.id) {activePlace =d.id}//mexico test
 
   zoomed = true;
 
@@ -766,6 +767,8 @@ function clickedMap(d) {
 
   if (d.id == "Quebec") {translate = [translate[0], translate[1]-height66/4]}
   if (d.id == "Ontario") {translate = [translate[0]-width66/4, translate[1]-height66/8]}
+
+  defaultStrokeZoomed = {"stroke": "red", "stroke-width": 1/scale+"px"}
 
   u.transition()
     .duration(750)
@@ -789,6 +792,12 @@ function clickedMap(d) {
     .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
     .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
     .attr("r", function (d){return IMPradius(d.total_waste)/(scale/2)})
+  ports.transition()
+    .selectAll('circle')
+    .duration(750)
+    //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
+    .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
+    .attr("r", 9/scale)
   exp.transition()
     .selectAll('circle')
     .duration(750)
@@ -825,9 +834,9 @@ function clickedMap(d) {
 }
 
 function reset() {
-
+  console.log("reset")
   //d3.select("#mapSVG").remove()
-  zoomed = false;
+    zoomed = false;
 
   u.transition()
       .duration(750)
@@ -851,6 +860,12 @@ function reset() {
       .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
       .attr("transform", "")
       .attr("r", function (d){return IMPradius(d.total_waste)})
+  ports.transition()
+      .selectAll('circle')
+      .duration(750)
+      //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
+      .attr("transform", "")
+      .attr("r", 3)
   exp.transition()
       .selectAll('circle')
       .duration(750)
@@ -863,7 +878,6 @@ function reset() {
       .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
       //.style("stroke-width", "1.5px")
       .attr("transform", "");
-  
   
 
   //setMap(dataHelp)
@@ -992,8 +1006,8 @@ function importers(data){
       color2(d);
       updateDisplay(d);
     })
-  
   exporters();
+ 
   
   /*
   cxLeft = document.getElementsByClassName("OHD00816629")["importer"].attributes[3].value //get svg coords of Cincinatti site to set bounds
@@ -1064,6 +1078,39 @@ function importers(data){
   
 };
 
+function ports(){
+  var toolio = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([0, 0])
+  .html(function(d) {
+    return "<span style='color:white'>" + d.portname + ", "+d.portstate+ "</span>";
+  })
+
+  svg.call(toolio)
+
+  ports = svg.append("g")
+  d3.csv("data/ports.csv", function(error, data) {
+    data.forEach(function (d){d.lat = +d.latitude, d.long = +d.longitude})
+
+  ports.selectAll("circle")
+    .data(data)
+    .enter().append("circle")
+    .attr("class", "ports")
+    .style("fill", "red")
+    .attr("r", 3)
+    .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
+    .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
+    .on("mouseover", function(d){
+      toolio.show(d);
+    })
+    .on("mouseout", function(d){
+      toolio.hide(d);})
+
+   
+})
+}
+
+
 function exportThis(data){
   //change latlongdump to site-specific latlongdump
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
@@ -1100,7 +1147,6 @@ function exportThis(data){
 
 
 function drawLinesOver(data, base){
-  console.log(zoomed)
   if (zoomed == false){
   //var max = d3.max(data, function(d) {return d.total_waste}),
   //min = d3.min(data, function(d) {return d.total_waste})
@@ -1233,16 +1279,20 @@ function colorize(data, name){
 function clicky(data){
   svg.selectAll("."+currImporter)
     .style({"fill": currColor, "fill-opacity": .75});
-  svg.selectAll("circle") //select the current province in the DOM
-    //.style("fill-opacity", "1")
-    .style(defaultStroke);
+
   if (zoomed) {
+    svg.selectAll("circle") //select the current province in the DOM
+    //.style("fill-opacity", "1")
+    .style(defaultStrokeZoomed);
     if (data.id){ svg.selectAll("."+data.id) //select the current province in the DOM
     .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
     } else if (data.name) { svg.selectAll("."+data.name) //select the current province in the DOM
     .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
     }
   } else{
+    svg.selectAll("circle") //select the current province in the DOM
+    //.style("fill-opacity", "1")
+    .style(defaultStroke);
     if (data.id){ svg.selectAll("."+data.id) //select the current province in the DOM
       .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
     } else if (data.name) { svg.selectAll("."+data.name) //select the current province in the DOM
@@ -1352,6 +1402,7 @@ for (var j=0; j<latlongdump.length; j++){
     }) 
     .on("mouseout", function(d){tooltip.hide(d); dehighlight(d)}) 
     .on("click", function(d){drawLinesOut(d);importThis(d); clickyCheck = d.id; clicky(d); updateDisplay(d)})
+  ports();
 };
 
 function ViewerHelp(data){
@@ -1441,7 +1492,6 @@ var x = d3.scale.linear()
     .attr("width", 25)
     .attr("height", y)*/
 var barPadding = 5;
-console.log(povdump)
 povSVG.selectAll("rect")
      .data(povdump)
      .enter()
@@ -1511,14 +1561,13 @@ povSVG.selectAll("label")
   d3.csv("data/minority.csv", function(rdata) {
     racedata = rdata.map(function(d) { return {"Geography": d["Geography"], "percentMinority": +d["percentMinority"], "RecFacName": d["RecFacName"], "RecZip": +d["RecZip"], "RecPcntNonwhite": +d["RecPcntNonwhite"]}});
   
-  console.log(racedata)
   var censusDump
     for (var i =0; i<racedata.length-1; i++){
       if (racedata[i].RecZip === data.zip){
         censusDump = racedata[i].RecPcntNonwhite
       };
     };
-  console.log(censusDump)
+
   var racedump;
   for (var i =0; i<racedata.length-1; i++){
       if (racedata[i].Geography == data.zip){
@@ -1777,7 +1826,43 @@ var pathArcs = arcGroup.selectAll(".arc")
 }
 }
 
+function mapDisplay(){ //show steady state of system - ports, importers, and exporters
+  d3.select(".mapDisplay").remove()
+
+  d3.select("body")
+        .append("div")
+        .attr("class", "mapDisplay")
+
+  var stringwork2 = ["= ports of entry", "= US importers", "= foreign exporters"]
+  var circleData = [[6, "red"], [16, defaultColor], [16, "#3d3d3d"]]
+
+  displaySVG = d3.select(".mapDisplay").append("svg")
+  displaySVG.selectAll("circle")
+    .data(circleData)
+    .enter()
+    .append("circle")
+    //.attr("class", function(d) {return data.parent.name})
+    .style("fill", function(d){return d[1]})
+    .style("fill-opacity", ".75")
+    .style(defaultStroke)
+    .attr("r", function(d){return d[0]})
+    .attr("cx", function(d,i){return i*300 + 16}) 
+    .attr("cy", 16)
+  displaySVG.selectAll("text")
+    .data(stringwork2)
+     .enter()
+     .append("text")
+     .text(function(d){return d})
+     .attr("text-anchor", "right")
+     .attr("y", 20)
+     .attr("x", function(d,i){return i * 300 + 40})
+     .attr("font-size", "16px")
+     .attr("fill", "white")
+
+}
+
 function updateDisplay(data){ //function is called whether system change occurs and displays the new state of the system
+  if (data.depth == 0) {return mapDisplay()}
 
   d3.select(".mapDisplay").remove()
 
@@ -1823,9 +1908,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
       var stringwork2 = ["= sites with " + data.desc2+"", "= of those, sites with " + data.desc]
       var circleData = [data.parent.name, data.name]
       var result2 = colorKey.filter(function( obj ) {return obj.name == data.parent.name; });
-      console.log(result2)
       result=[result2[0], result]
-      console.log(result)
       displaySVG = d3.select(".mapDisplay").append("svg")
       displaySVG.selectAll("circle")
         .data(circleData)
