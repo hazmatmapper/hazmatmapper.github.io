@@ -28,14 +28,14 @@ a{
 }
 
 .title{
-  color: orange;
+  color: yellow;
   font-size: 40px;
   position: absolute;
-  left: 102vh;
+  left: 105vh;
   top: 5vh;
   height: 5%;
   width: 10%;
-  border: none;
+  text-shadow: 2px black;
 }
 
 .exporter{
@@ -43,9 +43,11 @@ a{
   stroke:#636363;
   stroke-width: 1px;
   fill-opacity: .7;
-
+  cursor: pointer;
 }
-
+.exporter:hover {
+  fill: orange;
+}
 .borders{
   fill: none;
   stroke: black;
@@ -53,7 +55,7 @@ a{
 }
 
 .introTitle{
-  color: orange;
+  color: yellow;
 }
 .introButton{
   width:100%;
@@ -67,19 +69,19 @@ a{
 
 }
 .introButton:hover{
-  border: solid orange 2px;
+  border: solid yellow 2px;
   cursor: pointer;
 }
 
 .feature {
-   fill: #b1bcc5;
+  fill: #b1bcc5;
   stroke:#838383;
   stroke-width: 1px;
   fill-opacity: .4;
   cursor: pointer;
 }
 
-.feature.active {
+.feature:hover {
   fill: orange;
 }
 
@@ -88,18 +90,12 @@ a{
   left: 44vh;
   top: 64vh;
   height: 5%;
-  width: 10%;
+  width: 100%; 
   color:white;
   font-family: 'Roboto', sans-serif;
 }
-.holder{
-  position:absolute;
-  left: 62vh;
-  top: 64vh;
-  height: 4%;
-  width: 100%;
-  font-family: 'Roboto', sans-serif;
-}
+
+
 
 #importer{
   stroke: red;
@@ -116,7 +112,7 @@ a{
 
 .aboutFooter{
   cursor: pointer;
-  color: orange;
+  color: yellow;
 }
 
 .aboutText{
@@ -143,10 +139,10 @@ a{
 }
 .viewer {
 	position: absolute;
-	left: 85vh;
+	left: 105vh;
 	top: 13vh;
   height: 55%;
-  width: 40%;
+  width: 35%;
 	border: none;
 }
 .importerName{
@@ -159,6 +155,11 @@ a{
   color: #c2c2c2;
 }
 
+.percentLabel{
+  font-size: 11px;
+  fill: white
+}
+
 .viewerData{
   font-size: 12px;
   color: #e8e8e8;
@@ -167,7 +168,7 @@ a{
 .povertyChart{
   position:absolute;
   left:50%;
-  top: 15%;
+  top: 12%;
   width: 100%;
   height: 100%;
   border: none;
@@ -217,7 +218,7 @@ h3{
   bottom: 0%;
   width: 100%;
   background-color: #555;
-  color: orange;
+  color: yellow;
 }
 
 .intro{
@@ -229,7 +230,7 @@ h3{
 
 /*this is the class for all of the filter buttons*/
 .filtering{
-  width: 85%;
+  width: 80%;
   text-align: center;
   font-size: small;
   vertical-align: middle;
@@ -266,9 +267,9 @@ h3{
 }
 .filterSelector{
   position: absolute;
-  width: 14%;
-  height: 20%;
-  left: -16%;
+  width: 20%;
+  height: 25%;
+  left: -15%;
 }
 
 .label {

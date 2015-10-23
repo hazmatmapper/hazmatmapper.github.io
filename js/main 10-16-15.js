@@ -4,7 +4,6 @@ var latlongs;
 var svg;
 var sum;
 var projection;
-var projectionDefault;
 var latlongsR;
 var latlongRdump = [];
 var facilitySum;
@@ -15,16 +14,13 @@ var bigNest;
 var latlongReset;
 var Isvg;
 var IAsvg;
-var width66;
-var height33;
-var height66;
+var width66, width75, height33, height66;
 var Site;
 var DisposalMethod;
 var povertydata = [];
 var colorKey;
 var checker = false; //checks to see whether we've run initial data crunching, essentially
 var povSVG;
-//var clickCheck = true; //detect whether radio button filter control was clicked
 var zoomed = false; //are we zoomed into rust belt?
 var switcher = false; //have we switched phases? if so, need to crunch data
 var exporterInfo;
@@ -33,7 +29,7 @@ var domain;
 var fullWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
 var fullHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 var filterDomain;
-var margin = {top: 10, right: 10, bottom: 30, left: 10};
+var margin = {top: 10, right: 10, bottom: 25, left: 10};
 var name; //the name of the chart area selected
 var phase = "Solids";
 var defaultColor = "#e8e8e8";
@@ -41,10 +37,6 @@ var exporterRing = "black";
 var latlongdump;
 var tooltip;
 var defaultStroke = {"stroke": "red", "stroke-width": ".5px"}
-var cxLeft;
-var cyLeft;
-var cxRight;
-var cyRight;
 var siteViewerHelp = false;
 var footerText;
 var descriptors = {};
@@ -53,9 +45,12 @@ var UNtypeKey = {};
 var mgmtTypeKey = {};
 var displaySVG;
 var facilityName = {"name": ""}
-var active = d3.select(null);
-var dataHelp;
+var activePlace = 666
 var pathHelp;
+var IMPradius;
+var EXPradius;
+var lineStroke
+var u, c, m, b, imp, exp, arcGroup;
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -146,25 +141,24 @@ function setControls(){
     .append("div")
     .attr("class", "filterSelector");
 
-  width66 =  .7 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+  width66 =  .55 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+  width75 =  .7 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
   height33 = .25 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-  height66 = .75 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+  height66 = .6 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
   projection = d3.geo.albers()
   .center([9,33])
   .rotate([100,0])
   .parallels([20,45])
-  .scale(700)
-  .translate([width66/2.75, height66/1.75]);
-
-  projectionDefault = projection;
+  .scale(600)
+  .translate([width66/2, height66/1.6]);
 
   IAsvg = d3.select(".barWrap").append("svg")
-    .attr("width", width66/8)
+    .attr("width", width75/8)
     .attr("height", height33)
 
   Isvg = d3.select(".barWrap").append("svg")
-    .attr("width", width66)
+    .attr("width", width75)
     .attr("height", height33)
   
   
@@ -362,7 +356,6 @@ d3.csv("data/"+phase+".csv", function(data) {
   .key(function(d) { return d.importer_state; }) //EPA ID number
   .key(function(d) {return d.receivingLong;})
   .entries(data);
-  dataHelp = data;
   setMap(data);
   
 
@@ -384,7 +377,6 @@ if (filterDomain == undefined){
   domain = method
 }
 
-
 var yax  = d3.scale.ordinal()
     .domain(domain)
     .range([0, height33/4.5, height33*2/4.5, height33*3/4.5]);
@@ -394,13 +386,13 @@ var yAxis = d3.svg.axis()
     .orient("left");
 IAsvg.append("g")
       .attr("class", "axis")
-      .attr("transform", "translate("+110+","+15+")")
+      .attr("transform", "translate("+width75/8+","+15+")")
       .call(yAxis);
 }
 
 function icicle(data){
 var x = d3.scale.linear()
-    .range([0, width66]);
+    .range([0, width75]);
 
 var y = d3.scale.linear()
     .range([0, height33 - margin.bottom]);
@@ -517,7 +509,7 @@ Isvg.selectAll("rects")
 
 //construct x axis
 var xscale = d3.scale.linear()
-    .range([10, width66-10]);
+    .range([10, width75-15]);
 var xheight = height33-margin.bottom-5
 var xAxis = d3.svg.axis()
     .scale(xscale)
@@ -531,7 +523,7 @@ Isvg.append("g")
     .append("text")
     //.attr("transform", "rotate(-90)")
     .attr("y", margin.bottom+5)
-    .attr("x", width66/2)
+    .attr("x", width75/2)
     .style("text-anchor", "middle")
     .text("Proportion of Total Waste");
 
@@ -546,7 +538,7 @@ function clicked(d) {
 var xdomain = d.value/sum
 var xscale = d3.scale.linear()
     .domain([0, xdomain])
-    .range([10, width66-10]);
+    .range([10, width75-15]);
 var xheight = height33-margin.bottom-5
 var xAxis = d3.svg.axis()
     .scale(xscale)
@@ -562,7 +554,7 @@ Isvg.append("g")
       .call(xAxis)
   .append("text")
     .attr("y", margin.bottom+5)
-    .attr("x", width66/2)
+    .attr("x", width75/2)
     .style("text-anchor", "middle")
     .text("Proportion of Total Waste");
 
@@ -600,7 +592,7 @@ Isvg.append("g")
       .remove()
   IAsvg.append("g")
       .attr("class", "axis")
-      .attr("transform", "translate("+110+","+10+")")
+      .attr("transform", "translate("+width75/8+","+10+")")
       .call(yAxis);
   };
 
@@ -681,57 +673,71 @@ function icicleDehighlight(data){
 }*/
 
 function setMap(data) {
-data = dataHelp;
 svg = d3.select("body").append("svg")
     .attr("id", "mapSVG")
     .attr("width", width66)
-    .attr("height", height66);
+    .attr("height", height66)
 
 var path = d3.geo.path()
   .projection(projection);
 
 
-var g = svg.append("g")
-    .style("stroke-width", "1.5px");
+u = svg.append("g")
+c = svg.append("g")
+m = svg.append("g")
+b = svg.append("g")
+
 
 queue()
   .defer(d3.json, "data/us.json")
-  .defer(d3.json, "data/can008.topojson")
-  .defer(d3.json, "data/mex10.topojson")
+  .defer(d3.json, "data/canada.json")
+  .defer(d3.json, "data/mex008.json")
   .defer(d3.json, "data/borders.topojson")
   .await(callback);
 
 function callback(error, us, can, mex, borders){
-  g.selectAll("path")
-      .data(topojson.feature(us, us.objects.states).features)
+  u.selectAll("path")
+    .data(topojson.feature(us, us.objects.states).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "feature")
       .on("click", clickedMap);
+  
+  c.selectAll('path')
+    .data(topojson.feature(can, can.objects.provinces).features)
+    .enter().append("path")
+      .attr("d", path)
+      .attr("class", "exporter")
+      .on("click", clickedMap); 
+
+  m.selectAll('path')
+    .data(topojson.feature(mex, mex.objects.mex).features)
+    .enter().append("path")
+      .attr("d", path)
+      .attr("class", "exporter")
+      .on("click", clickedMap);
+
+  b.selectAll('path')
+    .data(topojson.feature(borders, borders.objects.borders).features)
+    .enter().append("path")
+      .attr("d", path)
+      .attr("class", "borders")
+
   pathHelp=path
   /*g.append("path")
       .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
       .attr("class", "mesh")
       .attr("d", path);*/
 
-  var can = svg.append("path")
-    .datum(topojson.feature(can, can.objects.can))
-    .attr("class", "exporter")
-    .attr("d", path);
 
-  var mex = svg.append("path")
-    .datum(topojson.feature(mex, mex.objects.mex))
-    .attr("class", "exporter")
-    .attr("d", path);
-
-  var borders = svg.append("path")
+  /*var borders = svg.append("path")
     .datum(topojson.feature(borders, borders.objects.borders))
     .attr("class", "borders")
-    .attr("d", path);
-
-if(checker == true && switcher == false){importers(data)} else{dataCrunch()}
+    .attr("d", path);*/
+dataCrunch()
+//if(checker == true && switcher == false){importers(latlongRdump)} else{dataCrunch()}
   //switcher is whether we've switched phases
-  //checker is whether we've crunched data
+  //checker is whether we've ever crunched data
  //if checker false and switch true, data crunch
  //if checker false and switch not true, data crunch
  //if checker true and switch true, data crunch
@@ -742,10 +748,14 @@ if(checker == true && switcher == false){importers(data)} else{dataCrunch()}
 };
 
 function clickedMap(d) {
-  if (active.node() === this) return reset();
-  active.classed("active", false);
-  active = d3.select(this).classed("active", true);
+  console.log(activePlace, d.properties.id)
+  if (d.properties.id && activePlace == d.properties.id) {activePlace = 666; reset()} else if (d.properties.id) {activePlace = d.properties.id} //mexico test
+  if (d.id && activePlace == d.id) {activePlace = 666; reset()} else if (d.id) {activePlace = d.id}
+
+  zoomed = true;
+
   path = pathHelp
+
   var bounds = path.bounds(d),
       dx = bounds[1][0] - bounds[0][0],
       dy = bounds[1][1] - bounds[0][1],
@@ -754,31 +764,109 @@ function clickedMap(d) {
       scale = .9 / Math.max(dx / width66, dy / height66),
       translate = [width66 / 2 - scale * x, height66 / 2 - scale * y];
 
-  var center = d3.geo.centroid(d)
-  console.log(center, scale, translate)
+  if (d.id == "Quebec") {translate = [translate[0], translate[1]-height66/4]}
+  if (d.id == "Ontario") {translate = [translate[0]-width66/4, translate[1]-height66/8]}
 
-  projection = d3.geo.mercator()
+  u.transition()
+    .duration(750)
+    .style("stroke-width", 1.5 / scale + "px")
+    .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+  c.transition()
+    .duration(750)
+    .style("stroke-width", 1.5 / scale + "px")
+    .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+  m.transition()
+    .duration(750)
+    .style("stroke-width", 1.5 / scale + "px")
+    .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+  b.transition()
+    .duration(750)
+    .style("stroke-width", 1.5 / scale + "px")
+    .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+  imp.transition()
+    .selectAll('circle')
+    .duration(750)
+    .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
+    .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
+    .attr("r", function (d){return IMPradius(d.total_waste)/(scale/2)})
+  exp.transition()
+    .selectAll('circle')
+    .duration(750)
+    .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
+    .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
+    .attr("r", function (d){return EXPradius(d.total_waste)/(scale/2)})
+  arcGroup.transition()
+    .selectAll(".arc")
+    .duration(750)
+    .style('stroke-width', function(d) {return lineStroke(d.total_waste)/(scale/2)})
+    .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+
+  
+  //need to get bounds of sites... not center of state/province
+   /*var center = d3.geo.centroid(d)
+
   .center(center)
   //.rotate([100,0])
   //.parallels([20,45])
-  .scale(12000)
+  .scale(22000)
   .translate([width66/2, height66/2])
 
   d3.select("#mapSVG").remove()
 
-  setMap(dataHelp)
+  zoomed = true;
+  checker = true;
+
+  setMap(dataHelp)*/
+  //svg.selectAll("#importer").remove()
+  //svg.selectAll("#exporter").remove()
+
+  //importers(latlongRdump)
+  
 }
 
 function reset() {
-  console.log('rest')
-  active.classed("active", false);
-  active = d3.select(null);
 
-  projection = projectionDefault
+  //d3.select("#mapSVG").remove()
+  zoomed = false;
 
-  d3.select("#mapSVG").remove()
+  u.transition()
+      .duration(750)
+      .style("stroke-width", "1.5px")
+      .attr("transform", "");
+  c.transition()
+      .duration(750)
+      .style("stroke-width", "1.5px")
+      .attr("transform", "");
+  m.transition()
+      .duration(750)
+      .style("stroke-width", "1.5px")
+      .attr("transform", "");
+  b.transition()
+      .duration(750)
+      .style("stroke-width", "1.5px")
+      .attr("transform", "");
+  imp.transition()
+      .selectAll('circle')
+      .duration(750)
+      .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
+      .attr("transform", "")
+      .attr("r", function (d){return IMPradius(d.total_waste)})
+  exp.transition()
+      .selectAll('circle')
+      .duration(750)
+      .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return ".5px"}} )
+      .attr("transform", "")
+      .attr("r", function (d){return EXPradius(d.total_waste)})
+  arcGroup.transition()
+      .selectAll(".arc")
+      .duration(750)
+      .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
+      //.style("stroke-width", "1.5px")
+      .attr("transform", "");
+  
+  
 
-  setMap(dataHelp)
+  //setMap(dataHelp)
 }
 
 function dataCrunch(data){
@@ -858,14 +946,13 @@ function importers(data){
   min = d3.min(latlongReset, function(d) {return d.total_waste})
   globalMax = max;
   globalMin = min;
-
-  var radius; 
-  if (zoomed == false) {radius= d3.scale.sqrt()
+ 
+  if (zoomed == false) {IMPradius= d3.scale.sqrt()
     .domain([min+1, max]) //don't want min to be 0
     .range([10, 30])}
-  if (zoomed == true) {radius = d3.scale.sqrt()
+  if (zoomed == true) {IMPradius = d3.scale.sqrt()
     .domain([min+1, max]) //don't want min to be 0
-    .range([15, 50])}
+    .range([15, 70])}
   
   tooltip = d3.tip()
   .attr('class', 'd3-tip')
@@ -876,14 +963,16 @@ function importers(data){
 
   svg.call(tooltip)
 
-  svg.selectAll("circle")
+  imp = svg.append("g")
+
+  imp.selectAll("circle")
     .data(data)
     .enter().append("circle")
     .attr("class", function(d) {return d.id})
     .attr("id", "importer")
     .style("fill", defaultColor)
     .style("fill-opacity", ".75")
-    .attr("r", function(d) { return radius(d.total_waste); })
+    .attr("r", function(d) { return IMPradius(d.total_waste); })
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", function(d){
@@ -905,6 +994,8 @@ function importers(data){
     })
   
   exporters();
+  
+  /*
   cxLeft = document.getElementsByClassName("OHD00816629")["importer"].attributes[3].value //get svg coords of Cincinatti site to set bounds
   cyLeft = document.getElementsByClassName("OHD00816629")["importer"].attributes[4].value
 
@@ -969,7 +1060,7 @@ function importers(data){
       zoomed = false;
       setMap(data)
     })
-  }   
+  } */  
   
 };
 
@@ -1009,9 +1100,11 @@ function exportThis(data){
 
 
 function drawLinesOver(data, base){
+  console.log(zoomed)
+  if (zoomed == false){
   //var max = d3.max(data, function(d) {return d.total_waste}),
   //min = d3.min(data, function(d) {return d.total_waste})
-  var lineStroke = d3.scale.sqrt()
+  lineStroke = d3.scale.sqrt()
     .domain([globalMin, globalMax]) 
     .range([2, 10])
 
@@ -1025,7 +1118,7 @@ function drawLinesOver(data, base){
   svg.call(tooltipFlow)
 
   //based on: http://bl.ocks.org/enoex/6201948
-  var arcGroup = svg.append('g');
+  arcGroup = svg.append('g');
   var path = d3.geo.path()
     .projection(projection);
 
@@ -1096,7 +1189,7 @@ var pathArcs = arcGroup.selectAll(".arc")
             .on("mouseout", function(d) {tooltipFlow.hide(d)})
                 //'stroke-dasharray': '5'
             .call(lineTransition); 
-
+}
 }
 
 function drawLinesOut(){
@@ -1143,19 +1236,32 @@ function clicky(data){
   svg.selectAll("circle") //select the current province in the DOM
     //.style("fill-opacity", "1")
     .style(defaultStroke);
-  if (data.id){ svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
-  } else if (data.name) { svg.selectAll("."+data.name) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+  if (zoomed) {
+    if (data.id){ svg.selectAll("."+data.id) //select the current province in the DOM
+    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
+    } else if (data.name) { svg.selectAll("."+data.name) //select the current province in the DOM
+    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
+    }
+  } else{
+    if (data.id){ svg.selectAll("."+data.id) //select the current province in the DOM
+      .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+    } else if (data.name) { svg.selectAll("."+data.name) //select the current province in the DOM
+      .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+    }
   }
 
 }
 
 function highlight(data){
-  svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": "1"});
+  if (zoomed == false){
+  svg.selectAll("."+data.id) //select the current province in the DOM
+    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline
+  } else {
+  svg.selectAll("."+data.id) //select the current province in the DOM
+    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"}); //yellow outline 
+  }
 };
 
 function dehighlight(data){
@@ -1171,9 +1277,13 @@ function dehighlight(data){
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": ".5"});
   }
-  if (data.id == clickyCheck) {
+  if (data.id == clickyCheck && zoomed == false) {
   svg.selectAll("."+data.id) //select the current province in the DOM
     .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline  
+  }
+  if (data.id == clickyCheck && zoomed == true) {
+  svg.selectAll("."+data.id) //select the current province in the DOM
+    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"}); //yellow outline  
   }
 
 };
@@ -1217,18 +1327,20 @@ for (var j=0; j<latlongdump.length; j++){
   exGlobalMin = min;
 
   //scale according to zoom
-  var radius; 
-  if (zoomed == false) {radius= d3.scale.sqrt()
+  
+  if (zoomed == false) {EXPradius= d3.scale.sqrt()
     .domain([min+1, max]) //don't want min to be 0
     .range([10, 30])}
-  if (zoomed == true) {radius = d3.scale.sqrt()
+  if (zoomed == true) {EXPradius = d3.scale.sqrt()
     .domain([min+1, max]) //don't want min to be 0
     .range([15, 50])}
+
+  exp = svg.append("g")
   //add exporters to the map    
-  svg.selectAll(".pin")
+  exp.selectAll(".pin")
     .data(latlongdump)
     .enter().append("circle")
-    .attr("r", function(d) {return radius(d.total_waste); })
+    .attr("r", function(d) {return EXPradius(d.total_waste); })
     .attr("id", "exporter")
     .attr("class", function (d) { return d.id})
     .style({"fill": "#3d3d3d", "fill-opacity": ".75"/*, "stroke": exporterRing, "stroke-width": "3px"*/})
@@ -1279,31 +1391,40 @@ function demographicCharts(data){
 
 d3.select(".povertyChart").append("div")
   .attr("class", "povLabel")
-  .text("% in poverty near site")
+  .html("% in poverty near site <p>")
 
 d3.select(".povertyChart").append("div")
     .attr("class", "raceLabel")
-    .text("% non-white near site")
+    .html("% non-white near site <p>")
 
 var curr_width = document.getElementsByClassName("viewer")[0].clientWidth;
 var curr_height = document.getElementsByClassName("viewer")[0].clientHeight;
 
 var width = curr_width/3
-var height = curr_height/8
+var height = curr_height/6
 
   povSVG =  d3.select(".povertyChart").append("svg")
     .attr("width", width)
     .attr("height", height);
 //match zips
   d3.csv("data/poverty.csv", function(povdata) {
-    povertydata = povdata.map(function(d) { return {"Geography": d["Geography"], "percentPoverty": +d["percentPoverty"] }; });
-  
+    povertydata = povdata.map(function(d) { return {"Geography": d["Geography"], "percentPoverty": +d["percentPoverty"], "RecFacName": d["RecFacName"], "RecZip": +d["RecZip"], "RecPcntPoverty": +d["RecPcntPoverty"]}; });
+
+  var censusDump
+    for (var i =0; i<povertydata.length-1; i++){
+      if (povertydata[i].RecZip === data.zip){
+        censusDump = povertydata[i].RecPcntPoverty
+      };
+    };
+
   var povdump;
   for (var i =0; i<povertydata.length-1; i++){
       if (povertydata[i].Geography == data.zip){
-        povdump = [povertydata[i].percentPoverty, povertydata[0].percentPoverty]
+        povdump = [povertydata[i].percentPoverty, censusDump, povertydata[0].percentPoverty]
       };
     }; 
+
+
 var x = d3.scale.linear()
     .domain([100, 0])
     .range([0, width]);
@@ -1319,7 +1440,8 @@ var x = d3.scale.linear()
     .attr("class", "povBars")
     .attr("width", 25)
     .attr("height", y)*/
-var barPadding = 1;
+var barPadding = 5;
+console.log(povdump)
 povSVG.selectAll("rect")
      .data(povdump)
      .enter()
@@ -1328,11 +1450,11 @@ povSVG.selectAll("rect")
         return i * (height / povdump.length);
      })
      .attr("x", function(d) { return 0; })
-     .attr("height", height / povdump.length - barPadding)
-     .attr("width", function(d){ return width - x(d)})
+     .attr("height", height / povdump.length - barPadding).transition().duration(750)
+     .attr("width", function(d){ return width - x(d)}).transition().duration(750)
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
-        if (i == 0) {
+        if (i != 2) {
           return document.getElementsByClassName(data.id)["importer"].style.fill
         }
         else {
@@ -1346,21 +1468,23 @@ povSVG.selectAll("text")
          .enter()
          .append("text")
          .text(function(d) {
+            if (d == undefined) {return "Not available"} else{
             return d3.round(d, 1)+"%";
+            }
          })
-         .attr("text-anchor", "middle")
+         .attr("text-anchor", "right")
          .attr("y", function(d, i) {
             return i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.5;
          })
          .attr("x", function(d) { return 16; })
-         .attr("font-size", "11px")
-         .attr("fill", "black")
+         .attr("class", "percentLabel")
 povSVG.selectAll("label")
     .data(povdump)
          .enter()
          .append("text")
          .text(function(d, i) {
             if (i == 0) {return "Site zipcode"}
+            else if (i == 1) {return "Site census tract"}
             else{return "Ntl. Average"}
          })
          .attr("text-anchor", "middle")
@@ -1370,9 +1494,8 @@ povSVG.selectAll("label")
          })
          .attr("x", width - 50)
          .attr("font-size", "11px")
-         .attr("fill", "white")
+         .attr("fill", "#d3d3d3")
          //.attr("font-weight", "bold");
-
 
   });
 
@@ -1385,13 +1508,21 @@ povSVG.selectAll("label")
     .attr("width", width)
     .attr("height", height);
 
-  d3.csv("data/minority.csv", function(racedata) {
-    racedata = racedata.map(function(d) { return {"Geography": d["Geography"], "percentMinority": +d["percentMinority"] }; });
+  d3.csv("data/minority.csv", function(rdata) {
+    racedata = rdata.map(function(d) { return {"Geography": d["Geography"], "percentMinority": +d["percentMinority"], "RecFacName": d["RecFacName"], "RecZip": +d["RecZip"], "RecPcntNonwhite": +d["RecPcntNonwhite"]}});
   
+  console.log(racedata)
+  var censusDump
+    for (var i =0; i<racedata.length-1; i++){
+      if (racedata[i].RecZip === data.zip){
+        censusDump = racedata[i].RecPcntNonwhite
+      };
+    };
+  console.log(censusDump)
   var racedump;
   for (var i =0; i<racedata.length-1; i++){
       if (racedata[i].Geography == data.zip){
-        racedump = [racedata[i].percentMinority, racedata[0].percentMinority]
+        racedump = [racedata[i].percentMinority, censusDump, racedata[0].percentMinority]
       };
     }; 
 var x = d3.scale.linear()
@@ -1409,7 +1540,7 @@ var x = d3.scale.linear()
     .attr("class", "povBars")
     .attr("width", 25)
     .attr("height", y)*/
-var barPadding = 1;
+var barPadding = 5;
 rSVG.selectAll("rect")
      .data(racedump)
      .enter()
@@ -1418,11 +1549,11 @@ rSVG.selectAll("rect")
         return i * (height / racedump.length);
      })
      .attr("x", function(d) { return 0; })
-     .attr("height", height / racedump.length - barPadding)
-     .attr("width", function(d){ return width-x(d)})
+     .attr("height", height / racedump.length - barPadding).transition().duration(750)
+     .attr("width", function(d){ return width-x(d)}).transition().duration(750)
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
-        if (i == 0) {
+        if (i != 2) {
           return document.getElementsByClassName(data.id)["importer"].style.fill
         }
         else {
@@ -1435,14 +1566,13 @@ rSVG.selectAll("text")
          .data(racedump)
          .enter()
          .append("text")
-         .text(function(d){return d3.round(d, 1)+"%"})
-         .attr("text-anchor", "middle")
+         .text(function(d){if (d == undefined) {return "Not available"} else{return d3.round(d, 1)+"%"}})
+         .attr("text-anchor", "right")
          .attr("y", function(d, i) {
             return i * (height / racedump.length) + (height / racedump.length - barPadding) / 1.5;
          })
          .attr("x", function(d) { return 16; })
-         .attr("font-size", "11px")
-         .attr("fill", "black")
+         .attr("class", "percentLabel")
          //.attr("font-weight", "bold");
 /*rSVG.selectAll("label")
     .data(racedump)
@@ -1463,9 +1593,10 @@ rSVG.selectAll("text")
         .attr("font-weight", "bold");*/
   });
 
-d3.select(".povertyChart").append("div")
+//FOR DISPLAYING MANIFESTS
+/*d3.select(".povertyChart").append("div")
     .attr("class", "Manifests")
-    .html("<p>Manifests")
+    .html("<p>Manifests")*/
 
 }
 }
@@ -1556,7 +1687,8 @@ function importThis(data){
 
 
 function exDrawLinesOver(data, base){
-  var lineStroke = d3.scale.sqrt()
+  if (zoomed == false){
+  lineStroke = d3.scale.sqrt()
     .domain([exGlobalMin, exGlobalMax]) 
     .range([2, 10])
 
@@ -1569,7 +1701,8 @@ function exDrawLinesOver(data, base){
 
   svg.call(tooltipFlow)
   //based on: http://bl.ocks.org/enoex/6201948
-  var arcGroup = svg.append('g');
+
+ arcGroup = svg.append('g');
   var path = d3.geo.path()
     .projection(projection);
 
@@ -1641,29 +1774,24 @@ var pathArcs = arcGroup.selectAll(".arc")
             .on("mouseout", function(d) {tooltipFlow.hide(d)})
             .call(lineTransition); 
 
-
+}
 }
 
 function updateDisplay(data){ //function is called whether system change occurs and displays the new state of the system
 
   d3.select(".mapDisplay").remove()
-  d3.select(".holder").remove()
 
   d3.select("body")
         .append("div")
         .attr("class", "mapDisplay")
-        .text("What you're seeing: ")
-  d3.select("body")
-        .append("div")
-        .attr("class", "holder")
         .text(""+data.name)
   
 
   if (data.depth && filterDomain != "Site" && filterDomain != undefined){
-    d3.select(".holder").remove()
+    d3.select(".mapDisplay").remove()
     d3.select("body")
         .append("div")
-        .attr("class", "holder")
+        .attr("class", "mapDisplay")
     var result = colorKey.filter(function( obj ) {return obj.name == data.name;});
     result = result[0];
 
@@ -1671,7 +1799,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
       if (mgmtTypeKey[data.name]) {data.desc = mgmtTypeKey[data.name]}
       if (UNtypeKey[data.name]) {data.desc = UNtypeKey[data.name]}
       var stringwork1 = ["= sites with " + data.desc]
-      displaySVG = d3.select(".holder").append("svg")
+      displaySVG = d3.select(".mapDisplay").append("svg")
       displaySVG.append("circle")
         //.attr("class", function(d) {return data.name})
         .style("fill", result.color)
@@ -1698,7 +1826,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
       console.log(result2)
       result=[result2[0], result]
       console.log(result)
-      displaySVG = d3.select(".holder").append("svg")
+      displaySVG = d3.select(".mapDisplay").append("svg")
       displaySVG.selectAll("circle")
         .data(circleData)
         .enter()
@@ -1720,7 +1848,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
          .attr("font-size", "16px")
          .attr("fill", "white")
     } else{
-    d3.select(".holder")
+    d3.select(".mapDisplay")
     .text(""+facilityName.name)
   }
 }
