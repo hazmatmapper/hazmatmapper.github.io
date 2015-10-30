@@ -53,6 +53,361 @@ var EXPradius;
 var lineStroke
 var u, c, m, b, imp, exp, arcGroup, ports;
 
+var mexfips = {
+  "0": {
+    "FIELD2":"Aguascalientes",
+    "FIELD3":""
+  },
+  "1": {
+    "FIELD2":"Baja California",
+    "FIELD3":""
+  },
+  "2": {
+    "FIELD2":"Baja California Sur",
+    "FIELD3":""
+  },
+  "3": {
+    "FIELD2":"Campeche",
+    "FIELD3":""
+  },
+  "5": {
+    "FIELD2":"Chiapas",
+    "FIELD3":""
+  },
+  "6": {
+    "FIELD2":"Chihuahua",
+    "FIELD3":""
+  },
+  "7": {
+    "FIELD2":"Coahuila",
+    "FIELD3":""
+  },
+  "8": {
+    "FIELD2":"Colima",
+    "FIELD3":""
+  },
+  "9": {
+    "FIELD2":"Distrito Federal",
+    "FIELD3":""
+  },
+  "13": {
+    "FIELD2":"Durango",
+    "FIELD3":""
+  },
+  "9": {
+    "FIELD2":"Guanajuato",
+    "FIELD3":""
+  },
+  "10": {
+    "FIELD2":"Guerrero",
+    "FIELD3":""
+  },
+  "14": {
+    "FIELD2":"Hidalgo State, Mexico",
+    "FIELD3":""
+  },
+  "15": {
+    "FIELD2":"Jalisco",
+    "FIELD3":""
+  },
+  "21": {
+    "FIELD2":"Mexico State, Mexico",
+    "FIELD3":""
+  },
+  "18": {
+    "FIELD2":"Michoacan",
+    "FIELD3":""
+  },
+  "16": {
+    "FIELD2":"Morelos",
+    "FIELD3":""
+  },
+  "17": {
+    "FIELD2":"Nayarit",
+    "FIELD3":""
+  },
+  "18": {
+    "FIELD2":"Nuevo Leon",
+    "FIELD3":""
+  },
+  "26": {
+    "FIELD2":"Oaxaca",
+    "FIELD3":""
+  },
+  "20": {
+    "FIELD2":"Puebla",
+    "FIELD3":""
+  },
+  "22": {
+    "FIELD2":"Quer�taro",
+    "FIELD3":""
+  },
+  "23": {
+    "FIELD2":"Quintana Roo",
+    "FIELD3":""
+  },
+  "25": {
+    "FIELD2":"San Luis Potosi",
+    "FIELD3":""
+  },
+  "24": {
+    "FIELD2":"Sinaloa",
+    "FIELD3":""
+  },
+  "28": {
+    "FIELD2":"Sonora",
+    "FIELD3":""
+  },
+  "27": {
+    "FIELD2":"Tabasco",
+    "FIELD3":""
+  },
+  "29": {
+    "FIELD2":"Tamaulipas",
+    "FIELD3":""
+  },
+  "31": {
+    "FIELD2":"Tlaxcala",
+    "FIELD3":""
+  },
+  "30": {
+    "FIELD2":"Veracruz",
+    "FIELD3":""
+  },
+  "32": {
+    "FIELD2":"Yucat�n",
+    "FIELD3":""
+  },
+  "33": {
+    "FIELD2":"Zacatecas",
+    "FIELD3":""
+  }
+}
+var fips= {
+  "2": {
+    "name": "Alaska",
+    "abbreviation": "AK"
+  },
+  "1": {
+    "name": "Alabama",
+    "abbreviation": "AL"
+  },
+  "5": {
+    "name": "Arkansas",
+    "abbreviation": "AR"
+  },
+  "60": {
+    "name": "American Samoa",
+    "abbreviation": "AS"
+  },
+  "4": {
+    "name": "Arizona",
+    "abbreviation": "AZ"
+  },
+  "6": {
+    "name": "California",
+    "abbreviation": "CA"
+  },
+  "8": {
+    "name": "Colorado",
+    "abbreviation": "CO"
+  },
+  "9": {
+    "name": "Connecticut",
+    "abbreviation": "CT"
+  },
+  "11": {
+    "name": "District of Columbia",
+    "abbreviation": "DC"
+  },
+  "10": {
+    "name": "Delaware",
+    "abbreviation": "DE"
+  },
+  "12": {
+    "name": "Florida",
+    "abbreviation": "FL"
+  },
+  "13": {
+    "name": "Georgia",
+    "abbreviation": "GA"
+  },
+  "66": {
+    "name": "Guam",
+    "abbreviation": "GU"
+  },
+  "15": {
+    "name": "Hawaii",
+    "abbreviation": "HI"
+  },
+  "19": {
+    "name": "Iowa",
+    "abbreviation": "IA"
+  },
+  "16": {
+    "name": "Idaho",
+    "abbreviation": "ID"
+  },
+  "17": {
+    "name": "Illinois",
+    "abbreviation": "IL"
+  },
+  "18": {
+    "name": "Indiana",
+    "abbreviation": "IN"
+  },
+  "20": {
+    "name": "Kansas",
+    "abbreviation": "KS"
+  },
+  "21": {
+    "name": "Kentucky",
+    "abbreviation": "KY"
+  },
+  "22": {
+    "name": "Louisiana",
+    "abbreviation": "LA"
+  },
+  "25": {
+    "name": "Massachusetts",
+    "abbreviation": "MA"
+  },
+  "24": {
+    "name": "Maryland",
+    "abbreviation": "MD"
+  },
+  "23": {
+    "name": "Maine",
+    "abbreviation": "ME"
+  },
+  "26": {
+    "name": "Michigan",
+    "abbreviation": "MI"
+  },
+  "27": {
+    "name": "Minnesota",
+    "abbreviation": "MN"
+  },
+  "29": {
+    "name": "Missouri",
+    "abbreviation": "MO"
+  },
+  "28": {
+    "name": "Mississippi",
+    "abbreviation": "MS"
+  },
+  "30": {
+    "name": "Montana",
+    "abbreviation": "MT"
+  },
+  "37": {
+    "name": "North Carolina",
+    "abbreviation": "NC"
+  },
+  "38": {
+    "name": "North Dakota",
+    "abbreviation": "ND"
+  },
+  "31": {
+    "name": "Nebraska",
+    "abbreviation": "NE"
+  },
+  "33": {
+    "name": "New Hampshire",
+    "abbreviation": "NH"
+  },
+  "34": {
+    "name": "New Jersey",
+    "abbreviation": "NJ"
+  },
+  "35": {
+    "name": "New Mexico",
+    "abbreviation": "NM"
+  },
+  "32": {
+    "name": "Nevada",
+    "abbreviation": "NV"
+  },
+  "36": {
+    "name": "New York",
+    "abbreviation": "NY"
+  },
+  "39": {
+    "name": "Ohio",
+    "abbreviation": "OH"
+  },
+  "40": {
+    "name": "Oklahoma",
+    "abbreviation": "OK"
+  },
+  "41": {
+    "name": "Oregon",
+    "abbreviation": "OR"
+  },
+  "42": {
+    "name": "Pennsylvania",
+    "abbreviation": "PA"
+  },
+  "72": {
+    "name": "Puerto Rico",
+    "abbreviation": "PR"
+  },
+  "44": {
+    "name": "Rhode Island",
+    "abbreviation": "RI"
+  },
+  "45": {
+    "name": "South Carolina",
+    "abbreviation": "SC"
+  },
+  "46": {
+    "name": "South Dakota",
+    "abbreviation": "SD"
+  },
+  "47": {
+    "name": "Tennessee",
+    "abbreviation": "TN"
+  },
+  "48": {
+    "name": "Texas",
+    "abbreviation": "TX"
+  },
+  "49": {
+    "name": "Utah",
+    "abbreviation": "UT"
+  },
+  "51": {
+    "name": "Virginia",
+    "abbreviation": "VA"
+  },
+  "78": {
+    "name": "Virgin Islands",
+    "abbreviation": "VI"
+  },
+  "50": {
+    "name": "Vermont",
+    "abbreviation": "VT"
+  },
+  "53": {
+    "name": "Washington",
+    "abbreviation": "WA"
+  },
+  "55": {
+    "name": "Wisconsin",
+    "abbreviation": "WI"
+  },
+  "54": {
+    "name": "West Virginia",
+    "abbreviation": "WV"
+  },
+  "56": {
+    "name": "Wyoming",
+    "abbreviation": "WY"
+  }
+}
+
+console.log(fips[56])
+
 //begin script when window loads 
 window.onload = initialize(); 
 
@@ -211,6 +566,7 @@ function setControls(){
       filterform.selectAll("div").style({"border-color": "black", "border-width": "1px", "border-type": "solid"})
       filterform.select("div #Site").style({"border-color": "yellow", "border-width": "1px", "border-type": "solid"})
       switcher=true;
+      zoomed = false
       setData(d)  
     });
   labelEnter.append("label").text(function(d) {return d;}); 
@@ -266,6 +622,10 @@ d3.csv("data/"+phase+".csv", function(data) {
     d.un = d.un
     d.mgmt = d.mgmt
     d.year = d.year
+    d.rcra = d.rcra
+    d.inputer = d.inputer
+    d.filenom = d.filenom
+    d.ExpectedManagementMethod = d.ExpectedManagementMethod
     /*d.hazWasteDesc.indexOf("LEAD") > -1 ? d.hazWasteDesc = "lead" : d.hazWasteDesc = d.hazWasteDesc; //convert everything with lead to lead in waste description; // this is where we can do work creating waste categories...
     d.hazWasteDesc.indexOf("MERCURY") > -1 ? d.hazWasteDesc = "mercury" : d.hazWasteDesc = d.hazWasteDesc;
     d.hazWasteDesc.indexOf("TOLULENE") > -1 ? d.hazWasteDesc = "toluene" : d.hazWasteDesc = d.hazWasteDesc;
@@ -285,6 +645,8 @@ d3.csv("data/"+phase+".csv", function(data) {
   data.forEach(function(d) {
     mgmtTypeKey[d.mgmt] = d.ExpectedManagementMethod;
   });
+
+  console.log(mgmtTypeKey)
 
   Site = d3.nest()
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
@@ -311,6 +673,7 @@ d3.csv("data/"+phase+".csv", function(data) {
   Type={"key": "total", "values": Type};
 
   //need a sort by type solid/liquid here based on G/L vs K/P
+
 
   renameStuff(Site);
   renameStuff(DisposalMethod);
@@ -770,6 +1133,8 @@ function clickedMap(d) {
 
   defaultStrokeZoomed = {"stroke": "red", "stroke-width": 1/scale+"px"}
 
+  sumByState(d);
+
   u.transition()
     .duration(750)
     .style("stroke-width", 1.5 / scale + "px")
@@ -810,7 +1175,10 @@ function clickedMap(d) {
     .style('stroke-width', function(d) {return lineStroke(d.total_waste)/(scale/2)})
     .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
 
-  
+
+
+
+
   //need to get bounds of sites... not center of state/province
    /*var center = d3.geo.centroid(d)
 
@@ -979,11 +1347,14 @@ function importers(data){
 
   imp = svg.append("g")
 
+  console.log(data)
+
   imp.selectAll("circle")
     .data(data)
     .enter().append("circle")
-    .attr("class", function(d) {return d.id})
+    .attr("class", function(d) {return d.id+" "+d.state})
     .attr("id", "importer")
+    //.attr("id", function(d){return data.state})
     .style("fill", defaultColor)
     .style("fill-opacity", ".75")
     .attr("r", function(d) { return IMPradius(d.total_waste); })
@@ -1006,6 +1377,7 @@ function importers(data){
       color2(d);
       updateDisplay(d);
     })
+
   exporters();
  
   
@@ -1078,12 +1450,47 @@ function importers(data){
   
 };
 
+function sumByState(data){
+  console.log(data.id)
+  if (typeof(data.id) === "string") {
+    var name = data.id
+    var state = document.getElementsByClassName(data.id.toUpperCase())
+    var length = state.length
+  }
+  if (typeof(data.id) === "number") {
+    var name = fips[data.id].name
+    var ddd = fips[data.id].abbreviation
+    var state = document.getElementsByClassName(ddd)
+    var length = state.length
+  }
+  if (data.properties.id){
+    var name = mexfips[data.properties.id]["FIELD2"]
+    var state = document.getElementsByClassName(name.toUpperCase())
+    var length = state.length
+  }
+  console.log(state)
+
+  var sum = 0;
+  for (var k=0; k<state.length; k++){
+    sum += state[k].__data__.total_waste
+  }
+
+  d3.select(".intro").remove()
+  d3.select(".viewerText").remove()
+  d3.select(".povertyChart").remove()
+  d3.select(".viewer").append("div").attr("class", "viewerText");
+  d3.select(".viewerText")
+    .html("<span class='importerName'>"+name+"</span><p><span class = 'viewerCategory'>Total waste</span><br><span class ='viewerData'>"+sum+"<p><span class = 'viewerCategory'>Number of sites</span><br><span class ='viewerData'>"+length+"")
+  //get importers within bounding box
+  //sum them, do other stuff
+}
+
 function ports(){
   var toolio = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
-    return "<span style='color:white'>" + d.portname + ", "+d.portstate+ "</span>";
+    return "<span style='color:white'>" + d.name + "</span>";
   })
 
   svg.call(toolio)
@@ -1303,6 +1710,7 @@ function clicky(data){
 }
 
 function highlight(data){
+  console.log(data)
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": "1"});
   if (zoomed == false){
@@ -1386,13 +1794,14 @@ for (var j=0; j<latlongdump.length; j++){
     .range([15, 50])}
 
   exp = svg.append("g")
-  //add exporters to the map    
+  //add exporters to the map   
+
   exp.selectAll(".pin")
     .data(latlongdump)
     .enter().append("circle")
     .attr("r", function(d) {return EXPradius(d.total_waste); })
     .attr("id", "exporter")
-    .attr("class", function (d) { return d.id})
+    .attr("class", function (d) { return d.state+" "+d.id})
     .style({"fill": "#3d3d3d", "fill-opacity": ".75"/*, "stroke": exporterRing, "stroke-width": "3px"*/})
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
