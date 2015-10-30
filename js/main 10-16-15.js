@@ -406,8 +406,6 @@ var fips= {
   }
 }
 
-console.log(fips[56])
-
 //begin script when window loads 
 window.onload = initialize(); 
 
@@ -437,7 +435,7 @@ function initialize(){
   d3.select(".footer")
   .append("text")
   .attr("class", "data")
-  .html("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Data last updated: 3/5/15")
+  .html("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Data last updated: 10/30/15")
   
   setControls();
   /*d3.select("body")
@@ -460,7 +458,7 @@ function setControls(){
   d3.select("body")
     .append("div")
     .attr("class", "title")
-    .html("HazMatMapper")
+    .html("HazMatMapper<br><span class='subtitle'>US Imports of Hazardous Waste from Canada and Mexico 2007-2012</span>")
   d3.select("body")
     .append("div")
     .classed("viewer", true)
@@ -646,7 +644,6 @@ d3.csv("data/"+phase+".csv", function(data) {
     mgmtTypeKey[d.mgmt] = d.ExpectedManagementMethod;
   });
 
-  console.log(mgmtTypeKey)
 
   Site = d3.nest()
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
@@ -694,6 +691,7 @@ d3.csv("data/"+phase+".csv", function(data) {
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // EPA ID number
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by receiving facility code
   .entries(data);
+
 
   typeByFacility = d3.nest()
   .key(function(d) { return d.hazWasteDesc; })
@@ -1128,8 +1126,8 @@ function clickedMap(d) {
       scale = .9 / Math.max(dx / width66, dy / height66),
       translate = [width66 / 2 - scale * x, height66 / 2 - scale * y];
 
-  if (d.id == "Quebec") {translate = [translate[0], translate[1]-height66/4]}
-  if (d.id == "Ontario") {translate = [translate[0]-width66/4, translate[1]-height66/8]}
+  if (d.id == "Quebec") {scale = scale*3, translate = [translate[0]-width66*3, translate[1]-height66*1.5]}
+  if (d.id == "Ontario") {scale = scale* 3.5; translate = [translate[0]-width66*4.25, translate[1]-height66*2.5]}
 
   defaultStrokeZoomed = {"stroke": "red", "stroke-width": 1/scale+"px"}
 
@@ -1157,12 +1155,12 @@ function clickedMap(d) {
     .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
     .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
     .attr("r", function (d){return IMPradius(d.total_waste)/(scale/2)})
-  ports.transition()
+  /*ports.transition()
     .selectAll('circle')
     .duration(750)
     //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
     .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
-    .attr("r", 9/scale)
+    .attr("r", 9/scale)*/
   exp.transition()
     .selectAll('circle')
     .duration(750)
@@ -1202,7 +1200,6 @@ function clickedMap(d) {
 }
 
 function reset() {
-  console.log("reset")
   //d3.select("#mapSVG").remove()
     zoomed = false;
 
@@ -1228,12 +1225,12 @@ function reset() {
       .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
       .attr("transform", "")
       .attr("r", function (d){return IMPradius(d.total_waste)})
-  ports.transition()
+  /*ports.transition()
       .selectAll('circle')
       .duration(750)
       //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
       .attr("transform", "")
-      .attr("r", 3)
+      .attr("r", 3)*/
   exp.transition()
       .selectAll('circle')
       .duration(750)
@@ -1347,8 +1344,6 @@ function importers(data){
 
   imp = svg.append("g")
 
-  console.log(data)
-
   imp.selectAll("circle")
     .data(data)
     .enter().append("circle")
@@ -1451,7 +1446,6 @@ function importers(data){
 };
 
 function sumByState(data){
-  console.log(data.id)
   if (typeof(data.id) === "string") {
     var name = data.id
     var state = document.getElementsByClassName(data.id.toUpperCase())
@@ -1461,6 +1455,7 @@ function sumByState(data){
     var name = fips[data.id].name
     var ddd = fips[data.id].abbreviation
     var state = document.getElementsByClassName(ddd)
+    console.log(name, ddd, state)
     var length = state.length
   }
   if (data.properties.id){
@@ -1468,7 +1463,6 @@ function sumByState(data){
     var state = document.getElementsByClassName(name.toUpperCase())
     var length = state.length
   }
-  console.log(state)
 
   var sum = 0;
   for (var k=0; k<state.length; k++){
@@ -1485,7 +1479,7 @@ function sumByState(data){
   //sum them, do other stuff
 }
 
-function ports(){
+/*function ports(){
   var toolio = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
@@ -1516,7 +1510,7 @@ function ports(){
    
 })
 }
-
+*/
 
 function exportThis(data){
   //change latlongdump to site-specific latlongdump
@@ -1529,21 +1523,22 @@ function exportThis(data){
           latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"], "units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": []}) //lat longs of the foreign waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
             latlongdump[0]["types"].push(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
-
           };
         };
-
         };     
       };
     };
   //add exporter sum to latlongdump object for symbolizing etc.
+  //THIS IS WHERE THE PROBLEM IS?
+  console.log(exporterSum)
   for (var i =0; i<exporterSum.length; i++){
     for (var j=0; j<latlongdump.length; j++){
       if (exporterSum[i]["key"] == latlongdump[j].long){
-        latlongdump[j].total_waste = exporterSum[i]["values"]["total_waste"]
+        latlongdump[j].total_waste = exporterSum[i]["values"]["total_waste"] // this is adding ALL that facility's waste...?
       };
     }; 
   };
+  console.log(latlongdump)
   //send data off to viewer
   viewer(data, latlongdump);
 
@@ -1601,7 +1596,6 @@ function drawLinesOver(data, base){
             return function(t) { return interpolate(t); };
         };
 
-
 var links = [];
 for(var i=0, len=data.length; i<len; i++){
     // (note: loop until length - 1 since we're getting the next
@@ -1617,6 +1611,7 @@ for(var i=0, len=data.length; i<len; i++){
             units: data[i].units
         });
     }
+
 var pathArcs = arcGroup.selectAll(".arc")
             .data(links);
 
@@ -1710,7 +1705,6 @@ function clicky(data){
 }
 
 function highlight(data){
-  console.log(data)
   Isvg.selectAll("."+data.id) //select the current province in the DOM
     .style({"fill-opacity": "1"});
   if (zoomed == false){
@@ -2242,8 +2236,8 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
         .append("div")
         .attr("class", "mapDisplay")
 
-  var stringwork2 = ["= ports of entry", "= US importers", "= foreign exporters"]
-  var circleData = [[6, "red"], [16, defaultColor], [16, "#3d3d3d"]]
+  var stringwork2 = ["= US importers", "= foreign exporters"]
+  var circleData = [[16, defaultColor], [16, "#3d3d3d"]]
 
   displaySVG = d3.select(".mapDisplay").append("svg")
   displaySVG.selectAll("circle")
@@ -2267,7 +2261,6 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
      .attr("x", function(d,i){return i * 300 + 40})
      .attr("font-size", "16px")
      .attr("fill", "white")
-
 }
 
 function updateDisplay(data){ //function is called whether system change occurs and displays the new state of the system

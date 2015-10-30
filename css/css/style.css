@@ -34,8 +34,14 @@ a{
   left: 105vh;
   top: 5vh;
   height: 5%;
-  width: 10%;
-  text-shadow: 2px black;
+  width: 40%;
+}
+
+.subtitle{
+  color: #c2c2c2;
+  font-size:16px;
+  position: absolute;
+  width: 100%;
 }
 
 .exporter{
@@ -140,7 +146,7 @@ a{
 .viewer {
 	position: absolute;
 	left: 105vh;
-	top: 13vh;
+	top: 15vh;
   height: 55%;
   width: 35%;
 	border: none;
