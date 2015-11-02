@@ -865,14 +865,14 @@ var partition = d3.layout.partition()
     //.size([width, height])
     .value(function(d) { return d.size; });
 
-/*var tip = d3.tip()
+var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
-Isvg.call(tip)*/
+Isvg.call(tip)
 
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
