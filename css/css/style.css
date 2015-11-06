@@ -1,14 +1,6 @@
-@font-face {
-    font-family: 'BebasNeueRegular';
-    src: url('fonts/BebasNeue-webfont.eot');
-    src: url('fonts/BebasNeue-webfont.eot?#iefix') format('embedded-opentype'),
-         url('fonts/BebasNeue-webfont.woff') format('woff'),
-         url('fonts/BebasNeue-webfont.ttf') format('truetype'),
-         url('fonts/BebasNeue-webfont.svg#BebasNeueRegular') format('svg');
-    font-weight: normal;
-    font-style: normal;
+/* lambda = 200px 
 
-}   
+*/ 
 
 body {
   font-family: 'Roboto', sans-serif;
@@ -25,30 +17,95 @@ html {
 
 a{
   color: red;
+  font-size: 10px;
 }
+
+
+#showHide{
+  position: absolute;
+  bottom: 215px;
+  right: 15px;
+}
+.barWrap{
+  position: absolute;
+  bottom: 15px;  
+  width: 100%;
+}
+.filterSelector{
+  position: absolute;
+}
+/*this is the class for all of the filter buttons*/
+label {
+  color: white;
+  font-size: 10px;
+}
+.filtering{
+  color: white;
+  width: 80%;
+  text-align: center;
+  font-size: 10px;
+}
+.filtering:hover {
+  cursor: pointer;
+}
+.mapDisplay{
+  position: absolute;
+  width: 75%;
+  height:60px;
+  color:white;
+  font-family: 'Roboto', sans-serif;
+  font-size: 10px;
+  background: "orange"
+}
+.descriptions{
+  position:absolute;
+}
+
+
+
+.footer{
+  position: absolute;
+  bottom: 0%;
+  height: 15px;
+  width: 100%;
+  background-color: #333;
+  color: yellow;
+  font-size:12px;
+}
+.aboutFooter{
+  position:absolute;
+  left: 5px;
+  cursor: pointer; 
+}
+.data{
+  position:absolute;
+  left: 100px;
+}
+
+
 
 .title{
   color: yellow;
-  font-size: 40px;
+  font-size: 20px;
   position: absolute;
-  left: 105vh;
-  top: 5vh;
-  height: 5%;
-  width: 40%;
+  background: #333;
 }
-
 .subtitle{
   color: #c2c2c2;
-  font-size:16px;
+  font-size:12px;
   position: absolute;
   width: 100%;
+  background: #333;
 }
+
+
+
 
 .exporter{
     fill: #606060;
-  stroke:#636363;
+  stroke:#737373;
   stroke-width: 1px;
-  fill-opacity: .7;
+  fill-opacity: 1;
   cursor: pointer;
 }
 .exporter:hover {
@@ -59,6 +116,7 @@ a{
   stroke: black;
   stroke-width: 2px
 }
+
 
 .introTitle{
   color: yellow;
@@ -72,34 +130,25 @@ a{
   border: none;
   box-shadow:none;
   color: white;
-
 }
 .introButton:hover{
   border: solid yellow 2px;
   cursor: pointer;
 }
 
+
+
 .feature {
   fill: #b1bcc5;
   stroke:#838383;
-  stroke-width: 1px;
-  fill-opacity: .4;
+  stroke-width: .5px;
+  fill-opacity: 1;
   cursor: pointer;
 }
-
 .feature:hover {
   fill: orange;
 }
 
-.mapDisplay{
-  position:absolute;
-  left: 44vh;
-  top: 64vh;
-  height: 5%;
-  width: 100%; 
-  color:white;
-  font-family: 'Roboto', sans-serif;
-}
 
 
 
@@ -108,7 +157,6 @@ a{
   stroke-width:.5px;
   cursor: pointer;
 }
-
 #exporter{
   stroke: red;
   stroke-width:.5px;
@@ -116,15 +164,10 @@ a{
 }
 
 
-.aboutFooter{
-  cursor: pointer;
-  color: yellow;
-}
 
-.aboutText{
-  color:white;
-  font-family: 'Roboto', sans-serif;
-}
+
+
+/*the text that comes up in the about window*/
 .about{
   position: absolute;
   left: 10vh;
@@ -135,112 +178,86 @@ a{
   background-color: #333;
   ;
 }
-
+.aboutText{
+  color:white;
+  font-family: 'Roboto', sans-serif;
+}
 .exitAbout{
   cursor: pointer;
 }
 
-.data{
-  text-align: right;
+
+
+#viewShowHide{
+  position: absolute;
+  top: 110px;
+  left: 300px
 }
 .viewer {
-	position: absolute;
-	left: 55%;
-	top: 15%;
-  height: 40%;
-  width: 40%;
-	border: none;
+  position:absolute;
+  background: #444;
 }
-
+.intro{
+  font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+  color: white;
+}
 .viewerText{
-  position: absolute;
-  top:0%;
-  left:0%;
-  width:80%;
-  height:100%;
-  margin:5px;
-  border: none;
 }
-
-.viewerTextContainer{
-  width:45%;
-  border: none;
-}
-
 .importerName{
-  font-size: 24px;
+  font-size: 12px;
   color: #e8e8e8;
 }
-
 .viewerCategory{
-  font-size: 16px;
+  font-size: 10px;
   color: #c2c2c2;
   border: none;
 }
-
 .percentLabel{
-  font-size: 11px;
+  font-size: 8px;
+  text-align: bottom;
   fill: white
 }
-
 .viewerData{
-  font-size: 12px;
+  font-size: 10px;
   color: #e8e8e8;
-  border: none;
 }
-
 .povertyChart{
-  position:absolute;
-  left:50%;
-  top: 16%;
-  width: 100%;
-  height: 50%;
   border: none;
 }
-
 .yearChart{
-    position:absolute;
-  left: 0%;
-  top: 0%;
-  width: 100%;
-  height: 100%;
+  position:absolute;
   border: none;
 }
 .yearData{
   position:absolute;
-  left: 50%;
-  top: 55%;
-  width: 100%;
-  height: 50%;
   border: none;
 }
-
 .raceLabel{
-  float:left;
-  width:50%;
   text-align: center;
-  font-size: 16px;
+  font-size: 12px;
   color: #c2c2c2;
 }
 .povLabel{
-  float:left;
   text-align: center;
-    font-size: 16px;
+  font-size: 12px;
   color: #c2c2c2;
 }
-
-.Manifests{
+/*.Manifests{
   text-align: left;
     font-size: 16px;
   color: #c2c2c2;
   border: none;
   width:50%;
   height: 30%;
-}
+}*/
+
+
+
 
 
 .textdiv { /* text in the boxes */
-  display: inline-block;
+display: inline-block;
 font-size: medium;
 text-align: center;
 width: 50%;
@@ -254,35 +271,10 @@ h3{
   cursor: pointer;
 }
 
-.footer{
-  position: absolute;
-  bottom: 0%;
-  width: 100%;
-  background-color: #555;
-  color: yellow;
-}
 
-.intro{
-  border: solid black 1px;
-  font-size: 16px;
-  font-family: 'Roboto', sans-serif;
-  color: white;
-  width:200px;
-}
 
-/*this is the class for all of the filter buttons*/
-.filtering{
-  width: 80%;
-  text-align: center;
-  font-size: small;
-  vertical-align: middle;
-  background-color: #555;
-  border: solid 1px black;
-}
 
-.filtering:hover {
-  cursor: pointer;
-}
+
 
 
 .something{
@@ -293,27 +285,11 @@ h3{
   border: solid 1px black;
 }
 
-
-
 .greyedOut{
   height: 100vh;
   width: 100vw;
 }
 
-.barWrap{
-  position: absolute;
-  top: 70%;
-  margin-left: 16%;
-  margin-right: 16%;
-  width: 100%;
-}
-.filterSelector{
-  position: absolute;
-  width: 20%;
-  height: 25%;
-  top: -25%;
-  left: -15%;
-}
 
 .label {
   font: 10px sans-serif;
@@ -395,9 +371,10 @@ h3{
 }
 
 
+
 .axis text{
   font-family: 'Roboto', sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   fill: white;
 }
 
