@@ -24,7 +24,7 @@ var viewClickCheck = true
 var checker = false; //checks to see whether we've run initial data crunching, essentially
 var povSVG;
 var zoomed = false; //are we zoomed into rust belt?
-var firstTime = true, otherTimes = false, latlongGlobal, importByYearGlobal, filter, currentYears;
+var firstTime = true, otherTimes = false, latlongGlobal, importByYearGlobal, exportByYearGlobal, filter, currentYears;
 var exporterInfo;
 var icicleDump;
 var domain;
@@ -482,7 +482,7 @@ function setControls(){
   d3.select("body")
     .append("div")
     .classed("viewer", true)
-    .style({"top": lambdaNOPX/2+"px", "width": lambdaPlus, "height": height100-(lambdaNOPX*2)+"px"})
+    .style({"top": 10+lambdaNOPX/2+"px", "width": lambdaPlus, "height": height100-20-(lambdaNOPX*2)+"px"})
     .html("<span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually now imports more than twice as much waste from Canada and Mexico than it exports to the two countries combined.  <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
     //.style("display", "inline-block");
 
@@ -873,6 +873,20 @@ d3.csv("data/"+phase+".csv", function(data) {
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // 
   .entries(data);
 
+  typeAndMethByFacility = d3.nest()
+  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // EPA ID number
+  .key(function(d) { return d.hazWasteDesc; })
+  .key(function(d) { return d.mgmt; })
+  .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // 
+  .entries(data);
+  console.log(typeAndMethByFacility)
+
+  typeByExporter = d3.nest()
+  .key(function(d) { return d.exporterLONG; })
+  .key(function(d) { return d.hazWasteDesc; })
+  .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // 
+  .entries(data);
+
   quantByExporter =d3.nest() //calculate for each importer, how much each exporter ships
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; }) // EPA ID number
   .key(function(d) { return d.exporterLONG })
@@ -892,11 +906,12 @@ d3.csv("data/"+phase+".csv", function(data) {
   .entries(data);
   if (firstTime) {importByYearGlobal = importByYear}
 
-  exportByYear =d3.nest() //calculate for each importer, how much they get per year
+  exportByYear =d3.nest() //calculate for each exporter, how much they get per year
   .key(function(d) { return d.exporterLONG; }) // EPA ID number
   .key(function(d) { return d.Year})
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // 
   .entries(data);
+  if (firstTime) {exportByYearGlobal = exportByYear}
 
   importByState=d3.nest() //calculate for each importer, how much they get per year
   .key(function(d) { return d.importer_state; }) // EPA ID number
@@ -1030,14 +1045,14 @@ var partition = d3.layout.partition()
     //.size([width, height])
     .value(function(d) { return d.size; });
 
-var tip = d3.tip()
+/*var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
-Isvg.call(tip)
+Isvg.call(tip)*/
 
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
@@ -1555,7 +1570,7 @@ for (var i =0; i<facilitySum.length; i++){
 
 
 //put total for each type here
-for (var i =0; i<typeByFacility.length; i++){
+/*for (var i =0; i<typeByFacility.length; i++){
   var p = typeByFacility[i]["key"]
   for (var n =0; n<typeByFacility[i]["values"].length; n++){
     for (var j=0; j<latlongRdump.length; j++){
@@ -1565,7 +1580,38 @@ for (var i =0; i<typeByFacility.length; i++){
       };
     }; 
   };
+};*/
+
+//total by type and meth
+
+for (var e =0; e<typeAndMethByFacility.length; e++){
+  for (var j=0; j<latlongRdump.length; j++){
+    if (typeAndMethByFacility[e]["key"] == latlongRdump[j].id){
+      for (var n =0; n<typeAndMethByFacility[e]["values"].length; n++){ //for all the different types
+        //console.log(typeAndMethByFacility[e]["values"][n])
+        var type = typeAndMethByFacility[e]["values"][n]["key"] //name the type
+        var tots = []
+        var obj = []
+          for (var v =0; v<typeAndMethByFacility[e]["values"][n]["values"].length; v++){  //for all the ways of disposing the type
+            //console.log(typeAndMethByFacility[e]["values"][n]["values"][v])
+            var meth = typeAndMethByFacility[e]["values"][n]["values"][v]["key"] //name the mgmt meth
+            var amt = typeAndMethByFacility[e]["values"][n]["values"][v]["values"]["total_waste"]
+            //totals += amt
+            obj[meth]=amt
+            //console.log(obj)
+             //[{type1: {meth1: amount1, meth2: amount2}...]
+           // console.log(type)
+          };
+        tots[type]=obj
+        latlongRdump[j].types.push(tots)
+        //console.log(latlongRdump[j].types)
+      }; 
+    };
+  };
 };
+console.log(latlongRdump[10])
+
+
 
 //do sort and rank here
 latlongRdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
@@ -1620,14 +1666,14 @@ function importers(data){
     .domain([min+1, max]) //don't want min to be 0
     .range([15, 70])}
   
-  tooltip = d3.tip()
+ /* tooltip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
-  svg.call(tooltip)
+  svg.call(tooltip)*/
 
 
   imp = svg.append("g")
@@ -1868,14 +1914,14 @@ function drawLinesOver(data, base){
     .domain([globalMin, globalMax]) 
     .range([2, 10])
 
-  var tooltipFlow = d3.tip()
+/*  var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='text-size:8px'>" + d.total_waste + " " + d.units + " from "+ d.name +"</span>";
   })
 
-  svg.call(tooltipFlow)
+  svg.call(tooltipFlow)*/
 
   //based on: http://bl.ocks.org/enoex/6201948
   arcGroup = svg.append('g');
@@ -2057,16 +2103,14 @@ function exporters(){
   svg.selectAll("#exporter").remove();
     //begin constructing latlongs of exporters
   //if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
-
   latlongdump = [];
-  
    for (var i=0; i<latlongs.length-1; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {   
           //console.log(latlongs[i]["values"][j]["values"][0])   
           latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_key"], "address": latlongs[i]["values"][j]["values"][0]["exporter_address"], "city": latlongs[i]["values"][j]["values"][0]["exporter_city"], "state": latlongs[i]["values"][j]["values"][0]["exporter_state"],"units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": [], "rank": []}) //lat longs of the foreign waste sites
-          for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
+/*          for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
             latlongdump[0]["types"].push(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
-          };
+          };*/
         };
       };
   for (var i =0; i<exporterSum.length-1; i++){
@@ -2076,9 +2120,17 @@ function exporters(){
       };
     }; 
   };
+  //exporter types here
+  for (var i =0; i<latlongdump.length; i++){
+    for (var j=0; j<typeByExporter.length; j++){
+      if (typeByExporter[j]["key"] == latlongdump[i].long){
+        latlongdump[i].types = typeByExporter[j]["values"]
+      };
+    }; 
+  };
 
-  //do sort and rank here
 
+//do sort and rank here
 latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
 for (var j=0; j<latlongdump.length; j++){
   latlongdump[j].rank = j+1+"/"+latlongdump.length}
@@ -2177,35 +2229,166 @@ function viewer(data, latlongdump){
 
   function viewerHelp(data, latlongdump){
 
-  var names=[]
+/*  var names=[]
   for (i=0;i<latlongdump.length;i++){names.push(latlongdump[i].name)}
   z=JSON.stringify(names)
-  
+  */
 
   // Sort the array based on the second element
   data.types.sort(function(a, b)
   {
     return b[1] - a[1];
   });
-
+/*
   //biggest export partner
-  latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;})
+  latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;})*/
 
   d3.select(".viewerText")
-    .html("<span class='importerName'>"+data.name+"</span><p> <span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://epamap14.epa.gov/ejmap/ejmap.aspx?wherestr="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in EPA's EJView</a><br><span class='viewerCategory'>For selected year(s):</span><br><span class = 'viewerCategory'>Total imports and rank</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"</span><br><span class = 'viewerCategory'>Main Export Partner</span><br><span class ='viewerData'>"+latlongdump[0].name+"</span><br><span class = 'viewerCategory'>Top Import Type</span><br><span class ='viewerData' width = '50px'>"+data.types[0][0]+": "+data.types[0][1]+" "+data.units+"</span>");
-
+    .html("<span class='importerName'>"+data.name+"</span><p> <span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://epamap14.epa.gov/ejmap/ejmap.aspx?wherestr="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in EPA's EJView</a><br><span class='viewerCategory'>For selected year(s):</span><br><span class = 'viewerCategory'>Total imports and rank: </span><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"</span>");
+    // <br><span class = 'viewerCategory'>Main Export Partner</span><br><span class ='viewerData'>"+latlongdump[0].name+"</span><br><span class = 'viewerCategory'>Top Import Type</span><br><span class ='viewerData' width = '50px'>"+data.types[0][0]+": "+data.types[0][1]+" "+data.units+"</span>
     
   demographicCharts(data);
   
 
 function demographicCharts(data){ 
-  d3.selectAll(".viewerText").append("div").attr("class", "povertyChart");
+//imports by type
+d3.selectAll(".viewerText").append("div").attr("class", "typeChart");
+
+d3.select(".typeChart").append("div")
+  .attr("class", "povLabel")
+  .html("Imports by type <p>")
+
+var width = lambdaplusNOPX -10
+var height = lambdaNOPX/3
+
+var barheight = height/6
+
+typeSVG =  d3.select(".typeChart").append("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+/*var tooltipBars = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([0, 0])
+  .html(function(d) {
+    return "<span style='color:white' style='font-size:4px'>" + d[0] + ": " +d[1] + data.units +"</span>";
+  })
+
+typeSVG.call(tooltipBars)*/
+
+typedump = data.types
+
+//sum = d3.sum(typedump[0], function(d) {return d[0][1]})
+/*numbers = []
+for (var i=0; i<typedump.length; i++){if (typeof(typedump[i]) == "number") {numbers.push(typedump[i])}}
+typedump = typedump.filter(function(d){return typeof(d) != "number"})*/
+typesum=[];
+work = []
+typemax =[]
+typemin = []
+typedumper=[]
+methdumper = []
+
+//console.log(d3.values(d3.values(typedump[0])[0]))
+
+for (l=0; l<typedump.length; l++){
+    typesum[l]=d3.sum(d3.values(d3.values(typedump[l])[0])) //sum by type
+    typemax[l]=d3.max(d3.values(d3.values(typedump[l])[0])) //max in type
+    typemin[l]=d3.min(d3.values(d3.values(typedump[l])[0]))
+    //console.log(d3.values(typedump[l])[0])
+    typedumper[l]=d3.keys(typedump[l])[0]
+    methdumper[l]=d3.keys(d3.values(typedump[l])[0])
+    d3.values(typedump[l])[0].sort(function(a,b){console.log(a,b); return b-a})
+    work[l]=d3.values(d3.values(typedump[l])[0])
+    //work[l].sort(function(a,b){return b-a})
+}
+//typedump.sort(function(a,b){return d3.sum(d3.values(d3.values(b)[0]))-d3.sum(d3.values(d3.values(a[0])))})
+//work.sort(function(a,b) {return d3.sum(b)-d3.sum(a)})
+summy = d3.sum(typesum)
+maxi = d3.max(typemax)
+mini = d3.min(typemin)
+
+var x = d3.scale.sqrt()
+    .domain([summy, mini])
+    .range([10, width]);
+/*
+  var y = d3.scale.linear()
+    .domain([0, 100])
+    .range([height, 0]);
+  /*var bar = povSVG.selectAll("g")
+    .data(povdump)
+    .enter().append("g")
+    .attr("transform", function(d, i) { return "translate(" + i * 25 + ",0)"; });
+  bar.append("rect")
+    .attr("class", "povBars")
+    .attr("width", 25)
+    .attr("height", y)*/
+var barPadding = 3;
+var spacing = 10;
+var lastStart = 0
+typeSVG.append("g")
+    .selectAll("g")
+     .data(work)
+     .enter()
+     .append("g")
+     .selectAll("rect")
+     .data(function(d,i,j){return d})
+     .enter()
+     .append("rect")
+     .attr("y", function(d, i, j) {
+        return j * barheight;
+     })
+     .attr("x", function(d, i, j) {
+      if (x(work[j][i-1])) {
+        lastStart += spacing + width - x(work[j][i-1])
+        return lastStart
+      }
+        else {lastStart =0; return 0;} //return last d + spacing 
+      })
+     .attr("height", barheight - barPadding).transition().duration(750)
+     .attr("width", function(d, i, j){return width - x(d)})
+     .transition().duration(750)
+     //.attr("class", function(d, i){ if (i == 0){return data.id}})
+     .attr("fill", function(d, i, j) {
+          return document.getElementsByClassName(data.id)["importer"].style.fill
+        })
+//implement control for svgbuild here
+methyTypeCheck = true
+lastStart=0
+typeSVG.append("g")
+    .selectAll("g")
+     .data(function(){
+      if (methyTypeCheck){return methdumper} else{return typedumper} //move control up...
+     })
+     .enter()
+     .append("g")
+     .selectAll("text")
+     .data(function(d,i,j){return d})
+     .enter()
+     .append("text")
+      .text(function(d, i, j) {console.log(d, i, j); return d
+      })
+      .attr("y", function(d, i, j) {
+      return j * barheight + (barheight - barPadding) / 1.1;
+      })
+      .attr("x", function(d, i, j) {if (x(work[j][i-1])) {
+        lastStart += spacing + width - x(work[j][i-1])
+        return lastStart
+      }
+        else {lastStart =0; return 0;} //return last d + spacing 
+      }) //scale by x...
+      .attr("class", "percentLabel")    
+
+
+
+//poverty chart
+d3.selectAll(".viewerText").append("div").attr("class", "povertyChart");
 
 d3.select(".povertyChart").append("div")
   .attr("class", "povLabel")
   .html("% in poverty near site <p>")
 
-var width = lambdaNOPX
+var width = lambdaplusNOPX - 10
 var height = lambdaNOPX/6
 
   povSVG =  d3.select(".povertyChart").append("svg")
@@ -2228,8 +2411,6 @@ var height = lambdaNOPX/6
         povdump = [povertydata[i].percentPoverty, censusDump, povertydata[0].percentPoverty]
       };
     }; 
-
-console.log(povdump)
 
 var x = d3.scale.linear()
     .domain([100, 0])
@@ -2296,7 +2477,7 @@ povSVG.selectAll("label")
          .attr("y", function(d, i) {
             return i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.1;
          })
-         .attr("x", width - 50)
+         .attr("x", width - 100)
          .attr("font-size", "8px")
          .attr("fill", "#d3d3d3")
          //.attr("font-weight", "bold");
@@ -2418,8 +2599,8 @@ function yearData(data){
   d3.select(".yearData").append("div")
     .attr("class", "yearChart")
 
-  var width = lambdaNOPX
-  var height = lambdaNOPX/6
+  var width = lambdaplusNOPX - 10
+  var height = lambdaNOPX/3
 
 
   //do work here getting imports by year for importer
@@ -2448,25 +2629,25 @@ function yearData(data){
 
   var barPadding = 3;
 
-  var tooltipBars = d3.tip()
+  /*var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
-    return "<span style='color:white' style='font-size:4px'>" + d +"</span>";
+    return "<span style='color:white' style='font-size:4px'>" + d + data.units +"</span>";
   })
 
- yearSVG.call(tooltipBars)
+ yearSVG.call(tooltipBars)*/
 
   yearSVG.selectAll("rect")
      .data(yearskey)
      .enter()
      .append("rect")
-      .on("mouseover", function(d){
-      tooltipBars.show(d)
-     })
-      .on("mouseout", function(d){
-      tooltipBars.hide(d)
-     })
+    .on("mouseover", function(d){
+    tooltipBars.show(d)
+   })
+    .on("mouseout", function(d){
+    tooltipBars.hide(d)
+   })
     .attr("y", function(d, i) {
         return i * (height / yearskey.length);
      })
@@ -2495,6 +2676,8 @@ function yearData(data){
 
 
 function exportViewer(data, latlongdump){
+  console.log(data, latlongdump)
+
   //implement the info panel/viewer here
   data=data[0]
   d3.select(".intro").remove()
@@ -2502,7 +2685,7 @@ function exportViewer(data, latlongdump){
   d3.selectAll(".povertyChart").remove()
   d3.selectAll(".yearData").remove()
   d3.selectAll(".viewer").append("div").attr("class", "viewerText");
-  var names=[]
+/*  var names=[]
   for (i=0;i<latlongdump.length;i++){names.push(latlongdump[i].name)}
   z=JSON.stringify(names)
   names=[]
@@ -2520,7 +2703,7 @@ function exportViewer(data, latlongdump){
   stuff.push(latlongdump[x].types[0])
   }
   stuff.sort(function(a,b){return b[1]-a[1]})
-
+  */
   /*
   data.types.sort(function(a, b)
   {
@@ -2532,14 +2715,195 @@ function exportViewer(data, latlongdump){
   */
 
 
-
   //combine and rank
   /*var ExportTypeSum = d3.nest()
   .key(function(d) { return latlongdump[0].types; }) // set type as key
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} })
   .entries(data);*/
 
-  d3.selectAll(".viewerText").html("<span class='importerName'>"+data.name+"</span><p><span class = 'viewerCategory'>Total exports and rank</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"</span><p><span class = 'viewerCategory'>Largest Shipment: </span><br><span class ='viewerData'>"+stuff[0][0]+": "+stuff[0][1]+" "+data.units+"</span><p><span class = 'viewerCategory'>Sent To: </span><br><span class ='viewerData'>"+stuff[0][2]+"</span><p><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>")
+
+
+  d3.selectAll(".viewerText").html("<span class='importerName'>"+data.name+"</span><br><span class = 'viewerCategory'>Site Address</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><br><span class = 'viewerCategory'>Total exports and rank</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"<p></span>")
+
+
+//exports by type
+d3.selectAll(".viewerText").append("div").attr("class", "typeChart");
+
+typedump = []
+for (var e=0; e<data.types.length; e++){
+  typedump[e] = [data.types[e].key,data.types[e].values.total_waste]
+}
+
+d3.select(".typeChart").append("div")
+  .attr("class", "povLabel")
+  .html("Exports by type <p>")
+
+var width = lambdaplusNOPX -10
+var height = lambdaNOPX/3
+var barheight = height/6
+
+typeSVG =  d3.select(".typeChart").append("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+/*var tooltipBars = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([0, 0])
+  .html(function(d) {
+    return "<span style='color:white' style='font-size:4px'>" + d[0] + ": " +d[1] + data.units +"</span>";
+  })
+
+typeSVG.call(tooltipBars)*/
+
+var maxi = d3.max(typedump, function(d){return d[1]})
+var mini = d3.min(typedump, function(d){return d[1]})
+
+console.log(maxi, mini)
+
+var x = d3.scale.sqrt()
+    .domain([maxi, mini])
+    .range([0, width]);
+/*
+  var y = d3.scale.linear()
+    .domain([0, 100])
+    .range([height, 0]);
+  /*var bar = povSVG.selectAll("g")
+    .data(povdump)
+    .enter().append("g")
+    .attr("transform", function(d, i) { return "translate(" + i * 25 + ",0)"; });
+  bar.append("rect")
+    .attr("class", "povBars")
+    .attr("width", 25)
+    .attr("height", y)*/
+var barPadding = 3;
+typeSVG.selectAll("rect")
+     .data(typedump)
+     .enter()
+     .append("rect")
+      .on("mouseover", function(d){
+      tooltipBars.show(d)
+      })
+      .on("mouseout", function(d){
+      tooltipBars.hide(d)
+      })
+     .attr("y", function(d, i) {
+        return i * barheight;
+     })
+     .attr("x", function(d) { return 0; })
+     .attr("height", barheight - barPadding).transition().duration(750)
+     .attr("width", function(d){ return width - x(d[1])}).transition().duration(750)
+     //.attr("class", function(d, i){ if (i == 0){return data.id}})
+     .attr("fill", function(d, i) {
+          return document.getElementsByClassName(data.id)["exporter"].style.fill
+        })
+typeSVG.selectAll("text")
+         .data(typedump)
+         .enter()
+         .append("text")
+         .text(function(d) {
+            if (d == undefined) {return "Not available"} else{
+            return d[0];
+            }
+         })
+         .attr("y", function(d, i) {
+            return i * barheight + (barheight - barPadding) / 1.1;
+         })
+         .attr("x", function(d) { return 16; })
+         .attr("class", "percentLabel")
+
+
+  d3.selectAll(".viewerText").append("div").attr("class", "yearData");
+  d3.select(".yearData").append("div")
+  .attr("class", "povLabel")
+  .html("Exports by year <p>")
+
+  d3.select(".yearData").append("div")
+    .attr("class", "yearChart")
+
+  var width = lambdaplusNOPX - 10
+  var height = lambdaNOPX/3
+
+
+  //do work here getting imports by year for exporter
+  var years= ["2007","2008","2009","2010","2011","2012"] 
+   var yearskey = {"2007":0,"2008":0,"2009":0,"2010":0,"2011":0,"2012":0}
+  for (var i = 0; i<exportByYearGlobal.length; i++){
+    if (exportByYearGlobal[i]["key"] == data.long){ //find matching importer
+          for (var k=0; k<exportByYearGlobal[i]["values"].length; k++){
+            x=exportByYearGlobal[i]["values"][k]["key"]
+              yearskey[x] = exportByYearGlobal[i]["values"][k]["values"]["total_waste"]
+            } 
+          }
+        }
+   yearskey = [yearskey["2007"],yearskey["2008"],yearskey["2009"],yearskey["2010"],yearskey["2011"],yearskey["2012"]]
+
+  var maxi = d3.max(yearskey, function(d){return d})
+  var mini = d3.min(yearskey, function(d){return d})
+  
+  yearSVG =  d3.select(".yearChart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  var x = d3.scale.sqrt()
+    .domain([maxi, mini])
+    .range([0,width]);
+
+  var barPadding = 3;
+
+  /*var tooltipBars = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([0, 0])
+  .html(function(d) {
+    return "<span style='color:white' style='font-size:4px'>" + d + data.units +"</span>";
+  })
+
+ yearSVG.call(tooltipBars)*/
+
+  yearSVG.selectAll("rect")
+     .data(yearskey)
+     .enter()
+     .append("rect")
+    .on("mouseover", function(d){
+    tooltipBars.show(d)
+   })
+    .on("mouseout", function(d){
+    tooltipBars.hide(d)
+   })
+    .attr("y", function(d, i) {
+        return i * (height / yearskey.length);
+     })
+     .attr("x", function(d) { return 0; })
+     .attr("height", height / yearskey.length - barPadding).transition().duration(750)
+     .attr("width", function(d){ return width - x(d)}).transition().duration(750)
+     .attr("class", data.id)
+     .attr("fill", function(d) {return document.getElementsByClassName(data.id)[0].style.fill})
+
+
+
+  yearSVG.selectAll("text")
+     .data(yearskey)
+     .enter()
+     .append("text")
+     .text(function(d,i) {
+      return years[i]
+     })
+      .attr("y", function(d, i) {
+            return i * (height / yearskey.length) + (height / yearskey.length - barPadding) / 1.1;
+         })
+      .attr("x", function(d) { return 16; })
+     .attr("class", "percentLabel")
+
+
+
+
+
+
+
+
+
+
+
+
 };
 
 function printThis(latlongdump){
@@ -2583,6 +2947,8 @@ function importThis(data){
     }; 
   };
 
+  console.log(latlongdump)
+
   exportViewer(data, latlongdump)
   //draw lines between importers and this site
   exDrawLinesOver(latlongdump, data);
@@ -2596,14 +2962,14 @@ function exDrawLinesOver(data, base){
     .domain([exGlobalMin, exGlobalMax]) 
     .range([2, 10])
 
-  var tooltipFlow = d3.tip()
+  /*var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + d.total_waste + " " + d.units + " to "+ d.name +"</span>";
   })
 
-  svg.call(tooltipFlow)
+  svg.call(tooltipFlow)*/
 
   //based on: http://bl.ocks.org/enoex/6201948
 
@@ -2687,10 +3053,9 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
   d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"bottom": 30+lambdaNOPX/2+"px", "left": lambdaNOPX*2+"px"})
+        .style({"bottom": 50+lambdaNOPX/2+"px", "left": lambdaNOPX*2+"px"})
 
   globalMean = sum/latlongReset.length
-  console.log(latlongdump)
   exglobalMean = sum/latlongdump.length
 
   if (zoomed == false) {radius= d3.scale.sqrt()
@@ -2731,8 +3096,14 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
 function updateDisplay(data){ //function is called whether system change occurs and displays the new state of the system
   if (data.depth == 0) {return mapDisplay()}
 
+    console.log(data)
+  //lookup data.name console.log(data)
+  var name = data.name
+  if (mgmtTypeKey[data.name]) {data.desc, name = mgmtTypeKey[data.name]}
+  if (UNtypeKey[data.name]) {data.desc, name = UNtypeKey[data.name]}
+
   d3.select(".descriptions").remove()
-  d3.select(".barWrap").append("div").attr("class", "descriptions").style({"left": lambda, "background-color":"red", "bottom": 45+lambdaNOPX/2+"px"}).html("<span class = 'importerName'>"+data.name+"</span>....<span class = 'viewerData'>"+descriptors[data.name]+"</span>")
+  d3.select(".barWrap").append("div").attr("class", "descriptions").style({"left": lambda, "background-color":"red", "bottom": 30+lambdaNOPX/2+"px"}).html("<span class = 'importerName'>"+name+"</span>....<span class = 'viewerData'>"+descriptors[name]+"</span>")
   
 
   if (data.depth && filterDomain != "Site" && filterDomain != undefined){
@@ -2740,7 +3111,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
     d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"bottom": 30+lambdaNOPX/2+"px", "left": lambdaNOPX*2+"px"})
+        .style({"bottom": 50+lambdaNOPX/2+"px", "left": lambdaNOPX*2+"px"})
     var result = colorKey.filter(function( obj ) {return obj.name == data.name;});
     result = result[0];
 

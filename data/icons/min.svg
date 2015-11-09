@@ -1,1 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 24 30" x="0px" y="0px"><path d="M7,12H16V13H7V12M11.5,3C16.75,3 21,7.25 21,12.5C21,17.75 16.75,22 11.5,22C6.25,22 2,17.75 2,12.5C2,7.25 6.25,3 11.5,3M11.5,4C6.81,4 3,7.81 3,12.5C3,17.19 6.81,21 11.5,21C16.19,21 20,17.19 20,12.5C20,7.81 16.19,4 11.5,4Z"/><text x="0" y="39" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Austin Andrews</text><text x="0" y="44" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="-293 382 24 30" style="enable-background:new -293 382 24 30;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#7C7C7C;}
+	.st1{enable-background:new    ;}
+</style>
+<path class="st0" d="M-286,394h9v1h-9V394 M-281.5,385c5.2,0,9.5,4.2,9.5,9.5s-4.2,9.5-9.5,9.5s-9.5-4.2-9.5-9.5
+	S-286.8,385-281.5,385 M-281.5,386c-4.7,0-8.5,3.8-8.5,8.5s3.8,8.5,8.5,8.5s8.5-3.8,8.5-8.5S-276.8,386-281.5,386z"/>
+<text transform="matrix(1 0 0 1 -293 421)" style="font-family:'HelveticaNeue-Bold'; font-size:5px;">Created by Austin Andrews</text>
+<text transform="matrix(1 0 0 1 -293 426)" style="font-family:'HelveticaNeue-Bold'; font-size:5px;">from the Noun Project</text>
+</svg>

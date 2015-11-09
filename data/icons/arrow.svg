@@ -1,1 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" viewBox="0 0 60 60" version="1.1" x="0px" y="0px"><title>Slice 1</title><description>Created with Sketch (http://www.bohemiancoding.com/sketch)</description><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g fill="#000000"><path d="M30,0 C13.4622,0 0,13.452 0,29.9898 C0,46.5372 13.4622,60 30,60 C46.5378,60 60,46.5372 60,29.9898 C60,13.452 46.5378,0 30,0 L30,0 Z M30,54.5424 C16.4652,54.5424 5.4576,43.5342 5.4576,29.9898 C5.4576,16.455 16.4652,5.4576 30,5.4576 C43.5348,5.4576 54.5424,16.455 54.5424,29.9898 C54.5424,43.5348 43.5348,54.5424 30,54.5424 L30,54.5424 Z M30,54.5424"></path><path d="M30.6923545,42.3129124 C31.615146,43.2290292 33.1117881,43.2290292 34.0333392,42.3129124 C34.9561307,41.3972061 34.9561307,39.9107234 34.0333392,38.9941959 L24.8931555,30 L34.0337527,21.0061121 C34.9565441,20.0904059 34.9565441,18.6035125 34.0337527,17.6873956 C33.5727704,17.2295425 32.9674985,17 32.3630536,17 C31.7586086,17 31.1533368,17.2295425 30.6923545,17.6873956 L19.9665574,28.3407958 C19.0433525,29.2569126 19.0433525,30.7429847 19.9665574,31.6595122 L30.6923545,42.3129124 Z M30.6923545,42.3129124"></path></g></g></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="-275 367 60 60"
+	 style="enable-background:new -275 367 60 60;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#7C7B7D;}
+</style>
+<title>Slice 1</title>
+<description>Created with Sketch (http://www.bohemiancoding.com/sketch)</description>
+<g>
+	<g>
+		<path class="st0" d="M-245,367c-16.5,0-30,13.5-30,30c0,16.5,13.5,30,30,30s30-13.5,30-30C-215,380.5-228.5,367-245,367L-245,367z
+			 M-245,421.5c-13.5,0-24.5-11-24.5-24.6c0-13.5,11-24.5,24.5-24.5c13.5,0,24.5,11,24.5,24.5C-220.5,410.5-231.5,421.5-245,421.5
+			L-245,421.5z"/>
+		<path class="st0" d="M-244.3,409.3c0.9,0.9,2.4,0.9,3.3,0c0.9-0.9,0.9-2.4,0-3.3l-9.1-9l9.1-9c0.9-0.9,0.9-2.4,0-3.3
+			c-0.5-0.5-1.1-0.7-1.7-0.7s-1.2,0.2-1.7,0.7l-10.7,10.7c-0.9,0.9-0.9,2.4,0,3.3L-244.3,409.3z"/>
+	</g>
+</g>
+</svg>
