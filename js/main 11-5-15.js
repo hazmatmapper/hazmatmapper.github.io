@@ -22,6 +22,7 @@ var colorKey;
 var clickCheck = true
 var viewClickCheck = true
 var checker = false; //checks to see whether we've run initial data crunching, essentially
+var methyTypeCheck = false;
 var povSVG;
 var zoomed = false; //are we zoomed into rust belt?
 var firstTime = true, otherTimes = false, latlongGlobal, importByYearGlobal, exportByYearGlobal, filter, currentYears;
@@ -34,11 +35,12 @@ var name; //the name of the chart area selected
 var phase = "Solids";
 var view = "Sites";
 var defaultColor = "#e8e8e8";
-var exporterRing = "black";
+//var exporterRing = "black";
 var latlongdump;
 var tooltip;
-var defaultStroke = {"stroke": "red", "stroke-width": ".5px"}
-var defaultStrokeZoomed;
+var defaultStroke = {"stroke": 1, "opacity": 1} //{"stroke": "red", "stroke-width": ".5px"}
+var highlighted = {"stroke": .25, "opacity": .2}
+var defaultStrokeZoomed = {"stroke": "none"}//{"stroke": "red", "stroke-width": ".5px"}
 var siteViewerHelp = false;
 var footerText;
 var descriptors = {};
@@ -693,7 +695,7 @@ labels.append("input")
         .style("opacity", 0)
         .remove();
       svg.selectAll("#importer")
-        .style({"fill": defaultColor, "fill-opacity": ".75"})
+        .style({"fill": defaultColor, "fill-opacity": "1"})
       d3.select(".mapDisplay").remove()
       mapDisplay()
       filterDomain = d
@@ -972,7 +974,7 @@ function choropleth(data){
     d3.select(".barWrap")
           .append("div")
           .attr("class", "mapDisplay")
-          .style({"bottom": 45+lambdaNOPX/2+"px", "left": lambdaNOPX*3+"px"})
+        .style({"height": "80px", "bottom": 50+lambdaNOPX/2+"px", "left": lambdaNOPX*1.5+"px"})
 
     var stringwork2 = [" no imports", " second quantile", " third quantile", " fourth quantile", " fifth quantile"]
     var squareData = [[16, '#eff3ff'], [16, '#bdd7e7'],[16, '#6baed6'],[16, '#3182bd'], [16,'#08519c']]
@@ -1003,11 +1005,11 @@ function choropleth(data){
 
 
 function icicleAxis(){
-  var height = lambdaNOPX/2
+var height = lambdaNOPX/2
   //domain calculator
-var site = ["total", "importers", "types", "methods"]
-var type = ["total", "types", "methods", "importers"]
-var method = ["total", "methods", "types", "importers"]
+var site = ["total", "importers"]
+var type = ["total", "types"]
+var method = ["total", "methods"]
 if (filterDomain == undefined){
   domain = site 
 } else if (filterDomain == "Site") {
@@ -1020,7 +1022,7 @@ if (filterDomain == undefined){
 
 var yax  = d3.scale.ordinal()
     .domain(domain)
-    .range([0, height/4.5, height*2/4.5, height*3/4.5]);
+    .range([0, height/2]);
 
 var yAxis = d3.svg.axis()
     .scale(yax)
@@ -1057,23 +1059,24 @@ Isvg.call(tip)*/
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
 var nodes = partition.nodes(data);
+var iceFilter = nodes.filter(function(d) {for (n=0; n<nodes.length; n++){ if (d.depth == 1 || d.depth == 0){return d}}});
 
 colorKey=[];
-
+console.log(iceFilter)
 Isvg.selectAll("rects")
-    .data(nodes)
+    .data(iceFilter)
   .enter().append("rect")
     .attr ("class",  function(d) { return d.name} )
     .attr("x", function(d) {  return x(d.x); })
-    .attr("y", function(d) { return y(d.y); })
+    .attr("y", function(d) { if (d.depth == 0){return y(d.y)}else{return y(.5); }})
     .attr("width", function(d) { return x(d.dx); })
-    .attr("height", function(d) { return y(d.dy); })
+    .attr("height", function(d) {return y(.5)})
     .style({"cursor": "pointer", "fill": function(d) { 
       colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); 
-      if (d.name == "total"){return defaultColor} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"})
+      if (d.name == "total"){return defaultColor} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "opacity": 1})
     .on("mouseover", function (d) {
       //look up facility name
-      
+      //can cut?
       if (filterDomain ==  "Site" && d.depth == 1 || filterDomain == undefined && d.depth == 1){
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
@@ -1081,7 +1084,7 @@ Isvg.selectAll("rects")
           siteViewerHelp = true
           }
         }
-        tip.show(facilityName); 
+        //tip.show(facilityName); 
       } else if (filterDomain ==  "Type" && d.depth == 3) {
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
@@ -1089,7 +1092,7 @@ Isvg.selectAll("rects")
           siteViewerHelp = true
           }
         }
-        tip.show(facilityName); 
+        //tip.show(facilityName); 
       } else if (filterDomain ==  "DisposalMethod" && d.depth == 3) {
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
@@ -1097,21 +1100,21 @@ Isvg.selectAll("rects")
           siteViewerHelp = true
           }
         }
-        tip.show(facilityName); 
-      } else {tip.show(d); siteViewerHelp = false}
+        //tip.show(facilityName); 
+      } else {siteViewerHelp = false} //tip.show(d); 
       if (filterDomain == "Type" && d.depth == 1 || filterDomain == "Site" && d.depth == 2 || filterDomain == "DisposalMethod" && d.depth == 2 || filterDomain == undefined && d.depth == 2){
         var show = {"name": UNtypeKey[d.name]}
-        tip.show(show)
+        //tip.show(show)
       }
       if (filterDomain == "Type" && d.depth == 2 || filterDomain == "Site" && d.depth == 3 || filterDomain == "DisposalMethod" && d.depth == 1 || filterDomain == undefined && d.depth == 3){
         var show = {"name": mgmtTypeKey[d.name]}
-        tip.show(show)
+        //tip.show(show)
       }
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
       icicleHighlight(d);
       //};  
     })
-    .on("mouseout", function(d){tip.hide(d); icicleDehighlight(d)})
+    .on("mouseout", function(d){ icicleDehighlight(d)}) //tip.hide(d);
     .on('click', function(d){
 /*      if (filterDomain ==  "DisposalMethod" && d.depth == 1 || filterDomain ==  "Type" && d.depth == 2 || filterDomain ==  "Site" && d.depth == 3 || filterDomain ==  undefined && d.depth == 3){
         //show details of method here
@@ -1141,8 +1144,13 @@ Isvg.selectAll("rects")
           }
         }
       } 
-
-      clicked(d);
+      if (d.depth == 0) {
+        d3.select(".viewerText").remove()
+        d3.select(".povertyChart").remove()
+        d3.selectAll(".yearData").remove()
+        drawLinesOut()
+      }
+      //clicked(d);
       //icicleImporters(d);
       icicleFilter(d);
       clickyCheck = d.name
@@ -1245,6 +1253,7 @@ Isvg.append("g")
 };
 
 function icicleFilter(data){
+  //can cut?
   name = data.name
   icicleDump = [];
   if (data.depth == 0) {colorize(latlongReset, name)}
@@ -1272,14 +1281,52 @@ function icicleFilter(data){
 }
 
 function icicleHighlight(data){
-  Isvg.selectAll("."+data.name) //select the current id
-    .style({"fill-opacity": "1"}); 
   if (data.name == "total"){
-  svg.selectAll("#importer")
-    .style({"stroke": "yellow", "stroke-width": "2px"})} //yellow outline
-  else {
-  svg.selectAll("."+data.name)
-    .style({"stroke": "yellow", "stroke-width": "5px"})}
+  Isvg.selectAll("rect")
+    .transition().duration(500) 
+    .style({"opacity": "1"}); 
+  svg.selectAll("circle")
+    .transition().duration(500)
+    .style(defaultStroke)
+    //.style({"stroke": "yellow", "stroke-width": "2px"})} //yellow outline
+  } else if (filterDomain != "Site" && filterDomain != undefined){
+  Isvg.selectAll("rect")
+    .transition().duration(500)
+    .style({"opacity": ".2"});
+  Isvg.selectAll("."+data.name)
+    .transition().duration(500) 
+    .style({"opacity": "1"});
+    var icicleDump =[]
+    //get the importers
+    for (var k=0; k<data.children.length; k++){
+      for (var l=0; l<data.children[k].children.length; l++){
+        icicleDump.push(data.children[k].children[l])
+       }
+     }
+    console.log(icicleDump, latlongReset)
+    svg.selectAll("circle")
+      .transition().duration(500)
+      .style(highlighted)
+    svg.selectAll("circle")
+      .data(latlongReset).filter(function(d) {for (var n = 0; n<icicleDump.length; n++){ if (icicleDump[n].name == d.id) {return d}}})
+      .transition().duration(500)
+      .style(defaultStroke) 
+  } else { 
+    // if importer highlighted
+    Isvg.selectAll("rect")
+      .transition().duration(500)
+      .style({"opacity": ".2"});
+    Isvg.selectAll("."+data.name)
+      .transition().duration(500) 
+      .style({"opacity": "1"});
+    svg.selectAll("circle")
+      .transition().duration(500)
+      .style(highlighted)
+    svg.selectAll("."+data.name)
+      .transition().duration(500)
+      .style(defaultStroke)
+  }
+    //.style({"stroke": "yellow", "stroke-width": "5px"})}
   if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){ //if sites and at bottom of barchart
 
   //icicleTranslate(data);
@@ -1294,12 +1341,16 @@ function icicleHighlight(data){
 }; 
 
 function icicleDehighlight(data){
-  Isvg.selectAll("."+data.name) //designate selector variable for brevity
-    .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
+  Isvg.selectAll("rect")
+      .transition().duration(500)
+      .style({"opacity": "1"});
   svg.selectAll("#importer")
+    .transition().duration(500)
     .style(defaultStroke)
-  svg.selectAll("."+clickyCheck) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+  svg.selectAll("."+clickyCheck)
+      .transition().duration(500)
+    .style(defaultStroke)
+    //.style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
   /*if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){
     //console.log(document.getElementsByClassName(data.name))
     svg.selectAll("."+data.name)
@@ -1410,8 +1461,6 @@ function clickedMap(d) {
   if (d.id == "Quebec") {scale = scale*3, translate = [translate[0]-width66*3, translate[1]-height66*1.5]}
   if (d.id == "Ontario") {scale = scale* 3.5; translate = [translate[0]-width66*4.25, translate[1]-height66*2.5]}
 
-  defaultStrokeZoomed = {"stroke": "red", "stroke-width": 1/scale+"px"}
-
   sumByState(d);
 
   d3.select(".mapDisplay").remove()
@@ -1437,7 +1486,7 @@ function clickedMap(d) {
   imp.transition()
     .selectAll('circle')
     .duration(750)
-    .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
+    //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
     .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
     .attr("r", function (d){return IMPradius(d.total_waste)/(scale/2)})
   /*ports.transition()
@@ -1449,7 +1498,7 @@ function clickedMap(d) {
   exp.transition()
     .selectAll('circle')
     .duration(750)
-    .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
+    //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
     .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
     .attr("r", function (d){return EXPradius(d.total_waste)/(scale/2)})
   arcGroup.transition()
@@ -1508,7 +1557,7 @@ function reset() {
   imp.transition()
       .selectAll('circle')
       .duration(750)
-      .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
+      //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
       .attr("transform", "")
       .attr("r", function (d){return IMPradius(d.total_waste)})
   /*ports.transition()
@@ -1520,7 +1569,7 @@ function reset() {
   exp.transition()
       .selectAll('circle')
       .duration(750)
-      .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return ".5px"}} )
+      //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return ".5px"}} )
       .attr("transform", "")
       .attr("r", function (d){return EXPradius(d.total_waste)})
   if(arcGroup){
@@ -1609,9 +1658,6 @@ for (var e =0; e<typeAndMethByFacility.length; e++){
     };
   };
 };
-console.log(latlongRdump[10])
-
-
 
 //do sort and rank here
 latlongRdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
@@ -1683,16 +1729,16 @@ function importers(data){
     .attr("class", function(d) {return d.id+" "+d.state+d.years})
     .attr("id", "importer")
     .style("fill", defaultColor)
-    .style("fill-opacity", ".75")
+    .style(defaultStroke)
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     //.attr("id", function(d){return data.state})
     .on("mouseover", function(d){
-      tooltip.show(d);
+      //tooltip.show(d);
       highlight(d);
     })
     .on("mouseout", function(d){
-      tooltip.hide(d);
+      //tooltip.hide(d);
       dehighlight(d);
       //drawLinesOut(d);
     })
@@ -2005,12 +2051,12 @@ d3.selectAll(".arc").remove();
 function color2(data){
   currColor = document.getElementsByClassName(data.id)["importer"].style["fill"]
   svg.selectAll("."+currImporter)
-    .style({"fill": currColor, "fill-opacity": .75});
+    .style({"fill": currColor, "opacity": 1});
   if(iceCheck){svg.selectAll("."+lastImporter)
-    .style({"fill": iceCheck, "fill-opacity": .75});}
+    .style({"fill": iceCheck, "opacity": 1});}
   var rectColor = document.getElementsByClassName(data.id)[0].style["fill"]
   svg.selectAll("."+data.id)
-    .style({"fill": rectColor, "fill-opacity": 1});
+    .style({"fill": rectColor, "opacity": 1});
   currImporter = data.id
 }
 
@@ -2027,73 +2073,119 @@ function colorize(data, name){
       if (name == "total"){return defaultColor}
       else {return colorDump[0]}
       })
-    .style("fill-opacity", function(){
-      if (name == "total"){return ".75"}
-      else {return "1"}
-      })
-    .style("stroke", function(){
-      if (name == "total"){return defaultStroke}
+    .style("opacity", function(){
+      return 1
       })
 }
 
 function clicky(data){
-  svg.selectAll("."+currImporter)
-    .style({"fill": currColor, "fill-opacity": .75});
-
-  if (zoomed) {
-    svg.selectAll("circle") //select the current province in the DOM
+  console.log(data)
+  /*svg.selectAll("."+currImporter)
+  .transition().duration(500) 
+    .style({"fill": currColor, "opacity": 1});
+*/
+  //if (zoomed) {
+    //svg.selectAll("circle") //select the current province in the DOM
     //.style("fill-opacity", "1")
-    .style(defaultStrokeZoomed);
-    if (data.id){ svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
-    } else if (data.name) { svg.selectAll("."+data.name) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
-    }
-  } else{
-    svg.selectAll("circle") //select the current province in the DOM
+    //.style(defaultStrokeZoomed);
+    if (data.id){ 
+    svg.selectAll("circle") 
+    .transition().duration(500) 
+    .style({"opacity": ".2"})
+    svg.selectAll("."+data.id)
+    .transition().duration(500)  
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
+    } /*else if (data.name) { 
+    svg.selectAll("circle")
+    .transition().duration(500) 
+    .style({"opacity": ".2"})
+    svg.selectAll("."+data.name) 
+    .transition().duration(500) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
+    }*/
+ /* } else{
+    //svg.selectAll("circle")
     //.style("fill-opacity", "1")
-    .style(defaultStroke);
-    if (data.id){ svg.selectAll("."+data.id) //select the current province in the DOM
-      .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
-    } else if (data.name) { svg.selectAll("."+data.name) //select the current province in the DOM
-      .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+    //.style(defaultStroke);
+    if (data.id){ 
+    svg.selectAll("circle") 
+    .transition().duration(500) 
+    .style({"opacity": ".2"})
+    svg.selectAll("."+data.id) 
+    .transition().duration(500) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+    } else if (data.name) {
+    svg.selectAll("circle") 
+    .transition().duration(500) 
+    .style({"opacity": ".2"})
+    svg.selectAll("."+data.name) 
+    .transition().duration(500) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
     }
-  }
+  }*/
 
 }
 
 function highlight(data){
-  Isvg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"fill-opacity": "1"});
+
+  Isvg.selectAll("rect") 
+      .transition().duration(500) 
+    .style({"opacity": ".2"})
+  Isvg.selectAll("."+data.id) 
+  .transition().duration(500) 
+    .style({"opacity": "1"});
+
   if (zoomed == false){
-  svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline
+    svg.selectAll("circle")
+    .transition().duration(500) 
+    .style({"opacity": ".2"})
+    svg.selectAll("."+data.id) 
+    .transition().duration(500) 
+    .style({"opacity": "1"})
   } else {
-  svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"}); //yellow outline 
+    svg.selectAll("circle") 
+    .style({"opacity": ".2"})
+    .transition().duration(500) 
+    svg.selectAll("."+data.id) 
+    .transition().duration(500) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
   }
 };
 
 function dehighlight(data){
+  console.log(name, data.id)
   if (data.id == name){
-   svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"fill-opacity": "1"})
-    .style(defaultStroke)
+   svg.selectAll("."+data.id)
+   .transition().duration(500)  
+    .style({"opacity": "1"})
+    //.style(defaultStroke)
   }
   else{
-  svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"fill-opacity": ".75"})//reset enumeration unit to orginal color
-    .style(defaultStroke)
-  Isvg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"fill-opacity": ".5"});
+  svg.selectAll("circle") 
+    .transition().duration(500) 
+    .style({"opacity": "1"})
+    //.style(defaultStroke)
+  Isvg.selectAll("rect") 
+    .transition().duration(500) 
+    .style({"opacity": "1"});
   }
+
   if (data.id == clickyCheck && zoomed == false) {
-  svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline  
+  svg.selectAll("."+data.id) 
+    .transition().duration(500) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline  
   }
   if (data.id == clickyCheck && zoomed == true) {
-  svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"}); //yellow outline  
+  svg.selectAll("."+data.id)
+    .transition().duration(500) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"}); //yellow outline  
   }
 
 };
@@ -2159,14 +2251,17 @@ for (var j=0; j<latlongdump.length; j++){
     .enter().append("circle")
     .attr("id", "exporter")
     .attr("class", function (d) { return d.state+" "+d.id})
-    .style({"fill": "#3d3d3d", "fill-opacity": ".75"/*, "stroke": exporterRing, "stroke-width": "3px"*/})
+    .style({"fill": "#3d3d3d"/*, "stroke": exporterRing, "stroke-width": "3px"*/})
+    .style(defaultStroke)
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", function(d){
-      tooltip.show(d);
+      //tooltip.show(d);
       highlight(d);
     }) 
-    .on("mouseout", function(d){tooltip.hide(d); dehighlight(d)}) 
+    .on("mouseout", function(d){
+      //tooltip.hide(d);
+      dehighlight(d)}) 
     .on("click", function(d){drawLinesOut(d);importThis(d); clickyCheck = d.id; clicky(d); updateDisplay(d)})
   exp.selectAll("circle")
     .transition()
@@ -2291,6 +2386,10 @@ methdumper = []
 
 //console.log(d3.values(d3.values(typedump[0])[0]))
 
+//sort typedump before pushing to work
+//typedump.sort(function(a,b){console.log(d3.sum(d3.values(d3.values(b)[0])), d3.sum(d3.values(d3.values(a)[0]))); return d3.sum(d3.values(d3.values(a)[0]))-d3.sum(d3.values(d3.values(b[0])))})
+
+
 for (l=0; l<typedump.length; l++){
     typesum[l]=d3.sum(d3.values(d3.values(typedump[l])[0])) //sum by type
     typemax[l]=d3.max(d3.values(d3.values(typedump[l])[0])) //max in type
@@ -2308,6 +2407,8 @@ summy = d3.sum(typesum)
 maxi = d3.max(typemax)
 mini = d3.min(typemin)
 
+//here, cut typedump/work to 6?
+
 var x = d3.scale.sqrt()
     .domain([summy, mini])
     .range([10, width]);
@@ -2323,6 +2424,32 @@ var x = d3.scale.sqrt()
     .attr("class", "povBars")
     .attr("width", 25)
     .attr("height", y)*/
+
+//implement control for svgbuild here
+labelView = ["Type", "Disposal Method"]
+var form = d3.select(".typeChart").append("form"), j=0;
+var labels = form.selectAll("span")
+    .data(labelView)
+    .enter().append("span")
+labels.append("input")
+    .attr({
+        type: "radio",
+        name: "mode",
+        value: function(d, i) {return i;}
+    })
+    .property("checked", function(d, i) {return i===j;})
+    .on("click", function(d){
+      if (methyTypeCheck == false){methyTypeCheck = true}
+      if (methyTypeCheck == true){methyTypeCheck = false}
+      typeSVG.selectAll("text")
+        .transition().duration(500)
+        .remove()
+      typeLabels();
+    })
+  labels.append("label").text(function(d) {return d;})
+  labels.append("text").html("&nbsp")
+
+
 var barPadding = 3;
 var spacing = 10;
 var lastStart = 0
@@ -2352,8 +2479,9 @@ typeSVG.append("g")
      .attr("fill", function(d, i, j) {
           return document.getElementsByClassName(data.id)["importer"].style.fill
         })
-//implement control for svgbuild here
-methyTypeCheck = true
+typeLabels();
+//type labels
+function typeLabels(){
 lastStart=0
 typeSVG.append("g")
     .selectAll("g")
@@ -2366,8 +2494,7 @@ typeSVG.append("g")
      .data(function(d,i,j){return d})
      .enter()
      .append("text")
-      .text(function(d, i, j) {console.log(d, i, j); return d
-      })
+      .text(function(d, i, j) { return d})
       .attr("y", function(d, i, j) {
       return j * barheight + (barheight - barPadding) / 1.1;
       })
@@ -2378,7 +2505,7 @@ typeSVG.append("g")
         else {lastStart =0; return 0;} //return last d + spacing 
       }) //scale by x...
       .attr("class", "percentLabel")    
-
+}
 
 
 //poverty chart
@@ -3053,7 +3180,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
   d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"bottom": 50+lambdaNOPX/2+"px", "left": lambdaNOPX*2+"px"})
+        .style({"height": "80px", "bottom": 50+lambdaNOPX/2+"px", "left": lambdaNOPX*1.5+"px"})
 
   globalMean = sum/latlongReset.length
   exglobalMean = sum/latlongdump.length
@@ -3065,7 +3192,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
     .domain([globalMin+1, globalMax]) //don't want min to be 0
     .range([15, 70])}
 
-  var stringwork2 = ["smallest importers","average importers","largest importers", "smallest exporters", "average exporters", "largest exporters"]
+  var stringwork2 = ["min","avg","max (importers)", "min", "avg", "max (exporters)"]
   var circleData = [[globalMin, defaultColor], [globalMean, defaultColor], [globalMax, defaultColor], [exGlobalMin, "#3d3d3d"], [exglobalMean, "#3d3d3d"], [exGlobalMax, "#3d3d3d"]]
 
   displaySVG = d3.select(".mapDisplay").append("svg")
@@ -3076,19 +3203,18 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
     .append("circle")
     //.attr("class", function(d) {return data.parent.name})
     .style("fill", function(d){return d[1]})
-    .style("fill-opacity", ".75")
     .style(defaultStroke)
     .attr("r", function(d){return radius(d[0])})
-    .attr("cx", function(d,i){return i*150 + 16}) 
+    .attr("cx", function(d,i){return i*100 +50}) 
     .attr("cy", 30)
  leg.selectAll("text")
     .data(stringwork2)
      .enter()
      .append("text")
      .text(function(d){return d})
-     .attr("text-anchor", "right")
-     .attr("y", 30)
-     .attr("x", function(d,i){return i * 150 + 30})
+     .attr("text-anchor", "middle")
+     .attr("y", 70)
+     .attr("x", function(d,i){return i * 100 + 50})
      .attr("font-size", "12px")
      .attr("fill", "white")
 }
@@ -3096,14 +3222,15 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
 function updateDisplay(data){ //function is called whether system change occurs and displays the new state of the system
   if (data.depth == 0) {return mapDisplay()}
 
-    console.log(data)
   //lookup data.name console.log(data)
   var name = data.name
   if (mgmtTypeKey[data.name]) {data.desc, name = mgmtTypeKey[data.name]}
   if (UNtypeKey[data.name]) {data.desc, name = UNtypeKey[data.name]}
 
   d3.select(".descriptions").remove()
-  d3.select(".barWrap").append("div").attr("class", "descriptions").style({"left": lambda, "background-color":"red", "bottom": 30+lambdaNOPX/2+"px"}).html("<span class = 'importerName'>"+name+"</span>....<span class = 'viewerData'>"+descriptors[name]+"</span>")
+  d3.select(".barWrap").append("div").attr("class", "descriptions")
+  .style({"left": lambda, "background-color":"red", "bottom": 30+lambdaNOPX/2+"px"})
+  .html("<span class = 'importerName'>"+name+"</span>....<span class = 'viewerData'>"+descriptors[name]+"</span>")
   
 
   if (data.depth && filterDomain != "Site" && filterDomain != undefined){
@@ -3111,7 +3238,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
     d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"bottom": 50+lambdaNOPX/2+"px", "left": lambdaNOPX*2+"px"})
+        .style({"bottom": 30+lambdaNOPX/2+"px", "left": lambdaNOPX*1.5+"px"})
     var result = colorKey.filter(function( obj ) {return obj.name == data.name;});
     result = result[0];
 
@@ -3127,7 +3254,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
         .append("circle")
         //.attr("class", function(d) {return data.name})
         .style("fill", function(d,i) {if (i==0){return result.color} else {return defaultColor}})
-        .style("fill-opacity", ".75")
+        .style(defaultStroke)
         .attr("r", 16)
         .attr("cx", function(d,i){return i*400 + 16}) 
         .attr("cy", 16)
@@ -3142,7 +3269,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
          .attr("x", function (d, i){return 40+ i*400}) // FIX
          .attr("font-size", "12px")
          .attr("fill", "white")
-    } else if (data.depth == 2){
+    } else if (data.depth == 2){ ///can cut???
       if (mgmtTypeKey[data.name]) {data.desc = mgmtTypeKey[data.name]; data.desc2 = UNtypeKey[data.parent.name]}
       if (UNtypeKey[data.name]) {data.desc = UNtypeKey[data.name]; data.desc2 = mgmtTypeKey[data.parent.name]}
 
@@ -3159,7 +3286,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
         .append("circle")
         //.attr("class", function(d) {return data.parent.name})
         .style("fill", function(d, i){ return result[i].color})
-        .style("fill-opacity", ".75")
+        .style(defaultStroke)
         .attr("r", 16)
         .attr("cx", function(d,i){return i*400 + 16}) 
         .attr("cy", 16)

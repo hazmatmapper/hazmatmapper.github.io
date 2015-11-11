@@ -34,11 +34,11 @@ var margin = {top: 10, right: 10, bottom: 25, left: 10};
 var name; //the name of the chart area selected
 var phase = "Solids";
 var defaultColor = "#e8e8e8";
-var exporterRing = "black";
+//var exporterRing = "black";
 var latlongdump;
 var tooltip;
-var defaultStroke = {"stroke": "red", "stroke-width": ".5px"}
-var defaultStrokeZoomed;
+var defaultStroke = {"stroke": "none"}//{"stroke": "red", "stroke-width": ".5px"}
+var defaultStrokeZoomed = {"stroke": "none"} //= {"stroke": "red", "stroke-width": 1/scale+"px"}
 var siteViewerHelp = false;
 var footerText;
 var descriptors = {};
@@ -651,7 +651,7 @@ filterform.select("div #Site").style({"border-color": "yellow", "border-width": 
         .duration(750)
         .style("opacity", 0)
         .remove();
-      svg.selectAll("cirlce")
+      svg.selectAll("circle")
         .transition()
         .duration(750)
         .attr("r", 0)
@@ -900,7 +900,7 @@ Isvg.selectAll("rects")
     .attr("height", function(d) { return y(d.dy); })
     .style({"cursor": "pointer", "fill": function(d) { 
       colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); 
-      if (d.name == "total"){return defaultColor} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "fill-opacity": ".5"})
+      if (d.name == "total"){return defaultColor} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "fill-opacity": "1"})
     .on("mouseover", function (d) {
       //look up facility name
       
@@ -1101,14 +1101,18 @@ function icicleFilter(data){
 }
 
 function icicleHighlight(data){
-  Isvg.selectAll("."+data.name) //select the current id
+  Isvg.selectAll("rect")
+    .style({"fill-opacity": ".2"});
+  Isvg.selectAll("."+data.name) 
     .style({"fill-opacity": "1"}); 
   if (data.name == "total"){
   svg.selectAll("#importer")
-    .style({"stroke": "yellow", "stroke-width": "2px"})} //yellow outline
+    .style(defaultStroke)
+    //.style({"stroke": "yellow", "stroke-width": "2px"})} //yellow outline
   else {
   svg.selectAll("."+data.name)
-    .style({"stroke": "yellow", "stroke-width": "5px"})}
+    .style(defaultStroke)
+    //.style({"stroke": "yellow", "stroke-width": "5px"})}
   if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){ //if sites and at bottom of barchart
 
   //icicleTranslate(data);
@@ -1124,11 +1128,12 @@ function icicleHighlight(data){
 
 function icicleDehighlight(data){
   Isvg.selectAll("."+data.name) //designate selector variable for brevity
-    .style({"fill-opacity": ".5"}); //reset enumeration unit to orginal color
+    .style({"fill-opacity": "1"}); //reset enumeration unit to orginal color
   svg.selectAll("#importer")
     .style(defaultStroke)
   svg.selectAll("."+clickyCheck) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+    .style(defaultStroke)
+    //.style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
   /*if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){
     //console.log(document.getElementsByClassName(data.name))
     svg.selectAll("."+data.name)
@@ -1240,8 +1245,6 @@ function clickedMap(d) {
   if (d.id == "Quebec") {scale = scale*3, translate = [translate[0]-width66*3, translate[1]-height66*1.5]}
   if (d.id == "Ontario") {scale = scale* 3.5; translate = [translate[0]-width66*4.25, translate[1]-height66*2.5]}
 
-  defaultStrokeZoomed = {"stroke": "red", "stroke-width": 1/scale+"px"}
-
   sumByState(d);
 
   u.transition()
@@ -1263,7 +1266,7 @@ function clickedMap(d) {
   imp.transition()
     .selectAll('circle')
     .duration(750)
-    .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
+    //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
     .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
     .attr("r", function (d){return IMPradius(d.total_waste)/(scale/2)})
   /*ports.transition()
@@ -1275,7 +1278,7 @@ function clickedMap(d) {
   exp.transition()
     .selectAll('circle')
     .duration(750)
-    .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
+    //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
     .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
     .attr("r", function (d){return EXPradius(d.total_waste)/(scale/2)})
   arcGroup.transition()
@@ -1333,7 +1336,7 @@ function reset() {
   imp.transition()
       .selectAll('circle')
       .duration(750)
-      .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
+      //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
       .attr("transform", "")
       .attr("r", function (d){return IMPradius(d.total_waste)})
   /*ports.transition()
@@ -1345,7 +1348,7 @@ function reset() {
   exp.transition()
       .selectAll('circle')
       .duration(750)
-      .style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return ".5px"}} )
+      //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return ".5px"}} )
       .attr("transform", "")
       .attr("r", function (d){return EXPradius(d.total_waste)})
   if(arcGroup){
@@ -1479,16 +1482,16 @@ function importers(data){
     .attr("class", function(d) {return d.id+" "+d.state+d.years})
     .attr("id", "importer")
     .style("fill", defaultColor)
-    .style("fill-opacity", ".75")
+    .style("fill-opacity", "1")
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     //.attr("id", function(d){return data.state})
     .on("mouseover", function(d){
-      tooltip.show(d);
+      //tooltip.show(d);
       highlight(d);
     })
     .on("mouseout", function(d){
-      tooltip.hide(d);
+      //tooltip.hide(d);
       dehighlight(d);
       //drawLinesOut(d);
     })
@@ -1693,14 +1696,14 @@ function drawLinesOver(data, base){
     .domain([globalMin, globalMax]) 
     .range([2, 10])
 
-  var tooltipFlow = d3.tip()
+/*  var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='text-size:8px'>" + d.total_waste + " " + d.units + " from "+ d.name +"</span>";
   })
 
-  svg.call(tooltipFlow)
+  svg.call(tooltipFlow)*/
 
   //based on: http://bl.ocks.org/enoex/6201948
   arcGroup = svg.append('g');
@@ -1784,9 +1787,9 @@ d3.selectAll(".arc").remove();
 function color2(data){
   currColor = document.getElementsByClassName(data.id)["importer"].style["fill"]
   svg.selectAll("."+currImporter)
-    .style({"fill": currColor, "fill-opacity": .75});
+    .style({"fill": currColor, "fill-opacity": 1});
   if(iceCheck){svg.selectAll("."+lastImporter)
-    .style({"fill": iceCheck, "fill-opacity": .75});}
+    .style({"fill": iceCheck, "fill-opacity": 1});}
   var rectColor = document.getElementsByClassName(data.id)[0].style["fill"]
   svg.selectAll("."+data.id)
     .style({"fill": rectColor, "fill-opacity": 1});
@@ -1807,8 +1810,7 @@ function colorize(data, name){
       else {return colorDump[0]}
       })
     .style("fill-opacity", function(){
-      if (name == "total"){return ".75"}
-      else {return "1"}
+      return 1
       })
     .style("stroke", function(){
       if (name == "total"){return defaultStroke}
@@ -1817,62 +1819,99 @@ function colorize(data, name){
 
 function clicky(data){
   svg.selectAll("."+currImporter)
-    .style({"fill": currColor, "fill-opacity": .75});
+    .style({"fill": currColor, "fill-opacity": 1});
 
   if (zoomed) {
-    svg.selectAll("circle") //select the current province in the DOM
+    //svg.selectAll("circle") //select the current province in the DOM
     //.style("fill-opacity", "1")
-    .style(defaultStrokeZoomed);
-    if (data.id){ svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
-    } else if (data.name) { svg.selectAll("."+data.name) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
+    //.style(defaultStrokeZoomed);
+    if (data.id){ 
+    svg.selectAll("circle") 
+    .style({"opacity": ".2"})
+    svg.selectAll("."+data.id) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
+    } else if (data.name) { 
+    svg.selectAll("circle")
+    .style({"opacity": ".2"})
+    svg.selectAll("."+data.name) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
     }
   } else{
-    svg.selectAll("circle") //select the current province in the DOM
+    //svg.selectAll("circle")
     //.style("fill-opacity", "1")
-    .style(defaultStroke);
-    if (data.id){ svg.selectAll("."+data.id) //select the current province in the DOM
-      .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
-    } else if (data.name) { svg.selectAll("."+data.name) //select the current province in the DOM
-      .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+    //.style(defaultStroke);
+    if (data.id){ 
+    svg.selectAll("circle") 
+    .style({"opacity": ".2"})
+    svg.selectAll("."+data.id) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
+    } else if (data.name) {
+    svg.selectAll("circle") 
+    .style({"opacity": ".2"})
+    svg.selectAll("."+data.name) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"});
     }
   }
 
 }
 
 function highlight(data){
-  Isvg.selectAll("."+data.id) //select the current province in the DOM
+
+  Isvg.selectAll("rect") 
+    .style({"fill-opacity": ".2"});
+  Isvg.selectAll("."+data.id) 
     .style({"fill-opacity": "1"});
+
   if (zoomed == false){
-  svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline
+    svg.selectAll("circle")
+    .transition().duration(500) 
+    .style({"opacity": ".2"})
+    svg.selectAll("."+data.id) 
+    .transition().duration(500) 
+    .style({"opacity": "1"})
   } else {
-  svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"}); //yellow outline 
+    svg.selectAll("circle") 
+    .style({"opacity": ".2"})
+    .transition().duration(500) 
+    svg.selectAll("."+data.id) 
+    .transition().duration(500) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
   }
 };
 
 function dehighlight(data){
   if (data.id == name){
-   svg.selectAll("."+data.id) //designate selector variable for brevity
+   svg.selectAll("."+data.id)
+   .transition().duration(500)  
     .style({"fill-opacity": "1"})
     .style(defaultStroke)
   }
   else{
-  svg.selectAll("."+data.id) //designate selector variable for brevity
-    .style({"fill-opacity": ".75"})//reset enumeration unit to orginal color
+  svg.selectAll("circle") 
+    .style({"fill-opacity": "1"})
+    .transition().duration(500) 
     .style(defaultStroke)
-  Isvg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"fill-opacity": ".5"});
+  Isvg.selectAll("rect") 
+  .transition().duration(500) 
+    .style({"fill-opacity": "1"});
   }
+
   if (data.id == clickyCheck && zoomed == false) {
-  svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline  
+  svg.selectAll("."+data.id) 
+    .transition().duration(500) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "5px", "opacity": "1"}); //yellow outline  
   }
   if (data.id == clickyCheck && zoomed == true) {
-  svg.selectAll("."+data.id) //select the current province in the DOM
-    .style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"}); //yellow outline  
+  svg.selectAll("."+data.id)
+    .transition().duration(500) 
+    .style({"opacity": "1"})
+    //.style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"}); //yellow outline  
   }
 
 };
@@ -1932,14 +1971,16 @@ for (var j=0; j<latlongdump.length; j++){
     .enter().append("circle")
     .attr("id", "exporter")
     .attr("class", function (d) { return d.state+" "+d.id})
-    .style({"fill": "#3d3d3d", "fill-opacity": ".75"/*, "stroke": exporterRing, "stroke-width": "3px"*/})
+    .style({"fill": "#3d3d3d", "fill-opacity": "1"/*, "stroke": exporterRing, "stroke-width": "3px"*/})
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", function(d){
-      tooltip.show(d);
+      //tooltip.show(d);
       highlight(d);
     }) 
-    .on("mouseout", function(d){tooltip.hide(d); dehighlight(d)}) 
+    .on("mouseout", function(d){
+      //tooltip.hide(d); 
+      dehighlight(d)}) 
     .on("click", function(d){drawLinesOut(d);importThis(d); clickyCheck = d.id; clicky(d); updateDisplay(d)})
   exp.selectAll("circle")
     .transition()
@@ -2244,14 +2285,14 @@ function yearData(data){
 
   var barPadding = 10;
 
-   var tooltipBars = d3.tip()
+/*   var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + d +"</span>";
   })
 
- yearSVG.call(tooltipBars)
+ yearSVG.call(tooltipBars)*/
 
   yearSVG.selectAll("rect")
      .data(yearskey)
@@ -2393,7 +2434,7 @@ function exDrawLinesOver(data, base){
     .domain([exGlobalMin, exGlobalMax]) 
     .range([2, 10])
 
-  var tooltipFlow = d3.tip()
+  /*var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
@@ -2401,7 +2442,7 @@ function exDrawLinesOver(data, base){
   })
 
   svg.call(tooltipFlow)
-
+*/
   //based on: http://bl.ocks.org/enoex/6201948
 
  arcGroup = svg.append('g');
@@ -2496,7 +2537,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
     .append("circle")
     //.attr("class", function(d) {return data.parent.name})
     .style("fill", function(d){return d[1]})
-    .style("fill-opacity", ".75")
+    .style("fill-opacity", "1")
     .style(defaultStroke)
     .attr("r", function(d){return d[0]})
     .attr("cx", function(d,i){return i*300 + 16}) 
@@ -2544,7 +2585,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
         .append("circle")
         //.attr("class", function(d) {return data.name})
         .style("fill", function(d,i) {if (i==0){return result.color} else {return defaultColor}})
-        .style("fill-opacity", ".75")
+        .style("fill-opacity", "1")
         .attr("r", 16)
         .attr("cx", function(d,i){return i*400 + 16}) 
         .attr("cy", 16)
@@ -2563,7 +2604,6 @@ function updateDisplay(data){ //function is called whether system change occurs 
       if (mgmtTypeKey[data.name]) {data.desc = mgmtTypeKey[data.name]; data.desc2 = UNtypeKey[data.parent.name]}
       if (UNtypeKey[data.name]) {data.desc = UNtypeKey[data.name]; data.desc2 = mgmtTypeKey[data.parent.name]}
 
-      console.log(filterDomain)
       if (filterDomain == "DisposalMethod"){var stringwork2 = ["= sites with " + data.desc2+"", "= sites doing " + data.desc2 + " of "+ data.desc]}
       if (filterDomain == "Type"){var stringwork2 = ["= sites with " + data.desc2+"", "= sites doing " + data.desc + " of "+ data.desc2]}
       var circleData = [data.parent.name, data.name]
@@ -2577,7 +2617,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
         .append("circle")
         //.attr("class", function(d) {return data.parent.name})
         .style("fill", function(d, i){ return result[i].color})
-        .style("fill-opacity", ".75")
+        .style("fill-opacity", "1")
         .attr("r", 16)
         .attr("cx", function(d,i){return i*400 + 16}) 
         .attr("cy", 16)
