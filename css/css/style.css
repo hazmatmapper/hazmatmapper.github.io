@@ -56,7 +56,6 @@ label {
   color:white;
   font-family: 'Roboto', sans-serif;
   font-size: 10px;
-  background: "orange"
 }
 .descriptions{
   position:absolute;
@@ -192,7 +191,7 @@ label {
 #viewShowHide{
   position: absolute;
   top: 110px;
-  left: 300px
+  left: 0px
 }
 .viewer {
   position:absolute;

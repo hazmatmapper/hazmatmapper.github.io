@@ -20,7 +20,7 @@ var DisposalMethod;
 var povertydata = [];
 var colorKey;
 var clickCheck = true
-var viewClickCheck = true
+var viewClickCheck = false
 var checker = false; //checks to see whether we've run initial data crunching, essentially
 var methyTypeCheck = false;
 var povSVG;
@@ -484,8 +484,8 @@ function setControls(){
   d3.select("body")
     .append("div")
     .classed("viewer", true)
-    .style({"top": 10+lambdaNOPX/2+"px", "width": lambdaPlus, "height": height100-20-(lambdaNOPX*2)+"px"})
-    .html("<span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually now imports more than twice as much waste from Canada and Mexico than it exports to the two countries combined.  <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
+    .style({"top": 10+lambdaNOPX/2+"px", "width": 0, "height": height100-100+"px"})
+    //.html("<span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually now imports more than twice as much waste from Canada and Mexico than it exports to the two countries combined.  <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
     //.style("display", "inline-block");
 
   d3.select("body")
@@ -950,6 +950,7 @@ function choropleth(data){
       chorodump[data[i]["key"]] = data[i]["values"]["total_waste"]
     } 
 
+
     //chorodump.sort(function(a,b) {return b.total_waste-a.total_waste;})
     var max = d3.max(d3.values(chorodump));
     var min = d3.min(d3.values(chorodump));
@@ -970,6 +971,8 @@ function choropleth(data){
           }
         }
       })
+
+    d3.select(".descriptions").remove()
     d3.select(".mapDisplay").remove()
     d3.select(".barWrap")
           .append("div")
@@ -2351,12 +2354,41 @@ d3.selectAll(".viewerText").append("div").attr("class", "typeChart");
 
 d3.select(".typeChart").append("div")
   .attr("class", "povLabel")
-  .html("Imports by type <p>")
+  .html("Imports by type")
 
 var width = lambdaplusNOPX -10
 var height = lambdaNOPX/3
 
 var barheight = height/6
+
+//implement control for svgbuild here
+labelView = ["Type", "Disposal Method"]
+var form = d3.select(".typeChart").append("form"), j=0;
+
+form.append("text")
+  .attr("class", "viewerCategory")
+ .text("Label by: ")
+
+var labels = form.selectAll("span")
+    .data(labelView)
+    .enter().append("span")
+
+labels.append("input")
+    .attr({
+        type: "radio",
+        name: "mode",
+        value: function(d, i) {return i;}
+    })
+    .property("checked", function(d, i) {return i===j;})
+    .on("click", function(d){
+      console.log(d)
+      if (d == "Type"){methyTypeCheck = false} else {methyTypeCheck = true}
+      typeSVG.selectAll("text")
+        .remove()
+      typeLabels();
+    })
+  labels.append("label").text(function(d) {return d;})
+  labels.append("text").html("&nbsp")
 
 typeSVG =  d3.select(".typeChart").append("svg")
   .attr("width", width)
@@ -2384,6 +2416,13 @@ typemin = []
 typedumper=[]
 methdumper = []
 
+var sorted = [];
+for(var key in typedump) {
+  sorted[sorted.length] = d3.values(d3.values(typedump[key])[0])
+}
+sorted.sort(function(a,b){return b-a}); //sorts by type
+//sorted.sort(function(a){for (c=1; c<sorted[a].length;c++){return sorted[a][c] - sorted[a][c-1]}})//sorts within type
+console.log(sorted)
 //console.log(d3.values(d3.values(typedump[0])[0]))
 
 //sort typedump before pushing to work
@@ -2395,14 +2434,17 @@ for (l=0; l<typedump.length; l++){
     typemax[l]=d3.max(d3.values(d3.values(typedump[l])[0])) //max in type
     typemin[l]=d3.min(d3.values(d3.values(typedump[l])[0]))
     //console.log(d3.values(typedump[l])[0])
-    typedumper[l]=d3.keys(typedump[l])[0]
+    typedumper[l]=[d3.keys(typedump[l])[0],typesum[l]]
     methdumper[l]=d3.keys(d3.values(typedump[l])[0])
-    d3.values(typedump[l])[0].sort(function(a,b){console.log(a,b); return b-a})
+    //d3.values(typedump[l])[0].sort(function(a,b){console.log(a,b); return b-a})
     work[l]=d3.values(d3.values(typedump[l])[0])
     //work[l].sort(function(a,b){return b-a})
 }
+console.log(methdumper)
+typedumper.sort(function(a, b){return b[1]-a[1]})
+
 //typedump.sort(function(a,b){return d3.sum(d3.values(d3.values(b)[0]))-d3.sum(d3.values(d3.values(a[0])))})
-//work.sort(function(a,b) {return d3.sum(b)-d3.sum(a)})
+work.sort(function(a,b) {return d3.sum(b)-d3.sum(a)})
 summy = d3.sum(typesum)
 maxi = d3.max(typemax)
 mini = d3.min(typemin)
@@ -2424,30 +2466,6 @@ var x = d3.scale.sqrt()
     .attr("class", "povBars")
     .attr("width", 25)
     .attr("height", y)*/
-
-//implement control for svgbuild here
-labelView = ["Type", "Disposal Method"]
-var form = d3.select(".typeChart").append("form"), j=0;
-var labels = form.selectAll("span")
-    .data(labelView)
-    .enter().append("span")
-labels.append("input")
-    .attr({
-        type: "radio",
-        name: "mode",
-        value: function(d, i) {return i;}
-    })
-    .property("checked", function(d, i) {return i===j;})
-    .on("click", function(d){
-      if (methyTypeCheck == false){methyTypeCheck = true}
-      if (methyTypeCheck == true){methyTypeCheck = false}
-      typeSVG.selectAll("text")
-        .transition().duration(500)
-        .remove()
-      typeLabels();
-    })
-  labels.append("label").text(function(d) {return d;})
-  labels.append("text").html("&nbsp")
 
 
 var barPadding = 3;
@@ -2483,15 +2501,15 @@ typeLabels();
 //type labels
 function typeLabels(){
 lastStart=0
+console.log(methyTypeCheck)
+if (methyTypeCheck){
 typeSVG.append("g")
     .selectAll("g")
-     .data(function(){
-      if (methyTypeCheck){return methdumper} else{return typedumper} //move control up...
-     })
+     .data(methdumper)
      .enter()
      .append("g")
      .selectAll("text")
-     .data(function(d,i,j){return d})
+     .data(function(d,i,j){console.log(d,i,j);return d})
      .enter()
      .append("text")
       .text(function(d, i, j) { return d})
@@ -2504,7 +2522,25 @@ typeSVG.append("g")
       }
         else {lastStart =0; return 0;} //return last d + spacing 
       }) //scale by x...
-      .attr("class", "percentLabel")    
+      .attr("class", "percentLabel") 
+  } else{
+typeSVG.append("g")
+    .selectAll("g")
+     .data(typedumper)
+     .enter()
+     .append("text")
+      .text(function(d) { return d[0]})
+      .attr("y", function(d, i, j) {
+      return i * barheight + (barheight - barPadding) / 1.1;
+      })
+      .attr("x", function(d, i, j) {if (x(work[i][j-1])) {
+        lastStart += spacing + width - x(work[i][j-1])
+        return lastStart
+      }
+        else {lastStart =0; return 0;} //return last d + spacing 
+      }) //scale by x...
+      .attr("class", "percentLabel") 
+    }   
 }
 
 
