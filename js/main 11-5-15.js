@@ -464,20 +464,19 @@ function initialize(){
   svg = d3.select("body").append("svg")
     .attr("id", "mapSVG")
     .style({"height": height100-lambdaNOPX-50, "width": width100, "position": "absolute"})
-
     //create map projection
   projection = d3.geo.albers()
   .center([9,35])
   .rotate([100,0])
   .parallels([20,45])
-  .scale(750)
+  .scale((height100-lambdaNOPX-50)*1.3) //491, 578 . at 578, 750 is fine. at 491, not so much.
   .translate([(width100)/2, (height100-lambdaNOPX)/2]);
 
   projectionLong = d3.geo.albers()
   .center([9,35])
-  .rotate([100,0])
+  //.rotate([100,0])
   .parallels([20,45])
-  .scale(1000)
+  .scale((height100-50)*1.3) // 691, 778 at 778 1000 is ok. 
   .translate([(width100)/2, (height100/2)]);
 
   projectionDefault=projection
