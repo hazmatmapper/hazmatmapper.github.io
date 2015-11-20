@@ -1,11 +1,7 @@
-/* lambda = 200px 
-
-*/ 
-
 body {
   font-family: 'Roboto', sans-serif;
   color: white;
-  background-color: #333;
+  background-color: white;
   max-width: 100%;
   overflow-x: hidden;
 }
@@ -20,17 +16,18 @@ a{
   font-size: 10px;
 }
 
-
 #showHide{
   position: absolute;
   bottom: 215px;
   right: 15px;
 }
 .barWrap{
-  background: #666;
+  background-color: #252525;
   position: absolute;
   bottom: 15px;  
   width: 100%;
+  border-radius: 5px;
+  padding: 5px;
 }
 .filterSelector{
   position: absolute;
@@ -52,7 +49,6 @@ label {
 .mapDisplay{
   position: absolute;
   width: 75%;
-  height:60px;
   color:white;
   font-family: 'Roboto', sans-serif;
   font-size: 10px;
@@ -68,9 +64,11 @@ label {
   bottom: 0%;
   height: 15px;
   width: 100%;
-  background-color: #333;
+  background-color: #252525;
   color: yellow;
   font-size:12px;
+    border-radius: 5px;
+  padding: 5px;
 }
 .aboutFooter{
   position:absolute;
@@ -88,29 +86,32 @@ label {
   color: yellow;
   font-size: 20px;
   position: absolute;
-  background: #333;
+  background: #252525;
+  border-radius: 5px;
+  padding: 5px;
 }
 .subtitle{
   color: #c2c2c2;
   font-size:12px;
   position: absolute;
-  width: 100%;
-  background: #333;
+  width: 95%;
+  background: #252525;
 }
 
 
 
 
 .exporter{
-    fill: #606060;
-  stroke:#737373;
-  stroke-width: 1px;
+    fill: #cccccc;
+  stroke:white;
+    stroke-width: .5px;
   fill-opacity: 1;
   cursor: pointer;
 }
 .exporter:hover {
-  stroke-width: 2px;
+  fill: #dddddd;
 }
+
 .borders{
   fill: none;
   stroke: black;
@@ -124,7 +125,7 @@ label {
 .introButton{
   width:100%;
   height:10%;
-  background: #333;
+  background: #252525;
   opacity: .3;
   text-shadow:none;
   border: none;
@@ -139,14 +140,13 @@ label {
 
 
 .feature {
-  fill: #b1bcc5;
-  stroke:#838383;
+  fill: #cccccc;
+  stroke: white;
   stroke-width: .5px;
-  fill-opacity: 1;
   cursor: pointer;
 }
 .feature:hover {
-  stroke-width: 2px;
+  fill: #dddddd;
 }
 
 
@@ -175,7 +175,7 @@ label {
   height: 75%;
   width: 90%;
   border: solid 1px yellow;
-  background-color: #333;
+  background-color: #252525;
   ;
 }
 .aboutText{
@@ -190,12 +190,13 @@ label {
 
 #viewShowHide{
   position: absolute;
-  top: 110px;
+  top: 115px;
   left: 0px
 }
 .viewer {
   position:absolute;
-  background: #444;
+  background-color: #252525;
+  border-radius: 5px;
 }
 .intro{
   font-size: 12px;
@@ -280,7 +281,7 @@ h3{
   width: 85%;
   text-align: center;
   vertical-align: middle;
-  background-color: #555;
+  background-color: #252525;
   border: solid 1px black;
 }
 
