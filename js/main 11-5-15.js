@@ -1581,6 +1581,7 @@ function clickedMap(d) {
   d3.select(".mapDisplay").remove()
   mapDisplay();
 
+  console.log(d)
 
   u.transition()
     .duration(750)
