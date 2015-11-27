@@ -1,8 +1,6 @@
 //global variables
 
-var latlongs;
-var svg;
-var sum;
+var latlongs, svg, sum, zoomer;
 var projection, projectionLong, projectionDefault;
 var latlongsR;
 var latlongRdump = [];
@@ -458,8 +456,8 @@ function initialize(){
   width75 =  .7 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
   height33 = .25 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
   height66 = .6 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-  height100 =  $(window).height();
-  width100 = $(window).width();//recalculate based on window resize function?
+  height100 = window.innerHeight
+  width100 = window.innerWidth
 
   svg = d3.select("body").append("svg")
     .attr("id", "mapSVG")
@@ -467,7 +465,7 @@ function initialize(){
     //create map projection
   projection = d3.geo.albers()
   .center([9,35])
-  .rotate([100,0])
+  //.rotate([100,0])
   .parallels([20,45])
   .scale((height100-lambdaNOPX-50)*1.3) //491, 578 . at 578, 750 is fine. at 491, not so much.
   .translate([(width100)/2, (height100-lambdaNOPX)/2]);
@@ -478,6 +476,10 @@ function initialize(){
   .parallels([20,45])
   .scale((height100-50)*1.3) // 691, 778 at 778 1000 is ok. 
   .translate([(width100)/2, (height100/2)]);
+
+  zoom = d3.behavior.zoom()
+    .scaleExtent([1, Infinity])
+    .on("zoom",zoomer);
 
   projectionDefault=projection
 
@@ -1507,26 +1509,28 @@ queue()
   .await(callback);
 
 function callback(error, us, can, mex, borders){
+  svg.call(zoom);
+
   u.selectAll("path")
     .data(topojson.feature(us, us.objects.states).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "feature")
-      .on("click", clickedMap);
+      //.on("click", clickedMap);
   
   c.selectAll('path')
     .data(topojson.feature(can, can.objects.provinces).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "exporter")
-      .on("click", clickedMap); 
+      //.on("click", clickedMap); 
 
   m.selectAll('path')
     .data(topojson.feature(mex, mex.objects.mex).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "exporter")
-      .on("click", clickedMap);
+      //.on("click", clickedMap);
 
   b.selectAll('path')
     .data(topojson.feature(borders, borders.objects.borders).features)
@@ -1557,6 +1561,23 @@ function callback(error, us, can, mex, borders){
 
   };
 };
+
+function zoomer() {
+  u.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
+  c.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
+  m.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
+  b.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
+  imp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("circle").attr("r", function (d){return IMPradius(d.total_waste)/(zoom.scale()/2)}).style("stroke-width", 1 / zoom.scale() * 3 + "px" )
+  exp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("circle").attr("r", function (d){return EXPradius(d.total_waste)/(zoom.scale()/2)}).style("stroke-width", 1 / zoom.scale() * 3 + "px" )
+  arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
+}
 
 function clickedMap(d) {
   if (activePlace == d.properties.id || activePlace == d.id) {activePlace = 666; return reset()} else if (d.properties.id) {activePlace = d.properties.id}  else if (d.id) {activePlace =d.id}//mexico test
