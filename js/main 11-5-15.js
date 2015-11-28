@@ -39,9 +39,12 @@ var exDefaultColor = "#636363"
 //var exporterRing = "black";
 var latlongdump;
 var tooltip;
-var defaultStroke = {"stroke": "black", "stroke-width": 1, "opacity": 1} //{"stroke": "red", "stroke-width": ".5px"}
-var highlighted = {"stroke-width": .25, "opacity": .2}
-var defaultStrokeZoomed = {"stroke": "none"}//{"stroke": "red", "stroke-width": ".5px"}
+var zoom = d3.behavior.zoom()
+    .scaleExtent([1, Infinity])
+    .on("zoom",zoomer);
+var defaultStroke = {"stroke": "black", "opacity": 1} //{"stroke": "red", "stroke-width": ".5px"}
+var highlighted = {"opacity": .2}
+//var defaultStrokeZoomed = {"stroke": "none"}//{"stroke": "red", "stroke-width": ".5px"}
 var siteViewerHelp = false;
 var footerText;
 var descriptors = {};
@@ -59,6 +62,7 @@ var u, c, m, b, imp, exp, arcGroup, ports;
 var filterTypesYear, filterTypesSignal;
 var lambda = "200px"; lambdaNOPX = 200, lambdaPad = "215px"
 var lambdaPlus = "300px"; lambdaplusNOPX = 300
+var chorodump;
 
 var mexfips = {
   "0": {
@@ -477,10 +481,6 @@ function initialize(){
   .scale((height100-50)*1.3) // 691, 778 at 778 1000 is ok. 
   .translate([(width100)/2, (height100/2)]);
 
-  zoom = d3.behavior.zoom()
-    .scaleExtent([1, Infinity])
-    .on("zoom",zoomer);
-
   projectionDefault=projection
 
   setControls();
@@ -505,14 +505,19 @@ function setControls(){
   d3.select("body")
     .append("div")
     .attr("class", "title")
-    .style({"height": lambdaNOPX/2+"px", "width": lambda})
+    .style({"height": lambdaNOPX/1.6+"px", "width": lambda})
     .html("HazMatMapper<br><span class='subtitle'>US Imports of Hazardous Waste from Canada and Mexico 2007-2012</span><br>")
 
+  d3.select("body")
+    .append("div")
+    .attr("id", "resetter")
+    .html("<img src='/data/icons/reset.svg' height='40' width='40'>")
+    .on("click", reset)
 
   d3.select("body")
     .append("div")
     .classed("viewer", true)
-    .style({"top": 10+lambdaNOPX/2+"px", "width": 0, "height": height100-100+"px"})
+    .style({"top": 10+lambdaNOPX/1.6+"px", "width": 0, "height": height100-100+"px"})
     //.html("<span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually now imports more than twice as much waste from Canada and Mexico than it exports to the two countries combined.  <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
     //.style("display", "inline-block");
 
@@ -559,7 +564,7 @@ function setControls(){
         d3.select("#accordion")
           .style("display", "none")
         d3.select("#showHide")
-          .style({"bottom": "0px"})
+          .style({"bottom": "20px"})
         d3.select("#mapSVG")
           .transition()
           .duration(450)
@@ -578,17 +583,19 @@ function setControls(){
                 .style({"left": "0px"})
               viewClickCheck = false
             }
-            console.log(view)
             if (view == "Sites"){
               svg.selectAll("path, circle").remove()
               projection = projectionLong//new projection terms
+              zoomed = false
+              zoom.translate([0,0]).scale(1)
               setMap()
               importers(latlongReset)
             }
             if (view == "States"){
-              console.log(phase, view)
               svg.selectAll("path, circle").remove()
               projection = projectionLong//new projection terms
+              zoomed = false
+              zoom.translate([0,0]).scale(1)
               setMap()
               setData(phase, currentYears, view)
             }
@@ -597,6 +604,19 @@ function setControls(){
         clickCheck = false
       }
       else {
+          if (viewClickCheck == true) {
+              d3.select('.intro').remove()
+              d3.select(".viewerText").remove()
+              d3.select(".viewer")
+                .transition()
+                .duration(450)
+                .style("width", "0px")
+              d3.select("#viewShowHide")
+                .transition()
+                .duration(450)
+                .style({"left": "0px"})
+              viewClickCheck = false
+            }
         d3.select("#accordion")
           .transition()
           .duration(750)
@@ -608,16 +628,19 @@ function setControls(){
           .duration(450)
           .style({"height": height100-lambdaNOPX-50})
           .each("end", function(){
-                        console.log(view)
             if (view == "Sites"){
               svg.selectAll("path, circle").remove()
               projection = projectionDefault //new projection terms
+              zoomed = false
+              zoom.translate([0,0]).scale(1)
               setMap()
               importers(latlongReset)
             }
             if (view == "States"){
               svg.selectAll("path, circle").remove()
               projection = projectionDefault//new projection terms
+              zoomed = false
+              zoom.translate([0,0]).scale(1)
               setMap()
               setData(phase, currentYears, view)
             }
@@ -646,7 +669,15 @@ function setControls(){
 
   Isvg = d3.select(".barWrap").append("svg")
     .style({"position": "absolute", "top": (lambdaNOPX/5)+40, "width": width100-lambdaNOPX*2.25, "left": lambdaNOPX+30, "height": (lambdaNOPX/2)+margin.bottom,})
-  
+
+var form = d3.select(".title").append("form")
+var labels = form.selectAll("span").data([0]).enter().append("span")
+labels.append("input")
+    .attr({
+        type: "text",
+        id: "tags",
+        value: "Find a place"
+    })
 
 //phase switcher here
 filterPhases = ["Solids", "Liquids"]
@@ -679,6 +710,7 @@ labels.append("input")
         .remove();
       d3.selectAll(".arc").remove()
       svg.selectAll("circle").transition().duration(1200).attr("r", 0).remove()//chain below so that removal only happens after r = 0
+      zoom.translate([0,0]).scale(1)
       setData(d, currentYears, view) 
     })
   labels.append("label").text(function(d) {return d;})
@@ -699,6 +731,24 @@ labels.append("input")
     })
     .property("checked", function(d, i) {return i===j;})
     .on("click", function(d){
+        d3.select(".viewerText").remove()
+        d3.select(".descriptions").remove()
+        d3.select(".povertyChart").remove()
+        d3.selectAll(".yearData").remove()
+        if (viewClickCheck == true) {
+        d3.select('.intro').remove()
+        d3.select(".viewerText")
+          .style("display", "none")
+        d3.select(".viewer")
+          .transition()
+          .duration(450)
+          .style("width", "0px")
+        d3.select("#viewShowHide")
+          .transition()
+          .duration(450)
+          .style({"left": "0px"})
+        viewClickCheck = false
+      }
       if (zoomed){reset()}
       filterDomain = "Site" // set type to Site when switching
       view = d
@@ -714,7 +764,7 @@ labels.append("input")
         .remove();
       if (d == "Sites") {
         mapDisplay()
-        svg.selectAll(".feature").transition().duration(2500).style({"fill": '#cccccc'})
+        svg.selectAll(".feature").transition().duration(2500).style({"fill": '#cccccc'}).style("stroke", "white");
         filterform.selectAll("input").property("disabled", false)
         filterform.selectAll("#Site")
         .property("checked", true)
@@ -725,6 +775,7 @@ labels.append("input")
       } // and grey out/disable filter by...
       d3.selectAll(".arc").remove()
       svg.selectAll("circle").transition().duration(1200).attr("r", 0).remove()
+      zoom.translate([0,0]).scale(1)
       setData(phase, currentYears, d) 
     })
   labels.append("label").text(function(d) {return d;})
@@ -772,9 +823,9 @@ labels.append("input")
         .remove();
       svg.selectAll("#importer")
         .style({"fill": defaultColor, "fill-opacity": "1"})
-      d3.select(".mapDisplay").remove()
+      //d3.select(".mapDisplay").remove()
       d3.selectAll(".arc").remove()
-      mapDisplay()
+      //mapDisplay()
       filterDomain = d
       icicle(window[d])
       //icicleAxis();
@@ -969,7 +1020,6 @@ d3.csv("data/"+phase+".csv", function(data) {
   .key(function(d) { return d.exporterLONG })
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // 
   .entries(data);
-  console.log("quant by exporter", quantByExporter)
 
   quantByDesination =d3.nest() //calculate for each exporter, how much each desination gets
   .key(function(d) { return d.exporterLONG })
@@ -1017,11 +1067,12 @@ d3.csv("data/"+phase+".csv", function(data) {
   firstTime=false
 
 
+
 });
 }
 
 function choropleth(data){
-    var chorodump = [];
+    chorodump = [];
     for (var i = 0; i<data.length; i++){
       chorodump[data[i]["key"]] = data[i]["values"]["total_waste"]
     } 
@@ -1047,6 +1098,7 @@ function choropleth(data){
           }
         }
       })
+      .style("stroke", "black");
 
     d3.select(".descriptions").remove()
     d3.select(".mapDisplay").remove()
@@ -1124,23 +1176,24 @@ var partition = d3.layout.partition()
     //.size([width, height])
     .value(function(d) { return d.size; });
 
-/*var tip = d3.tip()
+var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
-Isvg.call(tip)*/
+Isvg.call(tip)
 
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
 var nodes = partition.nodes(data);
 var iceFilter = nodes.filter(function(d) {for (n=0; n<nodes.length; n++){ if (d.depth == 1 || d.depth == 0){return d}}});
 iceFilter.sort(function(a,b){return a.value-b.value})
-console.log(iceFilter)
+
 color.domain(iceFilter)
 colorKey=[];
+
 Isvg.selectAll("rects")
     .data(iceFilter)
   .enter().append("rect")
@@ -1162,7 +1215,7 @@ Isvg.selectAll("rects")
           siteViewerHelp = true
           }
         }
-        //tip.show(facilityName); 
+        tip.show(facilityName); 
       } else if (filterDomain ==  "Type" && d.depth == 3) {
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
@@ -1170,7 +1223,7 @@ Isvg.selectAll("rects")
           siteViewerHelp = true
           }
         }
-        //tip.show(facilityName); 
+        tip.show(facilityName); 
       } else if (filterDomain ==  "DisposalMethod" && d.depth == 3) {
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
@@ -1178,21 +1231,21 @@ Isvg.selectAll("rects")
           siteViewerHelp = true
           }
         }
-        //tip.show(facilityName); 
+        tip.show(facilityName); 
       } else {siteViewerHelp = false} //tip.show(d); 
       if (filterDomain == "Type" && d.depth == 1 || filterDomain == "Site" && d.depth == 2 || filterDomain == "DisposalMethod" && d.depth == 2 || filterDomain == undefined && d.depth == 2){
         var show = {"name": UNtypeKey[d.name]}
-        //tip.show(show)
+        tip.show(show)
       }
       if (filterDomain == "Type" && d.depth == 2 || filterDomain == "Site" && d.depth == 3 || filterDomain == "DisposalMethod" && d.depth == 1 || filterDomain == undefined && d.depth == 3){
         var show = {"name": mgmtTypeKey[d.name]}
-        //tip.show(show)
+        tip.show(show)
       }
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
       icicleHighlight(d);
       //};  
     })
-    .on("mouseout", function(d){ icicleDehighlight(d)}) //tip.hide(d);
+    .on("mouseout", function(d){ icicleDehighlight(d); tip.hide(d);}) 
     .on('click', function(d){
 /*      if (filterDomain ==  "DisposalMethod" && d.depth == 1 || filterDomain ==  "Type" && d.depth == 2 || filterDomain ==  "Site" && d.depth == 3 || filterDomain ==  undefined && d.depth == 3){
         //show details of method here
@@ -1511,26 +1564,41 @@ queue()
 function callback(error, us, can, mex, borders){
   svg.call(zoom);
 
+  var name, sum, length;
+
+  var toolio = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([0, 0])
+  .html(function(d) {
+    return "<span style='color:white'>" + name + ": " + sum + " at " + length+ " sites</span>";
+  })
+  svg.call(toolio)
+
   u.selectAll("path")
     .data(topojson.feature(us, us.objects.states).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "feature")
-      //.on("click", clickedMap);
+      .on("mouseover", function(d){statez(d); toolio.show()})
+      .on("mouseout", function(d){toolio.hide()})
   
   c.selectAll('path')
     .data(topojson.feature(can, can.objects.provinces).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "exporter")
-      //.on("click", clickedMap); 
+      .on("mouseover",  function(d){
+        if (view == "Sites"){statez(d);toolio.show()}})
+      .on("mouseout", function(d){toolio.hide()})
 
   m.selectAll('path')
     .data(topojson.feature(mex, mex.objects.mex).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "exporter")
-      //.on("click", clickedMap);
+      .on("mouseover",  function(d){
+        if (view == "Sites"){statez(d);toolio.show()}})
+      .on("mouseout", function(d){toolio.hide()})
 
   b.selectAll('path')
     .data(topojson.feature(borders, borders.objects.borders).features)
@@ -1538,7 +1606,40 @@ function callback(error, us, can, mex, borders){
       .attr("d", path)
       .attr("class", "borders")
 
-  pathHelp=path
+  //pathHelp=path
+
+  function statez(data){
+
+
+  if (typeof(data.id) === "string") {
+    name = data.id
+    var state = document.getElementsByClassName(data.id.toUpperCase())
+    length = state.length
+  }
+  if (typeof(data.id) === "number") {
+    name = fips[data.id].name
+    var ddd = fips[data.id].abbreviation
+    var state = document.getElementsByClassName(ddd)
+    length = state.length
+  }
+  if (data.properties.id){
+    name = mexfips[data.properties.id]["FIELD2"]
+    var state = document.getElementsByClassName(name.toUpperCase())
+    length = state.length
+  }
+
+  sum = 0;
+  for (var k=0; k<state.length; k++){
+    sum += state[k].__data__.total_waste
+  }
+
+  if (view == "States"){
+   sum = chorodump[ddd]
+   if (sum == undefined){sum = 0}
+   length = "Not available"
+  }
+  
+}
   /*g.append("path")
       .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
       .attr("class", "mesh")
@@ -1563,6 +1664,8 @@ function callback(error, us, can, mex, borders){
 };
 
 function zoomer() {
+  if (zoom.scale() > 1) {zoomed = true} else {return zoom.translate([0,0]); zoom.scale(1)} //control slippiness for arcgroup
+
   u.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
   c.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
@@ -1572,14 +1675,14 @@ function zoomer() {
   b.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
   imp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return IMPradius(d.total_waste)/(zoom.scale()/2)}).style("stroke-width", 1 / zoom.scale() * 3 + "px" )
+      .selectAll("circle").attr("r", function (d){return IMPradius(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
   exp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return EXPradius(d.total_waste)/(zoom.scale()/2)}).style("stroke-width", 1 / zoom.scale() * 3 + "px" )
-  arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
+      .selectAll("circle").attr("r", function (d){return EXPradius(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
+  if(arcGroup){arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})}
 }
 
-function clickedMap(d) {
+/*function clickedMap(d) {
   if (activePlace == d.properties.id || activePlace == d.id) {activePlace = 666; return reset()} else if (d.properties.id) {activePlace = d.properties.id}  else if (d.id) {activePlace =d.id}//mexico test
 
   zoomed = true;
@@ -1601,8 +1704,6 @@ function clickedMap(d) {
 
   d3.select(".mapDisplay").remove()
   mapDisplay();
-
-  console.log(d)
 
   u.transition()
     .duration(750)
@@ -1631,7 +1732,7 @@ function clickedMap(d) {
     .duration(750)
     //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "1px"} else {return 1 / scale + "px"}} )
     .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
-    .attr("r", 9/scale)*/
+    .attr("r", 9/scale)
   exp.transition()
     .selectAll('circle')
     .duration(750)
@@ -1666,17 +1767,25 @@ function clickedMap(d) {
 
   //importers(latlongRdump)
   
-}
+//}
 
 function reset() {
   //d3.select("#mapSVG").remove()
-    zoomed = false;
+  zoomed = false;
+  zoom.translate([0,0]).scale(1)
 
+  svg.selectAll("#importer")
+    .style({"fill": defaultColor, "fill-opacity": "1"})
+
+  svg.selectAll(".arc").remove()
+
+  d3.select(".descriptions").remove()
   d3.select(".mapDisplay").remove()
   mapDisplay();
 
   if (viewClickCheck == true) {
         d3.select('.intro').remove()
+        d3.select(".viewerText").remove()
         d3.select(".viewerText")
           .style("display", "none")
         d3.select(".viewer")
@@ -1689,35 +1798,49 @@ function reset() {
           .style({"left": "0px"})
         viewClickCheck = false
       }
-
+  u.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", .5 / zoom.scale() + "px" );
+  c.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", .5 / zoom.scale() + "px" );
+  m.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", .5 / zoom.scale() + "px" );
+  b.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
+  imp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("circle").attr("r", function (d){return IMPradius(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
+  exp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("circle").attr("r", function (d){return EXPradius(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
+  if (arcGroup){arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+.selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})}
+ /* b.transition()
+      .duration(750)
+      .style("stroke-width", "1px")
+      .attr("transform", "");
   u.transition()
       .duration(750)
-      .style("stroke-width", "1.5px")
+      .style("stroke-width", "1px")
       .attr("transform", "");
   c.transition()
       .duration(750)
-      .style("stroke-width", "1.5px")
+      .style("stroke-width", "1px")
       .attr("transform", "");
   m.transition()
       .duration(750)
-      .style("stroke-width", "1.5px")
+      .style("stroke-width", "1px")
       .attr("transform", "");
-  b.transition()
-      .duration(750)
-      .style("stroke-width", "1.5px")
-      .attr("transform", "");
+
   imp.transition()
       .selectAll('circle')
       .duration(750)
       //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
       .attr("transform", "")
       .attr("r", function (d){return IMPradius(d.total_waste)})
-  /*ports.transition()
+  ports.transition()
       .selectAll('circle')
       .duration(750)
       //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
       .attr("transform", "")
-      .attr("r", 3)*/
+      .attr("r", 3)
   exp.transition()
       .selectAll('circle')
       .duration(750)
@@ -1731,7 +1854,7 @@ function reset() {
       .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
       //.style("stroke-width", "1.5px")
       .attr("transform", "");
-  }
+  }*/
 }
 
 function dataCrunch(data){
@@ -1819,6 +1942,11 @@ for (var j=0; j<latlongRdump.length; j++){
 if (firstTime) {latlongGlobal = latlongRdump}
 
 latlongReset = latlongRdump;
+
+
+
+
+
 icicle(Site);
 //icicleAxis();
 importers(latlongRdump);
@@ -1850,7 +1978,6 @@ function icicleImporters(data, name){
 
 function importers(data){
 
-    
 
   var max = d3.max(latlongReset, function(d) {return d.total_waste}),
   min = d3.min(latlongReset, function(d) {return d.total_waste})
@@ -1864,20 +1991,20 @@ function importers(data){
     .domain([min+1, max]) //don't want min to be 0
     .range([15, 70])}
   
- /* tooltip = d3.tip()
+  tooltip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
-  svg.call(tooltip)*/
+  svg.call(tooltip)
 
   imp = svg.append("g")
   imp.selectAll("circle")
     .data(data)
     .enter().append("circle")
-    .attr("class", function(d) {return d.id+" "+d.state+d.years})
+    .attr("class", function(d) {return d.id+" "+d.state+d.years+" "+d.name})
     .attr("id", "importer")
     .style("fill", defaultColor)
     .style(defaultStroke)
@@ -1885,11 +2012,11 @@ function importers(data){
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     //.attr("id", function(d){return data.state})
     .on("mouseover", function(d){
-      //tooltip.show(d);
+      tooltip.show(d);
       highlight(d);
     })
     .on("mouseout", function(d){
-      //tooltip.hide(d);
+      tooltip.hide(d);
       dehighlight(d);
       //drawLinesOut(d);
     })
@@ -1905,7 +2032,6 @@ function importers(data){
     .transition()
     .duration(1000)
     .attr("r", function(d) { return IMPradius(d.total_waste); })
-
 
   exporters();
  
@@ -1980,6 +2106,16 @@ function importers(data){
 };
 
 function sumByState(data){
+
+  var toolio = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([0, 0])
+  .html(function(d) {
+    return "<span style='color:white'>" + d.name + "</span>";
+  })
+
+  svg.call(toolio)
+
   if (typeof(data.id) === "string") {
     var name = data.id
     var state = document.getElementsByClassName(data.id.toUpperCase())
@@ -1997,6 +2133,8 @@ function sumByState(data){
     var length = state.length
   }
 
+
+
   var sum = 0;
   for (var k=0; k<state.length; k++){
     sum += state[k].__data__.total_waste
@@ -2007,6 +2145,14 @@ function sumByState(data){
   d3.select(".povertyChart").remove()
   d3.selectAll(".yearData").remove()
   
+
+  if (view == "States"){
+   sum = chorodump[ddd]
+   if (sum == undefined){sum = 0}
+   length = "Not available"
+  }
+
+
   if (viewClickCheck == true) {
   d3.select(".viewer").append("div").attr("class", "viewerText")
   .html("<span class='importerName'>"+name+"</span><p><span class='viewerCategory'>For selected year(s):</span><p><span class = 'viewerCategory'>Total waste</span><br><span class ='viewerData'>"+sum+"<p><span class = 'viewerCategory'>Number of sites</span><br><span class ='viewerData'>"+length+"")
@@ -2026,8 +2172,6 @@ function sumByState(data){
 
           })
       }
-      //get importers within bounding box
-  //sum them, do other stuff
 }
 
 /*function ports(){
@@ -2110,14 +2254,14 @@ function drawLinesOver(data, base){
     .domain([globalMin, globalMax]) 
     .range([2, 10])
 
-/*  var tooltipFlow = d3.tip()
+  var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='text-size:8px'>" + d.total_waste + " " + d.units + " from "+ d.name +"</span>";
   })
 
-  svg.call(tooltipFlow)*/
+  svg.call(tooltipFlow)
 
   //based on: http://bl.ocks.org/enoex/6201948
   arcGroup = svg.append('g');
@@ -2370,6 +2514,45 @@ function exporters(){
   };
 
 
+//search terms
+var database = []
+for (var o =0; o<latlongReset.length; o++) {
+  database.push({"label":latlongReset[o].name, "value":latlongReset[o].id})
+}
+
+console.log(latlongdump)
+for (var o =0; o<latlongdump.length; o++) {
+  database.push({"label":latlongdump[o].name, "value":latlongdump[o].id})
+}
+
+//mexfips.forEach( function (d) {database.push(d.FIELD2)})
+for (var key in mexfips){database.push({"label": mexfips[key].FIELD2, "value": mexfips[key].FIELD2})}
+for (var key in fips){database.push({"label": fips[key].name, "value": fips[key].abbreviation})}
+
+
+  console.log(database)
+  $(function() {
+    var availableTags = database;
+    $( "#tags" ).autocomplete({
+
+      autoFocus: true,  
+      source: database,
+      select: function(e, ui) {
+        console.log(ui.item)
+        svg.selectAll("."+ui.item.value)
+          .style("fill", "red")
+            if(e.keyCode == 13) {return false}
+        }
+    });
+$("#tags").keypress(function(e) {
+    var code = (e.keyCode ? e.keyCode : e.which);
+    if(code == 13) { //Enter keycode
+        return false;
+    }
+});
+  });
+
+
 //do sort and rank here
 latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
 for (var j=0; j<latlongdump.length; j++){
@@ -2405,11 +2588,11 @@ for (var j=0; j<latlongdump.length; j++){
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", function(d){
-      //tooltip.show(d);
+      tooltip.show(d);
       highlight(d);
     }) 
     .on("mouseout", function(d){
-      //tooltip.hide(d);
+      tooltip.hide(d);
       dehighlight(d)}) 
     .on("click", function(d){drawLinesOut(d);importThis(d); clickyCheck = d.id; clicky(d); updateDisplay(d)})
   exp.selectAll("circle")
@@ -2545,14 +2728,14 @@ typeSVG =  d3.select(".typeChart").append("svg")
   .attr("width", width)
   .attr("height", height);
 
-/*var tooltipBars = d3.tip()
+var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + d[0] + ": " +d[1] + data.units +"</span>";
   })
 
-typeSVG.call(tooltipBars)*/
+typeSVG.call(tooltipBars)
 
 
 
@@ -2940,14 +3123,14 @@ function yearData(data){
 
   var barPadding = 3;
 
-  /*var tooltipBars = d3.tip()
+  var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + d + data.units +"</span>";
   })
 
- yearSVG.call(tooltipBars)*/
+ yearSVG.call(tooltipBars)
 
   yearSVG.selectAll("rect")
      .data(yearskey)
@@ -3099,14 +3282,14 @@ typeSVG =  d3.select(".typeChart").append("svg")
   .attr("width", width)
   .attr("height", height);
 
-/*var tooltipBars = d3.tip()
+var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + d[0] + ": " +d[1] + data.units +"</span>";
   })
 
-typeSVG.call(tooltipBars)*/
+typeSVG.call(tooltipBars)
 
 var maxi = d3.max(typedump, function(d){return d[1]})
 var mini = d3.min(typedump, function(d){return d[1]})
@@ -3201,14 +3384,14 @@ typeSVG.selectAll("text")
 
   var barPadding = 3;
 
-  /*var tooltipBars = d3.tip()
+ var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + d + data.units +"</span>";
   })
 
- yearSVG.call(tooltipBars)*/
+ yearSVG.call(tooltipBars)
 
   yearSVG.selectAll("rect")
      .data(yearskey)
@@ -3310,14 +3493,14 @@ function exDrawLinesOver(data, base){
     .domain([exGlobalMin, exGlobalMax]) 
     .range([2, 10])
 
-  /*var tooltipFlow = d3.tip()
+  var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + d.total_waste + " " + d.units + " to "+ d.name +"</span>";
   })
 
-  svg.call(tooltipFlow)*/
+  svg.call(tooltipFlow)
 
   //based on: http://bl.ocks.org/enoex/6201948
 

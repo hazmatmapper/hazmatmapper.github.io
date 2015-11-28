@@ -18,8 +18,11 @@ a{
 
 #showHide{
   position: absolute;
-  bottom: 215px;
+  bottom: 220px;
   right: 15px;
+}
+#showHide:hover{
+  cursor: pointer;
 }
 .barWrap{
   background-color: #252525;
@@ -188,10 +191,24 @@ label {
 
 
 
+#resetter{
+  position: absolute;
+  top: 20px;
+  right: 20px
+}
+#resetter:hover{
+  cursor:pointer;
+}
+
+
+
 #viewShowHide{
   position: absolute;
-  top: 115px;
+  top: 140px;
   left: 0px
+}
+#viewShowHide:hover{
+  cursor:pointer;
 }
 .viewer {
   position:absolute;
@@ -332,12 +349,7 @@ h3{
 
 }
 
-.box{
-  background-color: red;
-  border-width: 1px;
-  border-style: solid;
-  border-color:yellow;
-}
+
 .d3-tip {
   font-size: 10px;
   line-height: 1;
@@ -345,12 +357,10 @@ h3{
   padding: 3px;
   border-width: 1px;
   border-style: solid;
-  border-color:yellow;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  border-radius: 2px;
+  background: black;
+  color: black;
+  border-radius: 1px;
 }
-
 /* Creates a small triangle extender for the tooltip */
 .d3-tip:after {
   box-sizing: border-box;
@@ -362,7 +372,6 @@ h3{
   position: absolute;
   text-align: center;
 }
-
 /* Style northward tooltips differently */
 .d3-tip.n:after {
   margin: -1px 0 0 0;
@@ -377,10 +386,33 @@ h3{
   font-size: 10px;
   fill: white;
 }
-
 .axis path,
 .axis line {
   fill: none;
   stroke: none;
   shape-rendering: crispEdges;
+}
+
+#tags {
+    border-radius: 0px;
+    border: 1px solid black;
+    height: 0 0 30px;
+}
+
+.ui-autocomplete {
+    background: #252525;
+    min-height: 100px;
+    width: 150px;
+    font-size:10px;
+}
+ul.ui-autocomplete {
+    list-style: none;
+}
+
+.ui-state-focus
+{
+    color:White;
+    background:#96B202;
+    outline:none;
+    cursor:  pointer;
 }
