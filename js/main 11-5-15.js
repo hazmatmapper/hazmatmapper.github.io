@@ -38,7 +38,7 @@ var defaultColor = "#f7f7f7";
 var exDefaultColor = "#636363"
 //var exporterRing = "black";
 var latlongdump;
-var tooltip;
+var tooltip, stateTool;
 var zoom = d3.behavior.zoom()
     .scaleExtent([1, Infinity])
     .on("zoom",zoomer);
@@ -53,8 +53,8 @@ var UNtypeKey = {};
 var mgmtTypeKey = {};
 var displaySVG;
 var facilityName = {"name": ""}
-var activePlace = 666
-var pathHelp;
+//var activePlace = 666
+//var pathHelp;
 var IMPradius;
 var EXPradius;
 var lineStroke
@@ -1566,39 +1566,42 @@ function callback(error, us, can, mex, borders){
 
   var name, sum, length;
 
-  var toolio = d3.tip()
+  stateTool = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white'>" + name + ": " + sum + " at " + length+ " sites</span>";
   })
-  svg.call(toolio)
+  svg.call(stateTool)
 
   u.selectAll("path")
     .data(topojson.feature(us, us.objects.states).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "feature")
-      .on("mouseover", function(d){statez(d); toolio.show()})
-      .on("mouseout", function(d){toolio.hide()})
+      .attr("id", function (d){return fips[d.id].abbreviation})
+      .on("mouseover", function(d){console.log(d); statez(d); stateTool.show()})
+      .on("mouseout", function(d){stateTool.hide()})
   
   c.selectAll('path')
     .data(topojson.feature(can, can.objects.provinces).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "exporter")
+      .attr("id", function (d){return d.id})
       .on("mouseover",  function(d){
-        if (view == "Sites"){statez(d);toolio.show()}})
-      .on("mouseout", function(d){toolio.hide()})
+        if (view == "Sites"){statez(d);stateTool.show()}})
+      .on("mouseout", function(d){stateTool.hide()})
 
   m.selectAll('path')
     .data(topojson.feature(mex, mex.objects.mex).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "exporter")
+      .attr("id", function (d){return mexfips[d.properties.id]["FIELD2"]})
       .on("mouseover",  function(d){
-        if (view == "Sites"){statez(d);toolio.show()}})
-      .on("mouseout", function(d){toolio.hide()})
+        if (view == "Sites"){statez(d);stateTool.show()}})
+      .on("mouseout", function(d){stateTool.hide()})
 
   b.selectAll('path')
     .data(topojson.feature(borders, borders.objects.borders).features)
@@ -2021,6 +2024,7 @@ function importers(data){
       //drawLinesOut(d);
     })
    .on("click", function (d){
+    console.log(d)
       drawLinesOut();
       exportThis(d);
       clickyCheck = d.id;
@@ -2343,6 +2347,7 @@ d3.selectAll(".arc").remove();
 }
 
 function color2(data){
+  console.log("Problem:", data)
   currColor = document.getElementsByClassName(data.id)["importer"].style["fill"]
   svg.selectAll("."+currImporter)
     .style({"fill": currColor, "opacity": 1});
@@ -2513,35 +2518,97 @@ function exporters(){
     }; 
   };
 
+exlatlongReset = latlongdump
 
 //search terms
 var database = []
 for (var o =0; o<latlongReset.length; o++) {
-  database.push({"label":latlongReset[o].name, "value":latlongReset[o].id})
+  database.push({"label":latlongReset[o].name, "value":latlongReset[o].id, "category": "Importers"})
 }
 
-console.log(latlongdump)
 for (var o =0; o<latlongdump.length; o++) {
-  database.push({"label":latlongdump[o].name, "value":latlongdump[o].id})
+  database.push({"label":latlongdump[o].name, "value":latlongdump[o].id, "category": "Exporters"})
 }
 
 //mexfips.forEach( function (d) {database.push(d.FIELD2)})
-for (var key in mexfips){database.push({"label": mexfips[key].FIELD2, "value": mexfips[key].FIELD2})}
-for (var key in fips){database.push({"label": fips[key].name, "value": fips[key].abbreviation})}
+for (var key in mexfips){database.push({"label": mexfips[key].FIELD2, "value": mexfips[key].FIELD2, "category": "Places"})}
+for (var key in fips){database.push({"label": fips[key].name, "value": fips[key].abbreviation, "category": "Places"})}
 
-
-  console.log(database)
-  $(function() {
+$.widget( "custom.catcomplete", $.ui.autocomplete, {
+    _create: function() {
+      this._super();
+      this.widget().menu( "option", "items", "> :not(.ui-autocomplete-category)" );
+    },
+    _renderMenu: function( ul, items ) {
+      var that = this,
+        currentCategory = "";
+      $.each( items, function( index, item ) {
+        var li;
+        if ( item.category != currentCategory ) {
+          ul.append( "<li class='ui-autocomplete-category'>" + item.category + "</li>" );
+          currentCategory = item.category;
+        }
+        li = that._renderItemData( ul, item );
+        if ( item.category ) {
+          li.attr( "aria-label", item.category + " : " + item.label );
+        }
+      });
+    }
+  });
+$(function() {
     var availableTags = database;
-    $( "#tags" ).autocomplete({
-
+    $( "#tags" ).catcomplete({
+      minLength: 3,
       autoFocus: true,  
       source: database,
-      select: function(e, ui) {
-        console.log(ui.item)
+      focus: function(e, ui) {
+       if (ui.item.category == "Importers" || ui.item.category == "Exporters" ){
+        svg.selectAll("circle")
+          .style("opacity", ".2")
         svg.selectAll("."+ui.item.value)
-          .style("fill", "red")
-            if(e.keyCode == 13) {return false}
+          .style("opacity", "1")
+        }
+        // } else if (ui.item.category == "Places"){
+        // console.log(ui.item)
+        // svg.selectAll("#"+ui.item.value)
+        //     .style("fill", "#dddddd");
+        // }
+        return false;
+        },
+      //close: function(e, ui ) {$("#tags")}
+      select: function(e, ui) {
+        event.preventDefault()
+        if(e.keyCode == 13) {return false}
+        if (ui.item.category == "Importers"){
+          var searchSelection = latlongRdump.filter(function (d){if (d.id == ui.item.value){return d}})
+          drawLinesOut();
+          exportThis(searchSelection);
+          clickyCheck = searchSelection.id;
+          clicky(searchSelection);
+          color2(searchSelection[0]);
+          updateDisplay(searchSelection);
+        }
+        else if (ui.item.category == "Exporters"){
+          var searchSelection = exlatlongReset.filter(function (d){if (d.id == ui.item.value){return d}})
+          drawLinesOut();
+          importThis(searchSelection);
+          clickyCheck = searchSelection.id;
+          clicky(searchSelection);
+          updateDisplay(searchSelection);
+        }
+        else if (ui.item.category == "Places"){
+          return false
+        }
+        return false;
+        },
+        response: function(event, ui) {
+          // ui.content is the array that's about to be sent to the response callback.
+          if (ui.content.length === 0) {
+              alert("sorry");
+              $("#tags").text("No results found");
+          } else {
+              $("#tags").empty();
+          }
         }
     });
 $("#tags").keypress(function(e) {
@@ -2564,7 +2631,7 @@ for (var j=0; j<latlongdump.length; j++){
   
   exGlobalMax = max;
   exGlobalMin = min;
-  exlatlongReset = latlongdump
+  
 
   //scale according to zoom
   
@@ -2604,6 +2671,8 @@ for (var j=0; j<latlongdump.length; j++){
 
 function viewer(data, latlongdump){
   //implement the info panel/viewer here
+  console.log(data, latlongdump)
+
   data = data[0]
   
   d3.select(".intro").remove()
@@ -3448,6 +3517,7 @@ function importThis(data){
   //change latlongdump to site-specific latlongdump
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
   //construct object with exporters to...
+  console.log("look here", data)
   latlongdump = [];
   for (var k=0; k<data.length; k++){
    for (var i=0; i<latlongs.length; i++) {
@@ -3596,8 +3666,9 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
     .domain([globalMin+1, globalMax]) //don't want min to be 0
     .range([15, 70])}
 
-  var stringwork2 = ["Importer min, avg, max","Exporter min, avg, max"]
+  var stringwork2 = ["Importer min, mean, max","Exporter min, mean, max"]
   var circleData = [[globalMax, defaultColor], [globalMean, defaultColor], [globalMin, defaultColor], [exGlobalMax, exDefaultColor], [exglobalMean, exDefaultColor], [exGlobalMin, exDefaultColor]]
+  var circleSpot = [70, 85, 88, 150, 165, 168] //calculate based on math....
 
   displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height", lambda)
   leg = displaySVG.append("g")
@@ -3609,7 +3680,9 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
     .style("fill", function(d){return d[1]})
     .style(defaultStroke)
     .attr("r", function(d){return radius(d[0])})
-    .attr("cy", function(d,i){if (i>2){return 150} else{return 70}}) 
+    .attr("cy", function(d,i){
+      return circleSpot[i]
+    }) 
     .attr("cx", 30)
  leg.selectAll("text")
     .data(stringwork2)
