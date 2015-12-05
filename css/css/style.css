@@ -58,6 +58,7 @@ label {
   cursor: pointer;
 }
 .mapDisplay{
+  background: green;
   position: absolute;
   width: 75%;
   color:white;

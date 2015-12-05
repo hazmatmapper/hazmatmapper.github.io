@@ -18,7 +18,6 @@ var DisposalMethod;
 var povertydata = [];
 var colorKey;
 var stringwork1= ["other sites"];
-var results = [];
 var clickCheck = true
 var viewClickCheck = false
 var checker = false; //checks to see whether we've run initial data crunching, essentially
@@ -35,6 +34,7 @@ var name; //the name of the chart area selected
 var phase = "Solids";
 var view = "Sites";
 var defaultColor = "#f7f7f7";
+var results = [{"name": "other sites", "color": defaultColor}];
 var exDefaultColor = "#636363"
 //var exporterRing = "black";
 var latlongdump;
@@ -799,7 +799,7 @@ labels.append("input")
     })
     .property("checked", function(d, i) {return i===j;})
     .on("click", function(d){
-      results = [];
+      results = [{"name": "other sites", "color": defaultColor}];
       stringwork1= ["other sites"];
       filter = d
       Isvg.selectAll("rect, div, g")
@@ -3664,7 +3664,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
   var circleData = [[globalMax, defaultColor], [globalMean, defaultColor], [globalMin, defaultColor], [exGlobalMax, exDefaultColor], [exglobalMean, exDefaultColor], [exGlobalMin, exDefaultColor]]
   var circleSpot = [35, 50, 53, 110, 125, 128] //calculate based on math....
 
-  displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height", lambda)
+  displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height",lambdaNOPX/1.25+"px")
   leg = displaySVG.append("g")
   leg.selectAll("circle")
     .data(circleData)
@@ -3730,7 +3730,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
         .enter()
         .append("circle")
         //.attr("class", function(d) {return data.name})
-        .style("fill", function(d,i) {if (i==stringwork1.length-1){return defaultColor} else {return results[i].color}})
+        .style("fill", function(d,i) {return results[i].color})
         .style(defaultStroke)
         .attr("r", 16)
         .attr("cy", function(d,i){return i*50 + 16}) 
