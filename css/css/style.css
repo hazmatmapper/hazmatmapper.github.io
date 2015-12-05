@@ -16,24 +16,32 @@ a{
   font-size: 10px;
 }
 
-#showHide{
+/*#showHide{
   position: absolute;
-  bottom: 220px;
-  right: 15px;
+  bottom: 175px;
+  right: 200px;
 }
 #showHide:hover{
   cursor: pointer;
-}
+}*/
 .barWrap{
   background-color: #252525;
-  position: absolute;
-  bottom: 15px;  
-  width: 100%;
+  position: absolute; 
+  height: 100%;
   border-radius: 5px;
   padding: 5px;
 }
 .filterSelector{
   position: absolute;
+}
+.filterDiv{
+  position: absolute;
+  width: 50%;
+}
+.yearDiv{
+  position: relative;
+  left: 50%;
+  width: 50%;
 }
 /*this is the class for all of the filter buttons*/
 label {
@@ -60,13 +68,10 @@ label {
   position:absolute;
 }
 
-
-
 .footer{
   position: absolute;
   bottom: 0%;
   height: 15px;
-  width: 100%;
   background-color: #252525;
   color: yellow;
   font-size:12px;
@@ -82,7 +87,6 @@ label {
   position:absolute;
   left: 100px;
 }
-
 
 
 .title{
@@ -194,7 +198,7 @@ label {
 #resetter{
   position: absolute;
   top: 20px;
-  right: 20px
+  right: 160px
 }
 #resetter:hover{
   cursor:pointer;
@@ -380,7 +384,11 @@ h3{
 }
 
 
-
+.yaxis{
+  font-family: 'Roboto', sans-serif;
+  font-size: 10px;
+  fill: white;
+}
 .axis text{
   font-family: 'Roboto', sans-serif;
   font-size: 10px;

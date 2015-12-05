@@ -428,30 +428,10 @@ function initialize(){
   }) // load waste descriptors
 
 
-    //define width variables
-  width66 =  .55 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-  width75 =  .7 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-  height33 = .25 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-  height66 = .6 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-  height100 = window.innerHeight
-  width100 = window.innerWidth
-
-  svg = d3.select("body").append("svg")
-    .attr("id", "mapSVG")
-    .style({"height": height100, "width": width100-lambdaNOPX-20, "position": "absolute"})
-    //create map projection
-  projection = d3.geo.albers()
-  .center([9,43])
-  //.rotate([100,0])
-  .scale((height100-lambdaNOPX-50)*2) //491, 578 . at 578, 750 is fine. at 491, not so much.
-  .translate([(width100)/2, (height100-lambdaNOPX)/2]);
-
-
-    d3.text("/abouts/footer.txt", function (text) {footerText = text}) //load footer text (stuff that goes in about page)
+  d3.text("/abouts/footer.txt", function (text) {footerText = text}) //load footer text (stuff that goes in about page)
   d3.select("body")
     .append("div")
     .attr("class", "footer")
-    .style("width", width100 - lambdaNOPX+"px")
   d3.select(".footer")
     .append("div")
     .attr("class", "aboutFooter")
@@ -473,6 +453,25 @@ function initialize(){
   .append("text")
   .attr("class", "data")
   .html("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Data last updated: 10/30/15")
+
+
+    //define width variables
+  width66 =  .55 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+  width75 =  .7 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+  height33 = .25 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+  height66 = .6 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+  height100 = window.innerHeight
+  width100 = window.innerWidth
+
+  svg = d3.select("body").append("svg")
+    .attr("id", "mapSVG")
+    .style({"height": height100-lambdaNOPX-10, "width": width100, "position": "absolute"})
+    //create map projection
+  projection = d3.geo.albers()
+  .center([9,37])
+  //.rotate([100,0])
+  .scale((height100-lambdaNOPX-50)*1.3) //491, 578 . at 578, 750 is fine. at 491, not so much.
+  .translate([(width100)/2, (height100-lambdaNOPX)/2]);
 
   setControls();
   /*d3.select("body")
@@ -546,7 +545,7 @@ function setControls(){
           })
       }
     })
-/*
+
   d3.select("#showHide")
     .append("div")
     .html("<img src='/data/icons/min.svg' height='40' width='40'>")
@@ -555,12 +554,12 @@ function setControls(){
         d3.select("#accordion")
           .style("display", "none")
         d3.select("#showHide")
-          .style({"right": "15px"})
-        /* d3.select("#mapSVG")
+          .style({"bottom": "20px"})
+        d3.select("#mapSVG")
           .transition()
           .duration(450)
           .style({"height": height100-50})
-         .each("end", function(){ // cut?
+/*          .each("end", function(){ // cut?
               if (viewClickCheck == true) {
               d3.select('.intro').remove()
               d3.select(".viewerText").remove()
@@ -590,7 +589,7 @@ function setControls(){
               setMap()
               setData(phase, currentYears, view)
             }
-          })
+          })*/
 
         clickCheck = false
       }
@@ -607,18 +606,18 @@ function setControls(){
                 .duration(450)
                 .style({"left": "0px"})
               viewClickCheck = false
-            }
+            }*/
         d3.select("#accordion")
           .transition()
           .duration(750)
           .style("display", "block")
         d3.select("#showHide")
-          .style({"right": lambdaNOPX+15+"px","bottom": 15+lambdaNOPX/1.25+"px"})
+          .style({"bottom": 15+lambdaNOPX/1.25+"px"})
         d3.select("#mapSVG")
           .transition()
           .duration(450)
           .style({"height": height100-lambdaNOPX-15})
-          .each("end", function(){
+/*          .each("end", function(){
             if (view == "Sites"){
               svg.selectAll("path, circle").remove()
               projection = projectionDefault //new projection terms
@@ -635,31 +634,31 @@ function setControls(){
               setMap()
               setData(phase, currentYears, view)
             }
-          })
+          })*/
         clickCheck = true
       }
     })
-*/
+
 
   //create a div to wrap accordion contents into
   d3.select("#accordion")
     .append("div")
     .attr("class", "barWrap")
-    .style({"height": height100, "width": lambda, "right": 0})
+    .style({"height": lambdaNOPX/1.25+"px"})
 
   //create a div for the filter controls
   d3.select(".barWrap")
     .append("div")
     .attr("class", "filterSelector")
-    .style({"width": lambda, "height": lambdaNOPX/1.25+"px", "bottom": 0})
+    .style({"width": lambda, "height": lambdaNOPX/1.25+"px"})
 
 
   //create SVGs for icicle and its y axis
   IAsvg = d3.select(".barWrap").append("svg")
-    .style({"position": "absolute", "top": height100 - 2* (lambdaNOPX/1.25), "height": 15, "width": lambda, "right": 110})
+    .style({"position": "absolute", "top": (lambdaNOPX/5),"width": "30px", "left": lambda, "height": lambdaNOPX/2})
 
   Isvg = d3.select(".barWrap").append("svg")
-    .style({"position": "absolute", "top": 0, "height": height100 - 2* (lambdaNOPX/1.25), "width": lambdaNOPX+margin.bottom, "right": 0})
+    .style({"position": "absolute", "top": (lambdaNOPX/5), "width": width100-lambdaNOPX*2.25, "left": lambdaNOPX+30, "height": (lambdaNOPX/2)+margin.bottom,})
 
 var form = d3.select(".title").append("form")
 var labels = form.selectAll("span").data([0]).enter().append("span")
@@ -1096,9 +1095,9 @@ function choropleth(data){
     d3.select(".barWrap")
           .append("div")
           .attr("class", "mapDisplay")
-          .style({"height": lambda, "width": lambda, "right": 0, "bottom": lambdaNOPX/1.25+"px"})
-    var stringwork2 = [" fifth quantile", " fourth quantile", " third quantile", " second quantile", " no imports"]
-    var squareData = [[16, '#08519c'], [16, '#3182bd'],[16, '#6baed6'],[16, '#bdd7e7'], [16,'#eff3ff']]
+        .style({"height": lambda, "width": lambda, "right": 0})
+    var stringwork2 = [" no imports", " second quantile", " third quantile", " fourth quantile", " fifth quantile"]
+    var squareData = [[16, '#eff3ff'], [16, '#bdd7e7'],[16, '#6baed6'],[16, '#3182bd'], [16,'#08519c']]
 
     displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height", lambda)
     displaySVG.selectAll("rect")
@@ -1154,11 +1153,11 @@ IAsvg.append("g")
 }*/
 
 function icicle(data){
-var y = d3.scale.linear()
-    .range([0, height100- 10-(2* (lambdaNOPX/1.25))]);
-
 var x = d3.scale.linear()
-    .range([0, lambdaNOPX-margin.bottom]);
+    .range([0, width100-lambdaNOPX*2.25]);
+
+var y = d3.scale.linear()
+    .range([0, (lambdaNOPX/2)-margin.bottom]);
 
 var color = d3.scale.category20b()
   //.range(['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f']);
@@ -1179,7 +1178,7 @@ Isvg.call(tip)
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
 var nodes = partition.nodes(data);
-var iceFilter = nodes.filter(function(d) {for (n=0; n<nodes.length; n++){ if (d.depth == 1){return d}}});
+var iceFilter = nodes.filter(function(d) {for (n=0; n<nodes.length; n++){ if (d.depth == 1 || d.depth == 0){return d}}});
 iceFilter.sort(function(a,b){return a.value-b.value})
 
 color.domain(iceFilter)
@@ -1189,10 +1188,10 @@ Isvg.selectAll("rects")
     .data(iceFilter)
   .enter().append("rect")
     .attr ("class",  function(d) { return d.name} )
-    .attr("y", function(d) {  return y(d.x); })
-    .attr("x", function(d) { if (d.depth == 0){return x(d.y)}else{return x(.5); }})
-    .attr("height", function(d) { return y(d.dx); })
-    .attr("width", function(d) {return x(.5)})
+    .attr("x", function(d) {  return x(d.x); })
+    .attr("y", function(d) { if (d.depth == 0){return y(d.y)}else{return y(.5); }})
+    .attr("width", function(d) { return x(d.dx); })
+    .attr("height", function(d) {return y(.5)})
     .style({"cursor": "pointer", "fill": function(d) { 
       colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); 
       if (d.name == "total"){return defaultColor} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "opacity": 1})
@@ -1297,10 +1296,10 @@ Isvg.selectAll("rects")
       updateDisplay(d);
 });
 
-//construct x axis
-var site = "importers"
-var type = "types"
-var method = "methods"
+//construct y axis
+var site = ["total", "importers"]
+var type = ["total", "types"]
+var method = ["total", "methods"]
 if (filterDomain == undefined){
   domain = site 
 } else if (filterDomain == "Site") {
@@ -1313,39 +1312,35 @@ if (filterDomain == undefined){
 
 var yax  = d3.scale.ordinal()
     .domain(domain)
-    .range([0, 120]);
+    .range([0, -50]);
 
 var yAxis = d3.svg.axis()
     .scale(yax)
     //.orient("left");
 IAsvg.append("g")
       .attr("class", "axis")
-      //.call(yAxis);
+      .attr("transform", "translate("+10+","+10+")rotate(-90)")
+      .call(yAxis);
 
-//construct y axis
+//construct x axis
 var xscale = d3.scale.linear()
-    .range([height100-(2*(lambdaNOPX/1.25))-5, 15]);
-var xheight = lambdaNOPX *2 + margin.bottom //width
+    .range([10, width100-lambdaNOPX*2-15]);
+var xheight = (lambdaNOPX/2)-margin.bottom
 var xAxis = d3.svg.axis()
     .scale(xscale)
     .ticks(10)
     .tickFormat(d3.format(".0%"))
-    .orient("right");
+    .orient("bottom");
 Isvg.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate("+175+", "+0+")")
+      .attr("transform", "translate(0,"+xheight+")")
       .call(xAxis)
     .append("text")
     //.attr("transform", "rotate(-90)")
-    .attr("transform", "translate("+40+","+lambdaNOPX+")rotate(-90)")
+    .attr("y", margin.bottom+5)
+    .attr("x", (width100-lambdaNOPX*2)/2)
     .style("text-anchor", "middle")
-    .text("Proportion of Total Waste")
-Isvg.append("g")
-    .attr("class", "yaxis")
-    .attr("transform", "translate("+80+","+lambdaNOPX+")rotate(-90)")
-    .append("text")
-    .style("text-anchor", "middle")
-    .text(domain)//("<span class = 'x axis'>"+domain+"</span>");
+    .text("Proportion of Total Waste");
 
 /*function clicked(d) {
   if (document.getElementsByClassName(d.name)["importer"]){lastImporter = d.name; iceCheck = document.getElementsByClassName(d.name)["importer"].style["fill"]}
@@ -1450,7 +1445,7 @@ function icicleFilter(data){
 }
 
 function icicleHighlight(data){
-/*  if (data.name == "total"){
+  if (data.name == "total"){
   Isvg.selectAll("rect")
     .transition().duration(500) 
     .style({"opacity": "1"}); 
@@ -1458,7 +1453,7 @@ function icicleHighlight(data){
     .transition().duration(500)
     .style(defaultStroke)
     //.style({"stroke": "yellow", "stroke-width": "2px"})} //yellow outline
-  }*/ if (filterDomain != "Site" && filterDomain != undefined){
+  } else if (filterDomain != "Site" && filterDomain != undefined){
   Isvg.selectAll("rect")
     .transition().duration(500)
     .style({"opacity": ".2"});
@@ -1780,8 +1775,8 @@ function reset() {
   svg.selectAll(".arc").remove()
 
   d3.select(".descriptions").remove()
-  
-  if (view == "Sites") {d3.select(".mapDisplay").remove(); mapDisplay();}
+  d3.select(".mapDisplay").remove()
+  mapDisplay();
 
   if (viewClickCheck == true) {
         d3.select('.intro').remove()
@@ -3651,7 +3646,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
   d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"height": lambdaNOPX/1.25+"px", "width": lambda, "right": 0, "bottom": 5+lambdaNOPX/1.25+"px"})
+        .style({"height": lambda, "width": lambda, "right": 0})
 
   globalMean = sum/latlongReset.length
   exglobalMean = sum/exlatlongReset.length
@@ -3677,14 +3672,14 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
     .attr("cy", function(d,i){
       return circleSpot[i]
     }) 
-    .attr("cx", lambdaNOPX/2)
+    .attr("cx", 35)
  leg.selectAll("text")
     .data(stringwork2)
      .enter()
      .append("text")
      .text(function(d){return d})
      .attr("text-anchor", "middle")
-     .attr("x", lambdaNOPX/2)
+     .attr("x", 70)
      .attr("y", function(d,i){if (i>0){return 150} else{return 75}})
      .attr("font-size", "12px")
      .attr("fill", "white")
@@ -3703,26 +3698,27 @@ function updateDisplay(data){ //function is called whether system change occurs 
 
   if (data.depth && filterDomain != "Site" && filterDomain != undefined){
 
-    d3.select("#mapSVG").append("div").attr("class", "descriptions")
-      .style({"left": lambdaNOPX+30+"px","bottom": 20+"px"}) //calculate based on bar rwap?
+  console.log(document.getElementsByClassName("barWrap"))
+    d3.select(".barWrap").append("div").attr("class", "descriptions")
+      .style({"left": lambdaNOPX+30+"px","top": 10+"px"}) //calculate based on bar rwap?
       .html("<span class = 'importerName'>"+name+"</span>....<span class = 'viewerData'>"+descriptors[name]+"</span>")
 
     d3.select(".mapDisplay").remove()
     d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"height": lambdaNOPX/1.25+"px", "width": lambda, "right": 0, "bottom": 5+lambdaNOPX/1.25+"px"})
+        .style({"height": lambda, "width": lambda, "right": 0})
 
     var result = colorKey.filter(function( obj ) {return obj.name == data.name;});
     result = result[0];
     results.splice(0,0,result)
+    console.log(results)
 
     if (data.depth == 1){
       if (mgmtTypeKey[data.name]) {data.desc = mgmtTypeKey[data.name]}
       if (UNtypeKey[data.name]) {data.desc = UNtypeKey[data.name]}
       tempString = "sites with " + data.desc
       stringwork1.splice(0,0,tempString)
-      if (stringwork1.length > 3) {stringwork1.splice(3, stringwork1.length-3)}
 
       displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height", lambda)
       displaySVG.selectAll("circle")
@@ -3734,7 +3730,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
         .style(defaultStroke)
         .attr("r", 16)
         .attr("cy", function(d,i){return i*50 + 16}) 
-        .attr("cx", 20)
+        .attr("cx", 16)
 
 
       displaySVG.selectAll("text")
@@ -3743,8 +3739,8 @@ function updateDisplay(data){ //function is called whether system change occurs 
          .append("text")
          .text(function(d){return d})
          //.attr("text-anchor", "right")
-         .attr("x", 45)
-         .attr("y", function (d, i){return 20+i*50})
+         .attr("x", 0)
+         .attr("y", function (d, i){return 42+ i*50})
          .attr("font-size", "12px")
          .attr("fill", "white")
     } /*else if (data.depth == 2){ ///can cut???
