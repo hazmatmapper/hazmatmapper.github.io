@@ -40,7 +40,7 @@ var exDefaultColor = "#636363"
 var latlongdump;
 var tooltip, stateTool;
 var zoom = d3.behavior.zoom()
-    .scaleExtent([1, Infinity])
+    .scaleExtent([1, 8])
     .on("zoom",zoomer);
 var defaultStroke = {"stroke": "black", "opacity": 1} //{"stroke": "red", "stroke-width": ".5px"}
 var highlighted = {"opacity": .2}
@@ -1581,7 +1581,7 @@ function callback(error, us, can, mex, borders){
       .attr("d", path)
       .attr("class", "feature")
       .attr("id", function (d){return fips[d.id].abbreviation})
-      .on("mouseover", function(d){console.log(d); statez(d); stateTool.show()})
+      .on("mouseover", function(d){statez(d); stateTool.show()})
       .on("mouseout", function(d){stateTool.hide()})
   
   c.selectAll('path')
@@ -1665,7 +1665,7 @@ function callback(error, us, can, mex, borders){
 
 function zoomer() {
   if (zoom.scale() > 1) {zoomed = true} else {return zoom.translate([0,0]); zoom.scale(1)} //control slippiness for arcgroup
-
+  
   u.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
   c.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
@@ -2021,7 +2021,6 @@ function importers(data){
       //drawLinesOut(d);
     })
    .on("click", function (d){
-    console.log(d)
       drawLinesOut();
       exportThis(d);
       clickyCheck = d.id;
@@ -2248,7 +2247,6 @@ function exportThis(data){
 
 
 function drawLinesOver(data, base){
-  if (zoomed == false){
   //var max = d3.max(data, function(d) {return d.total_waste}),
   //min = d3.min(data, function(d) {return d.total_waste})
   lineStroke = d3.scale.sqrt()
@@ -2336,6 +2334,9 @@ var pathArcs = arcGroup.selectAll(".arc")
             .on("mouseout", function(d) {tooltipFlow.hide(d)})
                 //'stroke-dasharray': '5'
             .call(lineTransition); 
+if (zoomed){
+  arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})
 }
 }
 
@@ -2344,7 +2345,6 @@ d3.selectAll(".arc").remove();
 }
 
 function color2(data){
-  console.log("Problem:", data)
   currColor = document.getElementsByClassName(data.id)["importer"].style["fill"]
   svg.selectAll("."+currImporter)
     .style({"fill": currColor, "opacity": 1});
@@ -2668,7 +2668,6 @@ for (var j=0; j<latlongdump.length; j++){
 
 function viewer(data, latlongdump){
   //implement the info panel/viewer here
-  console.log(data, latlongdump)
 
   data = data[0]
   
@@ -3514,7 +3513,6 @@ function importThis(data){
   //change latlongdump to site-specific latlongdump
   if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
   //construct object with exporters to...
-  console.log("look here", data)
   latlongdump = [];
   for (var k=0; k<data.length; k++){
    for (var i=0; i<latlongs.length; i++) {
@@ -3555,7 +3553,6 @@ function importThis(data){
 
 
 function exDrawLinesOver(data, base){
-  if (zoomed == false){
   lineStroke = d3.scale.sqrt()
     .domain([exGlobalMin, exGlobalMax]) 
     .range([2, 10])
@@ -3572,7 +3569,8 @@ function exDrawLinesOver(data, base){
   //based on: http://bl.ocks.org/enoex/6201948
 
  arcGroup = svg.append('g');
-  var path = d3.geo.path()
+
+ var path = d3.geo.path()
     .projection(projection);
 
 // --- Helper functions (for tweening the path)
@@ -3642,7 +3640,9 @@ var pathArcs = arcGroup.selectAll(".arc")
             .on("mouseover", function(d) {tooltipFlow.show(d)})//
             .on("mouseout", function(d) {tooltipFlow.hide(d)})
             .call(lineTransition); 
-
+if (zoomed){
+  arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})
 }
 }
 
