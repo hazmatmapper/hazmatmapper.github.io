@@ -36,12 +36,17 @@ a{
 }
 .filterDiv{
   position: absolute;
-  width: 50%;
+  width: 33%;
+}
+.showDiv{
+  position: absolute;
+  width: 33%;
+  left:34%;
 }
 .yearDiv{
   position: relative;
-  left: 50%;
-  width: 50%;
+  left: 66%;
+  width: 33%;
 }
 /*this is the class for all of the filter buttons*/
 label {
@@ -65,7 +70,10 @@ label {
   font-size: 10px;
 }
 .descriptions{
+  background: #252525;
   position:absolute;
+      border-radius: 2px;
+  padding: 2px;
 }
 
 .footer{
@@ -115,9 +123,6 @@ label {
   fill-opacity: 1;
   cursor: pointer;
 }
-.exporter:hover {
-  fill: #dddddd;
-}
 
 .borders{
   fill: none;
@@ -152,9 +157,7 @@ label {
   stroke-width: .5px;
   cursor: pointer;
 }
-.feature:hover {
-  fill: #dddddd;
-}
+
 
 
 
@@ -208,7 +211,7 @@ label {
 
 #viewShowHide{
   position: absolute;
-  top: 140px;
+  top: 145px;
   left: 0px
 }
 #viewShowHide:hover{
@@ -229,7 +232,7 @@ label {
 }
 .importerName{
   font-size: 12px;
-  color: #e8e8e8;
+  color: #c2c2c2;
 }
 .viewerCategory{
   font-size: 10px;
@@ -239,7 +242,12 @@ label {
 .percentLabel{
   font-size: 8px;
   text-align: bottom;
-  fill: white
+  fill: #e8e8e8
+}
+.percentLabelDark{
+  font-size: 8px;
+  text-align: bottom;
+  fill: black
 }
 .viewerData{
   font-size: 10px;

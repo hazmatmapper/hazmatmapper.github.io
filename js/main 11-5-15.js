@@ -13,8 +13,7 @@ var latlongReset, exlatlongReset;
 var Isvg;
 var IAsvg;
 var width66, width75, height33, height66, width100, height100;
-var Site;
-var DisposalMethod;
+var Disposal;
 var povertydata = [];
 var colorKey;
 var stringwork1= ["other sites"];
@@ -24,18 +23,18 @@ var checker = false; //checks to see whether we've run initial data crunching, e
 var methyTypeCheck = false;
 var povSVG;
 var zoomed = false; //are we zoomed into rust belt?
-var firstTime = true, otherTimes = false, latlongGlobal, importByYearGlobal, exportByYearGlobal, filter, currentYears;
+var firstTime = true, otherTimes = false, latlongGlobal, importByYearGlobal, exportByYearGlobal, filter, currentYears, siteCount=[];
 var exporterInfo;
 var icicleDump;
 var domain;
-var filterDomain;
+var filterDomain = "Site"
 var margin = {top: 10, right: 10, bottom: 25, left: 10};
 var name; //the name of the chart area selected
 var phase = "Solids";
 var view = "Sites";
 var defaultColor = "#f7f7f7";
 var results = [{"name": "other sites", "color": defaultColor}];
-var exDefaultColor = "#636363"
+var exDefaultColor = "#969696"
 //var exporterRing = "black";
 var latlongdump;
 var tooltip, stateTool;
@@ -63,6 +62,8 @@ var filterTypesYear, filterTypesSignal;
 var lambda = "200px"; lambdaNOPX = 200, lambdaPad = "215px"
 var lambdaPlus = "300px"; lambdaplusNOPX = 300
 var chorodump;
+var format = d3.format("0,000");
+var phaseformat = {"Solids": "kg", "Liquids": "liters"}
 
 var mexfips = {
   "0": {
@@ -446,12 +447,19 @@ function initialize(){
   .scale((height100-lambdaNOPX-50)*2) //491, 578 . at 578, 750 is fine. at 491, not so much.
   .translate([(width100)/2, (height100-lambdaNOPX)/2]);
 
+  function updateWindow(){
+    x = window.innerWidth
+    y = window.innerHeight
+    svg.style({"width": x-lambdaNOPX-20, "height": y});
+  }
+  window.onresize = updateWindow;
+  
 
-    d3.text("/abouts/footer.txt", function (text) {footerText = text}) //load footer text (stuff that goes in about page)
+  d3.text("/abouts/footer.txt", function (text) {footerText = text}) //load footer text (stuff that goes in about page)
   d3.select("body")
     .append("div")
     .attr("class", "footer")
-    .style("width", width100 - lambdaNOPX+"px")
+    .style("width", width100 - lambdaNOPX - 25+"px")
   d3.select(".footer")
     .append("div")
     .attr("class", "aboutFooter")
@@ -536,7 +544,7 @@ function setControls(){
         d3.select("#viewShowHide")
           .transition()
           .duration(450)
-          .style({"left": lambdaPlus})
+          .style({"left": lambdaplusNOPX-35+"px"})
         d3.select(".viewer")
           .transition()
           .duration(450)
@@ -700,6 +708,7 @@ labels.append("input")
         .style("opacity", 0)
         .remove();
       d3.selectAll(".arc").remove()
+      d3.select(".descriptions").remove()
       svg.selectAll("circle").transition().duration(1200).attr("r", 0).remove()//chain below so that removal only happens after r = 0
       zoom.translate([0,0]).scale(1)
       setData(d, currentYears, view) 
@@ -754,16 +763,20 @@ labels.append("input")
         .style("opacity", 0)
         .remove();
       if (d == "Sites") {
+        $("#tags").catcomplete( "enable" );
         mapDisplay()
         svg.selectAll(".feature").transition().duration(2500).style({"fill": '#cccccc'}).style("stroke", "white");
         filterform.selectAll("input").property("disabled", false)
-        filterform.selectAll("#Site")
-        .property("checked", true)
+        showform.selectAll("input").property("disabled", false)
+        filterform.selectAll("#Site").property("checked", true)
+        showform.selectAll("#None").property("checked", true)
       }
       if (d == "States") {
+        $("#tags").catcomplete( "disable" );
         d3.selectAll(".mapDisplay").remove()
         filterform.selectAll("input").property("disabled", true)
-      } // and grey out/disable filter by...
+        showform.selectAll("input").property("disabled", true)
+      } 
       d3.selectAll(".arc").remove()
       svg.selectAll("circle").transition().duration(1200).attr("r", 0).remove()
       zoom.translate([0,0]).scale(1)
@@ -782,7 +795,7 @@ labels.append("input")
   form.append("label").text("search")*/
 
   //filter types selector
-  filterTypes = ["Site", "DisposalMethod", "Type"]
+  filterTypes = ["Site", "Disposal", "Type"]
   var show = d3.select(".filterSelector").append("div").attr("class", "filterDiv").html("<span class='viewerCategory'>Filter by:</span>")
   var filterform = d3.select(".filterDiv").append("form"), j=0;
 
@@ -814,15 +827,41 @@ labels.append("input")
         .remove();
       svg.selectAll("#importer")
         .style({"fill": defaultColor, "fill-opacity": "1"})
-      //d3.select(".mapDisplay").remove()
+      d3.select(".mapDisplay").remove()
+      mapDisplay()
+      d3.select(".descriptions").remove()
       d3.selectAll(".arc").remove()
-      //mapDisplay()
+
       filterDomain = d
       icicle(window[d])
       //icicleAxis();
     });
   labelEnter.append("label").text(function(d) {return d;})
   labelEnter.append("text").html("&nbsp")
+
+
+  filterTypes = ["None", "Poverty", "Race"]
+  var show = d3.select(".filterSelector").append("div").attr("class", "showDiv").html("<span class='viewerCategory'>Show by:</span>")
+  var showform = d3.select(".showDiv").append("form"), j=0;
+
+  var labelEnter = showform.selectAll("span")
+    .data(filterTypes)
+    .enter().append("div")
+
+  labelEnter.append("input")
+    .attr({
+        id: function(d) {return d},
+        type: "radio",
+        name: "mode",
+        value: function(d, i) {return i;}
+    })
+    .property("checked", function(d, i) {return i===j;})
+    .on("click", function(d){
+      shader(d);
+    });
+  labelEnter.append("label").text(function(d) {return d;})
+  labelEnter.append("text").html("&nbsp")
+
 
 
   //filter years selector
@@ -865,13 +904,13 @@ labels.append("input")
         .duration(750)
         .attr("r", 0)
         .remove();
+      showform.selectAll("#None").property("checked", true)
       d3.select(".viewerText").remove()
       d3.select(".povertyChart").remove()
       d3.selectAll(".yearData").remove()
       d3.selectAll(".arc").remove()
       d3.selectAll("#importer").transition().duration(1200).attr("r", 0).remove()//chain below so that removal only happens after r = 0
       d3.selectAll("#exporters").transition().duration(1200).attr("r", 0).remove()
-      //filterDomain = d
       otherTimes = true
       yearChange();
 
@@ -948,13 +987,13 @@ d3.csv("data/"+phase+".csv", function(data) {
   .entries(data);
   Site={"key": "total", "values": Site};
 
-  DisposalMethod = d3.nest()  
+  Disposal = d3.nest()  
   .key(function(d) { return d.mgmt; })
   .key(function(d) { return d.un; })
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
   .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
   .entries(data);
-  DisposalMethod={"key": "total", "values": DisposalMethod};
+  Disposal={"key": "total", "values": Disposal};
 
   Type = d3.nest()
   .key(function(d) { return d.un; })
@@ -968,7 +1007,7 @@ d3.csv("data/"+phase+".csv", function(data) {
 
 
   renameStuff(Site);
-  renameStuff(DisposalMethod);
+  renameStuff(Disposal);
   renameStuff(Type);
   function renameStuff(d) {
     d.name = d.key; delete d.key;
@@ -1052,6 +1091,10 @@ d3.csv("data/"+phase+".csv", function(data) {
   .key(function(d) {return d.receivingLong;})
   .entries(data);
 
+  for (n=0;n<latlongsR.length;n++){
+    siteCount[latlongsR[n].key]=latlongsR[n].values.length
+  }
+
   if (view == "States") {return choropleth(importByState)} // if we're looking at states, only do choropleth
   else{dataCrunch()}; //otherwise, crunch the data to get the circles
   
@@ -1061,6 +1104,87 @@ d3.csv("data/"+phase+".csv", function(data) {
 
 });
 }
+
+function shader(data){
+  if (data == "None"){
+    svg.selectAll("#importer")
+    .style({"fill": defaultColor, "fill-opacity": "1"})
+    d3.select(".descriptions").remove()
+    d3.select(".mapDisplay").remove()
+    mapDisplay()
+  }
+  else{
+
+    dump = [];
+    for (var i = 0; i<latlongReset.length; i++){
+      dump[latlongReset[i]["id"]] = latlongReset[i][data] //sub thing here
+    } 
+
+    var max = d3.max(d3.values(dump));
+    var min = d3.min(d3.values(dump)); // need to do national calc, probably not zips
+
+  var color = d3.scale.quantile()
+    .domain([min, max])
+    .range(['#edf8e9', '#bdd7e7','#6baed6','#3182bd','#08519c']);
+
+  d3.selectAll("#importer")
+      .transition()
+      .duration(2500)
+      .style({"fill": function(d){
+          return color(dump[d.id]) 
+        }
+      })
+    lookup = {"Race": "percent nonwhite at site zipcode", "Poverty": "percent in poverty at site zipcode"}
+    d3.select(".descriptions").remove()
+    d3.select("body")
+      .append("div")
+      .attr("class", "descriptions")
+      .style({"right": lambdaNOPX+15+"px","bottom": 25+"px"}) //calculate based on bar rwap?
+      .html("<span class = 'importerName'>"+data+"</span>....<span class = 'viewerData'>"+lookup[data]+"</span>")
+    d3.select(".mapDisplay").remove()
+    d3.select(".barWrap")
+          .append("div")
+          .attr("class", "mapDisplay")
+          .style({"height": lambda, "width": lambda, "right": 0, "bottom": lambdaNOPX/1.25+"px"})
+
+    var results = color.quantiles()
+    
+    nice = d3.format(".2f")
+
+    for (p = 0; p<results.length; p++){
+      results[p]=nice(results[p])
+    }
+
+    
+
+    var stringwork2 = [results[3]+" - "+max, results[2]+" - "+results[3], results[1]+" - "+results[2], results[0]+" - "+results[1], min+" - "+results[0]]
+    var squareData = [[16, '#08519c'], [16, '#3182bd'],[16, '#6baed6'],[16, '#bdd7e7'], [16,'#edf8e9']]
+
+    displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height", lambda)
+    displaySVG.selectAll("rect")
+      .data(squareData)
+      .enter()
+      .append("rect")
+      //.attr("class", function(d) {return data.parent.name})
+      .style("fill", function(d){return d[1]})
+      .attr("width", function(d){return d[0]})
+      .attr("height", function(d){return d[0]})
+      .attr("y", function(d,i){return i * 30 + 50}) 
+      .attr("x", 16)
+    displaySVG.selectAll("text")
+      .data(stringwork2)
+       .enter()
+       .append("text")
+       .text(function(d){return d})
+       .attr("text-anchor", "right")
+       .attr("x", 40)
+       .attr("y", function(d,i){return i * 30 + 60})
+       .attr("font-size", "12px")
+       .attr("fill", "white")
+ 
+ }     
+}
+
 
 function choropleth(data){
     chorodump = [];
@@ -1097,7 +1221,16 @@ function choropleth(data){
           .append("div")
           .attr("class", "mapDisplay")
           .style({"height": lambda, "width": lambda, "right": 0, "bottom": lambdaNOPX/1.25+"px"})
-    var stringwork2 = [" fifth quantile", " fourth quantile", " third quantile", " second quantile", " no imports"]
+
+    var results = color.quantiles()
+    
+    for (p = 0; p<results.length; p++){
+      results[p]=format(results[p])
+    }
+    max = format(max)
+    min = format(min)
+
+    var stringwork2 = [results[2]+" - "+max, results[1]+" - "+results[2], results[0]+" - "+results[1], min+" - "+results[0], " no imports"]
     var squareData = [[16, '#08519c'], [16, '#3182bd'],[16, '#6baed6'],[16, '#bdd7e7'], [16,'#eff3ff']]
 
     displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height", lambda)
@@ -1109,7 +1242,7 @@ function choropleth(data){
       .style("fill", function(d){return d[1]})
       .attr("width", function(d){return d[0]})
       .attr("height", function(d){return d[0]})
-      .attr("y", function(d,i){return i*40+10}) 
+      .attr("y", function(d,i){return i * 30 + 50}) 
       .attr("x", 16)
     displaySVG.selectAll("text")
       .data(stringwork2)
@@ -1118,7 +1251,7 @@ function choropleth(data){
        .text(function(d){return d})
        .attr("text-anchor", "right")
        .attr("x", 40)
-       .attr("y", function(d,i){return i * 40 + 20})
+       .attr("y", function(d,i){return i * 30 + 60})
        .attr("font-size", "12px")
        .attr("fill", "white")
 } 
@@ -1160,8 +1293,8 @@ var y = d3.scale.linear()
 var x = d3.scale.linear()
     .range([0, lambdaNOPX-margin.bottom]);
 
-var color = d3.scale.category20b()
-  //.range(['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f']);
+var color = d3.scale.ordinal()
+  .range(['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928']);
 
 var partition = d3.layout.partition()
     //.size([width, height])
@@ -1215,7 +1348,7 @@ Isvg.selectAll("rects")
           }
         }
         tip.show(facilityName); 
-      } else if (filterDomain ==  "DisposalMethod" && d.depth == 3) {
+      } else if (filterDomain ==  "Disposal" && d.depth == 3) {
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
           facilityName.name = latlongRdump[c].name
@@ -1224,11 +1357,11 @@ Isvg.selectAll("rects")
         }
         tip.show(facilityName); 
       } else {siteViewerHelp = false} //tip.show(d); 
-      if (filterDomain == "Type" && d.depth == 1 || filterDomain == "Site" && d.depth == 2 || filterDomain == "DisposalMethod" && d.depth == 2 || filterDomain == undefined && d.depth == 2){
+      if (filterDomain == "Type" && d.depth == 1 || filterDomain == "Site" && d.depth == 2 || filterDomain == "Disposal" && d.depth == 2 || filterDomain == undefined && d.depth == 2){
         var show = {"name": UNtypeKey[d.name]}
         tip.show(show)
       }
-      if (filterDomain == "Type" && d.depth == 2 || filterDomain == "Site" && d.depth == 3 || filterDomain == "DisposalMethod" && d.depth == 1 || filterDomain == undefined && d.depth == 3){
+      if (filterDomain == "Type" && d.depth == 2 || filterDomain == "Site" && d.depth == 3 || filterDomain == "Disposal" && d.depth == 1 || filterDomain == undefined && d.depth == 3){
         var show = {"name": mgmtTypeKey[d.name]}
         tip.show(show)
       }
@@ -1307,7 +1440,7 @@ if (filterDomain == undefined){
   domain = site
 } else if (filterDomain == "Type") {
   domain = type
-} else if (filterDomain == "DisposalMethod") {
+} else if (filterDomain == "Disposal") {
   domain = method
 }
 
@@ -1495,7 +1628,7 @@ function icicleHighlight(data){
       .style(defaultStroke)
   }
     //.style({"stroke": "yellow", "stroke-width": "5px"})}
-  if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "DisposalMethod" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){ //if sites and at bottom of barchart
+  if (filterDomain == undefined && data.depth == 1 || filterDomain == "Site" && data.depth == 1 || filterDomain == "Disposal" && data.depth == 3 || filterDomain == "Type" && data.depth == 3){ //if sites and at bottom of barchart
 
   //icicleTranslate(data);
   /*oldFill = document.getElementsByClassName(data.name)["importer"].style.fill
@@ -1565,7 +1698,7 @@ function callback(error, us, can, mex, borders){
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
-    return "<span style='color:white'>" + name + ": " + sum + " at " + length+ " sites</span>";
+    return "<span style='color:white'>" + name + ": " + sum + " " + phaseformat[phase] + " at " + length+ " sites</span>";
   })
   svg.call(stateTool)
 
@@ -1581,7 +1714,8 @@ function callback(error, us, can, mex, borders){
       .attr("d", path)
       .attr("class", "feature")
       .attr("id", function (d){return fips[d.id].abbreviation})
-      .on("mouseover", function(d){statez(d); stateTool.show()})
+      .on("mouseover", function(d){
+         if (view == "States"){statez(d);stateTool.show()}})
       .on("mouseout", function(d){stateTool.hide()})
   
   c.selectAll('path')
@@ -1590,19 +1724,13 @@ function callback(error, us, can, mex, borders){
       .attr("d", path)
       .attr("class", "exporter")
       .attr("id", function (d){return d.id})
-      .on("mouseover",  function(d){
-        if (view == "Sites"){statez(d);stateTool.show()}})
-      .on("mouseout", function(d){stateTool.hide()})
 
   m.selectAll('path')
     .data(topojson.feature(mex, mex.objects.mex).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "exporter")
-      .attr("id", function (d){return mexfips[d.properties.id]["FIELD2"]})
-      .on("mouseover",  function(d){
-        if (view == "Sites"){statez(d);stateTool.show()}})
-      .on("mouseout", function(d){stateTool.hide()})
+      .attr("id", function (d){console.log(d); return mexfips[d.properties.id]["FIELD2"]})
 
 
 
@@ -1610,34 +1738,13 @@ function callback(error, us, can, mex, borders){
 
   function statez(data){
 
-
-  if (typeof(data.id) === "string") {
-    name = data.id
-    var state = document.getElementsByClassName(data.id.toUpperCase())
-    length = state.length
-  }
-  if (typeof(data.id) === "number") {
-    name = fips[data.id].name
-    var ddd = fips[data.id].abbreviation
-    var state = document.getElementsByClassName(ddd)
-    length = state.length
-  }
-  if (data.properties.id){
-    name = mexfips[data.properties.id]["FIELD2"]
-    var state = document.getElementsByClassName(name.toUpperCase())
-    length = state.length
-  }
-
-  sum = 0;
-  for (var k=0; k<state.length; k++){
-    sum += state[k].__data__.total_waste
-  }
-
-  if (view == "States"){
+   name = fips[data.id].name
+   ddd = fips[data.id].abbreviation
    sum = chorodump[ddd]
    if (sum == undefined){sum = 0}
-   length = "Not available"
-  }
+   sum = format(sum)
+   length = siteCount[fips[data.id].abbreviation]
+   if (length == undefined){length = 0}
   
 }
   /*g.append("path")
@@ -1664,8 +1771,10 @@ function callback(error, us, can, mex, borders){
 };
 
 function zoomer() {
+  if (view == "States"){return}
   if (zoom.scale() > 1) {zoomed = true} else {return zoom.translate([0,0]); zoom.scale(1)} //control slippiness for arcgroup
   
+
   u.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
   c.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
@@ -1776,6 +1885,8 @@ function reset() {
 
   svg.selectAll("#importer")
     .style({"fill": defaultColor, "fill-opacity": "1"})
+  d3.selectAll("#None").property("checked", true)
+
 
   svg.selectAll(".arc").remove()
 
@@ -1942,12 +2053,38 @@ for (var j=0; j<latlongRdump.length; j++){
 if (firstTime) {latlongGlobal = latlongRdump}
 
 latlongReset = latlongRdump;
+d3.csv("data/poverty.csv", function(povdata) {
+    povertydata = povdata.map(function(d) { return {"Geography": d["Geography"], "percentPoverty": +d["percentPoverty"], "RecFacName": d["RecFacName"], "RecZip": +d["RecZip"], "RecPcntPoverty": +d["RecPcntPoverty"]}; });
+
+//find the povs
+  for (var k = 0; k<latlongReset.length; k++){
+    for (var i =0; i<povertydata.length; i++){
+      if (latlongReset[k].zip == povertydata[i].Geography){
+      latlongReset[k]["Poverty"] = povertydata[i].percentPoverty
+    } 
+  }
+}
+})
+
+d3.csv("data/minority.csv", function(rdata) {
+    racedata = rdata.map(function(d) { return {"Geography": d["Geography"], "percentMinority": +d["percentMinority"], "RecFacName": d["RecFacName"], "RecZip": +d["RecZip"], "RecPcntNonwhite": +d["RecPcntNonwhite"]}});
+  for (var k = 0; k<latlongReset.length; k++){
+    for (var i =0; i<racedata.length; i++){
+      if (latlongReset[k].zip == racedata[i].Geography){
+      latlongReset[k]["Race"] = racedata[i].percentMinority
+    } 
+  }
+}
+
+})
+console.log(latlongRdump)
+latlongRdump = latlongReset;
 
 
 
 
 
-icicle(Site);
+icicle(window[filterDomain]);
 //icicleAxis();
 importers(latlongRdump);
 mapDisplay();
@@ -2105,7 +2242,7 @@ function importers(data){
   
 };
 
-function sumByState(data){
+/*function sumByState(data){
 
   var toolio = d3.tip()
   .attr('class', 'd3-tip')
@@ -2172,7 +2309,7 @@ function sumByState(data){
 
           })
       }
-}
+}*/
 
 /*function ports(){
   var toolio = d3.tip()
@@ -2257,7 +2394,7 @@ function drawLinesOver(data, base){
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
-    return "<span style='color:white' style='text-size:8px'>" + d.total_waste + " " + d.units + " from "+ d.name +"</span>";
+    return "<span style='color:white' style='text-size:8px'>" + format(d.total_waste) + " " + d.units + " from "+ d.name +"</span>";
   })
 
   svg.call(tooltipFlow)
@@ -2554,6 +2691,7 @@ $.widget( "custom.catcomplete", $.ui.autocomplete, {
   });
 $(function() {
     var availableTags = database;
+
     $( "#tags" ).catcomplete({
       minLength: 3,
       autoFocus: true,  
@@ -2615,7 +2753,6 @@ $("#tags").keypress(function(e) {
     }
 });
   });
-
 
 //do sort and rank here
 latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
@@ -2690,7 +2827,7 @@ function viewer(data, latlongdump){
             d3.select("#viewShowHide")
               .transition()
               .duration(450)
-              .style({"left": lambdaPlus})
+              .style({"left": lambdaplusNOPX-35+"px"})
             d3.select(".viewer")
               //.style("display", "block") 
               .transition()
@@ -2707,7 +2844,7 @@ function viewer(data, latlongdump){
         d3.select("#viewShowHide")
           .transition()
           .duration(450)
-          .style({"left": lambdaPlus})
+          .style({"left": lambdaplusNOPX-35+"px"})
         d3.select(".viewer")
           .transition()
           .duration(450)
@@ -2734,9 +2871,8 @@ function viewer(data, latlongdump){
 /*
   //biggest export partner
   latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;})*/
-
   d3.select(".viewerText")
-    .html("<span class='importerName'>"+data.name+"</span><br> <span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://epamap14.epa.gov/ejmap/ejmap.aspx?wherestr="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in EPA's EJView</a><p><span class='viewerCategory'>For selected year(s):</span><br><span class = 'viewerCategory'>Total imports and rank: </span><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"</span>");
+    .html("<span class='importerName'>"+data.name+"</span><br> <span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://epamap14.epa.gov/ejmap/ejmap.aspx?wherestr="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in EPA's EJView</a><p><span class='viewerCategory'>For selected year(s):</span><br><span class = 'viewerCategory'>Total imports and rank: </span><span class ='viewerData'>"+format(data.total_waste)+" "+data.units+"..........."+data.rank+"</span>");
     // <br><span class = 'viewerCategory'>Main Export Partner</span><br><span class ='viewerData'>"+latlongdump[0].name+"</span><br><span class = 'viewerCategory'>Top Import Type</span><br><span class ='viewerData' width = '50px'>"+data.types[0][0]+": "+data.types[0][1]+" "+data.units+"</span>
     
   demographicCharts(data);
@@ -2797,7 +2933,7 @@ var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
-    return "<span style='color:white' style='font-size:4px'>" + d[0] + ": " +d[1] + data.units +"</span>";
+    return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
 typeSVG.call(tooltipBars)
@@ -2877,6 +3013,12 @@ typeSVG.append("g")
      .data(function(d,i,j){return d})
      .enter()
      .append("rect")
+     .on("mouseover", function(d){
+      tooltipBars.show(d)
+      })
+     .on("mouseout", function(d){
+      tooltipBars.hide(d)
+      })
      .attr("y", function(d, i, j) {
         return j * barheight;
      })
@@ -2894,6 +3036,9 @@ typeSVG.append("g")
      .attr("fill", function(d, i, j) {
           return document.getElementsByClassName(data.id)["importer"].style.fill
         })
+
+console.log(typeof(document.getElementsByClassName(data.id)["importer"].style.fill)); 
+
 typeLabels();
 //type labels
 function typeLabels(){
@@ -2918,7 +3063,7 @@ typeSVG.append("g")
       }
         else {lastStart =0; return 0;} //return last d + spacing 
       }) //scale by x...
-      .attr("class", "percentLabel") 
+      .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
   } else{
 typeSVG.append("g")
     .selectAll("g")
@@ -2935,7 +3080,7 @@ typeSVG.append("g")
       }
         else {lastStart =0; return 0;} //return last d + spacing 
       }) //scale by x...
-      .attr("class", "percentLabel") 
+      .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
     }   
 }
 
@@ -3021,7 +3166,7 @@ povSVG.selectAll("text")
             return i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.1;
          })
          .attr("x", function(d) { return 16; })
-         .attr("class", "percentLabel")
+         .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
 
 povSVG.selectAll("label")
     .data(povdump)
@@ -3038,7 +3183,7 @@ povSVG.selectAll("label")
          })
          .attr("x", width - 100)
          .attr("font-size", "8px")
-         .attr("fill", exDefaultColor)
+         .attr("class", "percentLabel")
          //.attr("font-weight", "bold");
 
   });
@@ -3119,7 +3264,7 @@ rSVG.selectAll("text")
             return i * (height / racedump.length) + (height / racedump.length - barPadding) / 1.1;
          })
          .attr("x", function(d) { return 16; })
-         .attr("class", "percentLabel")
+         .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
          //.attr("font-weight", "bold");
 /*rSVG.selectAll("label")
     .data(racedump)
@@ -3192,7 +3337,7 @@ function yearData(data){
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
-    return "<span style='color:white' style='font-size:4px'>" + d + data.units +"</span>";
+    return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
  yearSVG.call(tooltipBars)
@@ -3229,7 +3374,7 @@ function yearData(data){
             return i * (height / yearskey.length) + (height / yearskey.length - barPadding) / 1.1;
          })
       .attr("x", function(d) { return 16; })
-     .attr("class", "percentLabel")
+      .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
 }
 }
 
@@ -3258,7 +3403,7 @@ function exportViewer(data, latlongdump){
             d3.select("#viewShowHide")
               .transition()
               .duration(450)
-              .style({"left": lambdaPlus})
+              .style({"left": lambdaplusNOPX-35+"px"})
             d3.select(".viewer")
               //.style("display", "block") 
               .transition()
@@ -3275,7 +3420,7 @@ function exportViewer(data, latlongdump){
         d3.select("#viewShowHide")
           .transition()
           .duration(450)
-          .style({"left": lambdaPlus})
+          .style({"left": lambdaplusNOPX-35+"px"})
         d3.select(".viewer")
           .transition()
           .duration(450)
@@ -3324,7 +3469,7 @@ function viewerHelp(data, latlongdump){
 
 
 
-  d3.selectAll(".viewerText").html("<span class='importerName'>"+data.name+"</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>Total exports and rank</span><br><span class ='viewerData'>"+data.total_waste+" "+data.units+"..........."+data.rank+"<p></span>")
+  d3.selectAll(".viewerText").html("<span class='importerName'>"+data.name+"</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>Total exports and rank</span><br><span class ='viewerData'>"+format(data.total_waste)+" "+data.units+"..........."+data.rank+"<p></span>")
 
 
 //exports by type
@@ -3340,8 +3485,8 @@ d3.select(".typeChart").append("div")
   .html("Exports by type <p>")
 
 var width = lambdaplusNOPX -10
-var height = lambdaNOPX/3
-var barheight = height/6
+var height = lambdaNOPX / (20/typedump.length)
+var barheight = height/typedump.length
 
 typeSVG =  d3.select(".typeChart").append("svg")
   .attr("width", width)
@@ -3351,11 +3496,12 @@ var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
-    return "<span style='color:white' style='font-size:4px'>" + d[0] + ": " +d[1] + data.units +"</span>";
+    return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
 typeSVG.call(tooltipBars)
 
+typedump.sort(function(a,b){return b[1]-a[1]})
 var maxi = d3.max(typedump, function(d){return d[1]})
 var mini = d3.min(typedump, function(d){return d[1]})
 
@@ -3380,7 +3526,7 @@ typeSVG.selectAll("rect")
      .enter()
      .append("rect")
       .on("mouseover", function(d){
-      tooltipBars.show(d)
+      tooltipBars.show(d[1])
       })
       .on("mouseout", function(d){
       tooltipBars.hide(d)
@@ -3453,7 +3599,7 @@ typeSVG.selectAll("text")
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
-    return "<span style='color:white' style='font-size:4px'>" + d + data.units +"</span>";
+    return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
  yearSVG.call(tooltipBars)
@@ -3491,15 +3637,6 @@ typeSVG.selectAll("text")
          })
       .attr("x", function(d) { return 16; })
      .attr("class", "percentLabel")
-
-
-
-
-
-
-
-
-
 
 
 };
@@ -3561,7 +3698,7 @@ function exDrawLinesOver(data, base){
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
-    return "<span style='color:white' style='font-size:4px'>" + d.total_waste + " " + d.units + " to "+ d.name +"</span>";
+    return "<span style='color:white' style='font-size:4px'>" + format(d.total_waste) + " " + d.units + " to "+ d.name +"</span>";
   })
 
   svg.call(tooltipFlow)
@@ -3569,7 +3706,6 @@ function exDrawLinesOver(data, base){
   //based on: http://bl.ocks.org/enoex/6201948
 
  arcGroup = svg.append('g');
-
  var path = d3.geo.path()
     .projection(projection);
 
@@ -3703,8 +3839,8 @@ function updateDisplay(data){ //function is called whether system change occurs 
 
   if (data.depth && filterDomain != "Site" && filterDomain != undefined){
 
-    d3.select("#mapSVG").append("div").attr("class", "descriptions")
-      .style({"left": lambdaNOPX+30+"px","bottom": 20+"px"}) //calculate based on bar rwap?
+    d3.select("body").append("div").attr("class", "descriptions")
+      .style({"right": lambdaNOPX+15+"px","bottom": 25+"px"}) //calculate based on bar rwap?
       .html("<span class = 'importerName'>"+name+"</span>....<span class = 'viewerData'>"+descriptors[name]+"</span>")
 
     d3.select(".mapDisplay").remove()
@@ -3724,7 +3860,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
       stringwork1.splice(0,0,tempString)
       if (stringwork1.length > 3) {stringwork1.splice(3, stringwork1.length-3)}
 
-      displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height", lambda)
+      displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height",lambdaNOPX/1.25+"px")
       displaySVG.selectAll("circle")
         .data(stringwork1)
         .enter()
