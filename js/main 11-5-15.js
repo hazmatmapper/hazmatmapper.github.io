@@ -20,7 +20,7 @@ var stringwork1= ["other sites"];
 var clickCheck = true
 var viewClickCheck = false
 var checker = false; //checks to see whether we've run initial data crunching, essentially
-var methyTypeCheck = false;
+var methyTypeCheck = "Type";
 var povSVG;
 var zoomed = false; //are we zoomed into rust belt?
 var firstTime = true, otherTimes = false, latlongGlobal, importByYearGlobal, exportByYearGlobal, filter, currentYears, siteCount=[];
@@ -841,7 +841,7 @@ labels.append("input")
 
 
   filterTypes = ["None", "Poverty", "Race"]
-  var show = d3.select(".filterSelector").append("div").attr("class", "showDiv").html("<span class='viewerCategory'>Show by:</span>")
+  var show = d3.select(".filterSelector").append("div").attr("class", "showDiv").html("<span class='viewerCategory'>Show:</span>")
   var showform = d3.select(".showDiv").append("form"), j=0;
 
   var labelEnter = showform.selectAll("span")
@@ -859,15 +859,19 @@ labels.append("input")
     .on("click", function(d){
       shader(d);
     });
-  labelEnter.append("label").text(function(d) {return d;})
+  labelEnter.append("label")
+        .html(function(d) {if (d == "Poverty" || d == "Race") {return d+" <img src='/data/icons/info.svg' height='12' width='12' id='infoDemo'>"} else {return d}})
   labelEnter.append("text").html("&nbsp")
-
+    d3.select("#infoDemo")
+      .on("mouseover", function(){
+        alert('yep')
+      })
 
 
   //filter years selector
   filterTypesYear = ['2007', '2008', '2009', '2010', '2011', '2012']
   filterTypesSignal = {"2007": "on","2008": "on","2009": "on","2010": "on","2011": "on","2012": "on"}
-    var show = d3.select(".filterSelector").append("div").attr("class", "yearDiv").html("<span class='viewerCategory'>Select year(s):</span>")
+    var show = d3.select(".filterSelector").append("div").attr("class", "yearDiv").html("<span class='viewerCategory'>Year(s):</span>")
   var yearform = d3.select(".yearDiv").append("form");
 
   var labelEnter = yearform.selectAll("span")
@@ -915,9 +919,14 @@ labels.append("input")
       yearChange();
 
     })
-    labelEnter.append("label").text(function(d) {return d;})
+    var tooly
+    labelEnter.append("label")
+      .html(function(d) {if (d == "2008") {return d+" <img src='/data/icons/info.svg' height='12' width='12' id='info2008'>"} else {return d}})
     labelEnter.append("br")
-
+    d3.select("#info2008")
+      .on("mouseover", function(){
+        alert('yep')
+      })
   //these only run first time
   setMap();
   setData(phase); 
@@ -1300,14 +1309,14 @@ var partition = d3.layout.partition()
     //.size([width, height])
     .value(function(d) { return d.size; });
 
-var tip = d3.tip()
+/*var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
-Isvg.call(tip)
+Isvg.call(tip)*/
 
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
@@ -1339,7 +1348,7 @@ Isvg.selectAll("rects")
           siteViewerHelp = true
           }
         }
-        tip.show(facilityName); 
+        //tip.show(facilityName); 
       } else if (filterDomain ==  "Type" && d.depth == 3) {
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
@@ -1347,7 +1356,7 @@ Isvg.selectAll("rects")
           siteViewerHelp = true
           }
         }
-        tip.show(facilityName); 
+        //tip.show(facilityName); 
       } else if (filterDomain ==  "Disposal" && d.depth == 3) {
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
@@ -1355,21 +1364,21 @@ Isvg.selectAll("rects")
           siteViewerHelp = true
           }
         }
-        tip.show(facilityName); 
+        //tip.show(facilityName); 
       } else {siteViewerHelp = false} //tip.show(d); 
       if (filterDomain == "Type" && d.depth == 1 || filterDomain == "Site" && d.depth == 2 || filterDomain == "Disposal" && d.depth == 2 || filterDomain == undefined && d.depth == 2){
         var show = {"name": UNtypeKey[d.name]}
-        tip.show(show)
+        //tip.show(show)
       }
       if (filterDomain == "Type" && d.depth == 2 || filterDomain == "Site" && d.depth == 3 || filterDomain == "Disposal" && d.depth == 1 || filterDomain == undefined && d.depth == 3){
         var show = {"name": mgmtTypeKey[d.name]}
-        tip.show(show)
+        //tip.show(show)
       }
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
       icicleHighlight(d);
       //};  
     })
-    .on("mouseout", function(d){ icicleDehighlight(d); tip.hide(d);}) 
+    .on("mouseout", function(d){ icicleDehighlight(d); ;}) //tip.hide(d)
     .on('click', function(d){
 /*      if (filterDomain ==  "DisposalMethod" && d.depth == 1 || filterDomain ==  "Type" && d.depth == 2 || filterDomain ==  "Site" && d.depth == 3 || filterDomain ==  undefined && d.depth == 3){
         //show details of method here
@@ -1694,13 +1703,13 @@ function callback(error, us, can, mex, borders){
 
   var name, sum, length;
 
-  stateTool = d3.tip()
+/*  stateTool = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white'>" + name + ": " + sum + " " + phaseformat[phase] + " at " + length+ " sites</span>";
   })
-  svg.call(stateTool)
+  svg.call(stateTool)*/
 
   b.selectAll('path')
     .data(topojson.feature(borders, borders.objects.borders).features)
@@ -1715,8 +1724,8 @@ function callback(error, us, can, mex, borders){
       .attr("class", "feature")
       .attr("id", function (d){return fips[d.id].abbreviation})
       .on("mouseover", function(d){
-         if (view == "States"){statez(d);stateTool.show()}})
-      .on("mouseout", function(d){stateTool.hide()})
+         if (view == "States"){statez(d);}}) //stateTool.show()
+     // .on("mouseout", function(d){stateTool.hide()})
   
   c.selectAll('path')
     .data(topojson.feature(can, can.objects.provinces).features)
@@ -1730,11 +1739,8 @@ function callback(error, us, can, mex, borders){
     .enter().append("path")
       .attr("d", path)
       .attr("class", "exporter")
-      .attr("id", function (d){console.log(d); return mexfips[d.properties.id]["FIELD2"]})
+     // .attr("id", function (d){console.log(d); return mexfips[d.properties.id]["FIELD2"]})
 
-
-
-  //pathHelp=path
 
   function statez(data){
 
@@ -2077,7 +2083,7 @@ d3.csv("data/minority.csv", function(rdata) {
 }
 
 })
-console.log(latlongRdump)
+
 latlongRdump = latlongReset;
 
 
@@ -2128,14 +2134,14 @@ function importers(data){
     .domain([min+1, max]) //don't want min to be 0
     .range([15, 70])}
   
-  tooltip = d3.tip()
+/*  tooltip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
-  svg.call(tooltip)
+  svg.call(tooltip)*/
 
   imp = svg.append("g")
   imp.selectAll("circle")
@@ -2149,11 +2155,11 @@ function importers(data){
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     //.attr("id", function(d){return data.state})
     .on("mouseover", function(d){
-      tooltip.show(d);
+     // tooltip.show(d);
       highlight(d);
     })
     .on("mouseout", function(d){
-      tooltip.hide(d);
+      //tooltip.hide(d);
       dehighlight(d);
       //drawLinesOut(d);
     })
@@ -2390,14 +2396,14 @@ function drawLinesOver(data, base){
     .domain([globalMin, globalMax]) 
     .range([2, 10])
 
-  var tooltipFlow = d3.tip()
+/*  var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='text-size:8px'>" + format(d.total_waste) + " " + d.units + " from "+ d.name +"</span>";
   })
 
-  svg.call(tooltipFlow)
+  svg.call(tooltipFlow)*/
 
   //based on: http://bl.ocks.org/enoex/6201948
   arcGroup = svg.append('g');
@@ -2467,8 +2473,8 @@ var pathArcs = arcGroup.selectAll(".arc")
             .style("stroke", "#f33")
             .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
             .style('cursor', "pointer")
-            .on("mouseover", function(d) {tooltipFlow.show(d)}) //
-            .on("mouseout", function(d) {tooltipFlow.hide(d)})
+           // .on("mouseover", function(d) {tooltipFlow.show(d)}) //
+           // .on("mouseout", function(d) {tooltipFlow.hide(d)})
                 //'stroke-dasharray': '5'
             .call(lineTransition); 
 if (zoomed){
@@ -2668,7 +2674,7 @@ for (var o =0; o<latlongdump.length; o++) {
 for (var key in mexfips){database.push({"label": mexfips[key].FIELD2, "value": mexfips[key].FIELD2, "category": "Places"})}
 for (var key in fips){database.push({"label": fips[key].name, "value": fips[key].abbreviation, "category": "Places"})}
 
-$.widget( "custom.catcomplete", $.ui.autocomplete, {
+/*$.widget( "custom.catcomplete", $.ui.autocomplete, {
     _create: function() {
       this._super();
       this.widget().menu( "option", "items", "> :not(.ui-autocomplete-category)" );
@@ -2752,7 +2758,7 @@ $("#tags").keypress(function(e) {
         return false;
     }
 });
-  });
+  });*/
 
 //do sort and rank here
 latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
@@ -2789,11 +2795,11 @@ for (var j=0; j<latlongdump.length; j++){
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", function(d){
-      tooltip.show(d);
+      //tooltip.show(d);
       highlight(d);
     }) 
     .on("mouseout", function(d){
-      tooltip.hide(d);
+     // tooltip.hide(d);
       dehighlight(d)}) 
     .on("click", function(d){drawLinesOut(d);importThis(d); clickyCheck = d.id; clicky(d); updateDisplay(d)})
   exp.selectAll("circle")
@@ -2812,6 +2818,7 @@ function viewer(data, latlongdump){
   d3.select(".viewerText").remove()
   d3.select(".povertyChart").remove()
   d3.select(".yearData").remove()
+
 
   if (viewClickCheck == true) {
         d3.select("#viewShowHide")
@@ -2852,6 +2859,7 @@ function viewer(data, latlongdump){
           .each("end", function(){
                 d3.select(".viewer").append("div").attr("class", "viewerText")
                 viewerHelp(data, latlongdump)
+
           })
         }
 }
@@ -2862,34 +2870,157 @@ function viewer(data, latlongdump){
   for (i=0;i<latlongdump.length;i++){names.push(latlongdump[i].name)}
   z=JSON.stringify(names)
   */
+  
+  d3.select(".viewerText")
+    .append("div")
+    .style("width", "80%")
+    .html("<span class='importerName'>"+data.name+"</span><br> <span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://epamap14.epa.gov/ejmap/ejmap.aspx?wherestr="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in EPA's EJView</a><p>")
 
-  // Sort the array based on the second element
+  //set-up triptych: 1 (default) loads import; 2 loads demographicCharts; 3 loads manifests
+  d3.select(".viewerText").append("div").attr("class", "triptych")
+  d3.select(".triptych").append("div").attr("class", "triImports")
+    .text("Imports")
+    .on("click", function(){
+      d3.select(".importCharts").remove()
+      d3.select(".povertyChart").remove()
+      d3.select(".manifests").remove()
+      importCharts(data);
+    })
+  d3.select(".triptych").append("div").attr("class", "triDemos")
+    .text("Demographics")
+    .on("click", function(){
+      d3.select(".importCharts").remove()
+      d3.select(".povertyChart").remove()
+      d3.select(".manifests").remove()
+      demographicCharts(data);
+    })
+  d3.select(".triptych").append("div").attr("class", "triManifests")
+    .text("Manifests")
+    .on("click", function(){
+      d3.select(".importCharts").remove()
+      d3.select(".povertyChart").remove()
+      d3.select(".manifests").remove()
+      manifestsCharts(data);
+    })
+
+importCharts(data);
+  //demographicCharts(data);
+}
+
+function importCharts(data){
+/* // Sort the array based on the second element
   data.types.sort(function(a, b)
   {
     return b[1] - a[1];
-  });
+  });*/
 /*
   //biggest export partner
   latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;})*/
-  d3.select(".viewerText")
-    .html("<span class='importerName'>"+data.name+"</span><br> <span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://epamap14.epa.gov/ejmap/ejmap.aspx?wherestr="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in EPA's EJView</a><p><span class='viewerCategory'>For selected year(s):</span><br><span class = 'viewerCategory'>Total imports and rank: </span><span class ='viewerData'>"+format(data.total_waste)+" "+data.units+"..........."+data.rank+"</span>");
-    // <br><span class = 'viewerCategory'>Main Export Partner</span><br><span class ='viewerData'>"+latlongdump[0].name+"</span><br><span class = 'viewerCategory'>Top Import Type</span><br><span class ='viewerData' width = '50px'>"+data.types[0][0]+": "+data.types[0][1]+" "+data.units+"</span>
-    
-  demographicCharts(data);
-  
+d3.select(".viewerText")
+.append("div")
+.attr("class", "importCharts")
 
-function demographicCharts(data){ 
+d3.select(".importCharts")
+    .append('div')
+    .html("<br><span class = 'povLabel'>Total imports and rank for selected year(s) </span><span class ='viewerData'><br>"+format(data.total_waste)+" "+data.units+"..........."+data.rank+"</span><p>");
+    // <br><span class = 'viewerCategory'>Main Export Partner</span><br><span class ='viewerData'>"+latlongdump[0].name+"</span><br><span class = 'viewerCategory'>Top Import Type</span><br><span class ='viewerData' width = '50px'>"+data.types[0][0]+": "+data.types[0][1]+" "+data.units+"</span>
+
+ 
+  d3.selectAll(".importCharts").append("div").attr("class", "yearData");
+  d3.select(".yearData").append("div")
+  .attr("class", "povLabel")
+  .html("Imports by year")
+
+  d3.select(".yearData").append("div")
+    .attr("class", "yearChart")
+
+  var width = lambdaplusNOPX - 10
+  var height = lambdaNOPX/2
+
+
+  //do work here getting imports by year for importer
+  var years= ["2007","2008","2009","2010","2011","2012"] 
+   var yearskey = {"2007":0,"2008":0,"2009":0,"2010":0,"2011":0,"2012":0}
+  for (var i = 0; i<importByYearGlobal.length; i++){
+    if (importByYearGlobal[i]["key"] == data.id){ //find matching importer
+          for (var k=0; k<importByYearGlobal[i]["values"].length; k++){
+            x=importByYearGlobal[i]["values"][k]["key"]
+              yearskey[x] = importByYearGlobal[i]["values"][k]["values"]["total_waste"]
+            } 
+          }
+        }
+   yearskey = [yearskey["2007"],yearskey["2008"],yearskey["2009"],yearskey["2010"],yearskey["2011"],yearskey["2012"]]
+
+  var maxi = d3.max(yearskey, function(d){return d})
+  var mini = d3.min(yearskey, function(d){return d})
+  
+  yearSVG =  d3.select(".yearChart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  var x = d3.scale.sqrt()
+    .domain([maxi, mini])
+    .range([0,width]);
+
+  var barPadding = 6;
+
+/*  var tooltipBars = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([0, 0])
+  .html(function(d) {
+    return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
+  })
+
+ yearSVG.call(tooltipBars)*/
+
+  yearSVG.selectAll("rect")
+     .data(yearskey)
+     .enter()
+     .append("rect")
+    .on("mouseover", function(d){
+   // tooltipBars.show(d)
+   })
+    .on("mouseout", function(d){
+  //  tooltipBars.hide(d)
+   })
+    .attr("y", function(d, i) {
+        return i * (height / yearskey.length);
+     })
+     .attr("x", function(d) { return 0; })
+     .attr("height", height / yearskey.length - barPadding).transition().duration(750)
+     .attr("width", function(d){ return width - x(d)}).transition().duration(750)
+     .attr("class", data.id)
+     .attr("fill", function(d) {return document.getElementsByClassName(data.id)[0].style.fill})
+
+
+
+  yearSVG.selectAll("text")
+     .data(yearskey)
+     .enter()
+     .append("text")
+     .text(function(d,i) {
+      return years[i]
+     })
+      .attr("y", function(d, i) {
+            return i * (height / yearskey.length) + (height / yearskey.length - barPadding) / 1.1;
+         })
+      .attr("x", function(d) { return 16; })
+      .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
+
+
+
+
 //imports by type
-d3.selectAll(".viewerText").append("div").attr("class", "typeChart");
+d3.selectAll(".importCharts").append("div").attr("class", "typeChart");
 
 d3.select(".typeChart").append("div")
   .attr("class", "povLabel")
-  .html("Imports by type")
+  .html("Imports by type for selected year(s)")
 
 typedump = data.types
 
 var width = lambdaplusNOPX -10
-var height = lambdaNOPX / (20/typedump.length)
+var height = lambdaNOPX / (10/typedump.length)
 
 //height max = lambdaNOPX*1.5 = lambdaNOPX*27
 //height min  = lambdaNOPX/5
@@ -2898,7 +3029,7 @@ var height = lambdaNOPX / (20/typedump.length)
 var barheight = height/typedump.length
 
 //implement control for svgbuild here
-labelView = ["Type", "Disposal Method"]
+labelView = ["Type", "Disposal Method", "None"]
 var form = d3.select(".typeChart").append("form"), j=0;
 
 form.append("text")
@@ -2917,7 +3048,7 @@ labels.append("input")
     })
     .property("checked", function(d, i) {return i===j;})
     .on("click", function(d){
-      if (d == "Type"){methyTypeCheck = false} else {methyTypeCheck = true}
+      methyTypeCheck = d
       typeSVG.selectAll("text")
         .remove()
       typeLabels();
@@ -2929,14 +3060,14 @@ typeSVG =  d3.select(".typeChart").append("svg")
   .attr("width", width)
   .attr("height", height);
 
-var tooltipBars = d3.tip()
+/*var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
-typeSVG.call(tooltipBars)
+typeSVG.call(tooltipBars)*/
 
 
 
@@ -3001,7 +3132,7 @@ var x = d3.scale.sqrt()
     .attr("height", y)*/
 
 
-var barPadding = 3;
+var barPadding = 6;
 var spacing = 10;
 var lastStart = 0
 typeSVG.append("g")
@@ -3014,10 +3145,10 @@ typeSVG.append("g")
      .enter()
      .append("rect")
      .on("mouseover", function(d){
-      tooltipBars.show(d)
+      //tooltipBars.show(d)
       })
      .on("mouseout", function(d){
-      tooltipBars.hide(d)
+      //tooltipBars.hide(d)
       })
      .attr("y", function(d, i, j) {
         return j * barheight;
@@ -3037,13 +3168,12 @@ typeSVG.append("g")
           return document.getElementsByClassName(data.id)["importer"].style.fill
         })
 
-console.log(typeof(document.getElementsByClassName(data.id)["importer"].style.fill)); 
 
 typeLabels();
 //type labels
 function typeLabels(){
 lastStart=0
-if (methyTypeCheck){
+if (methyTypeCheck == "Disposal Method"){
 typeSVG.append("g")
     .selectAll("g")
      .data(methdumper)
@@ -3064,7 +3194,7 @@ typeSVG.append("g")
         else {lastStart =0; return 0;} //return last d + spacing 
       }) //scale by x...
       .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
-  } else{
+  } else if (methyTypeCheck == "Type"){
 typeSVG.append("g")
     .selectAll("g")
      .data(typedumper)
@@ -3083,8 +3213,10 @@ typeSVG.append("g")
       .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
     }   
 }
+}
 
 
+function demographicCharts(data){ 
 //poverty chart
 d3.selectAll(".viewerText").append("div").attr("class", "povertyChart");
 
@@ -3093,28 +3225,54 @@ d3.select(".povertyChart").append("div")
   .html("<p>% in poverty near site")
 
 var width = lambdaplusNOPX - 10
-var height = lambdaNOPX/6
+var height = lambdaNOPX
 
   povSVG =  d3.select(".povertyChart").append("svg")
     .attr("width", width)
     .attr("height", height);
 //match zips
-  d3.csv("data/poverty.csv", function(povdata) {
-    povertydata = povdata.map(function(d) { return {"Geography": d["Geography"], "percentPoverty": +d["percentPoverty"], "RecFacName": d["RecFacName"], "RecZip": +d["RecZip"], "RecPcntPoverty": +d["RecPcntPoverty"]}; });
+  d3.csv("data/completeDemographics.csv", function(povdata) {
+    povertydata = povdata.map(function(d) { return {
+      "receivingfacilityzipcode": d["receivingfacilityzipcode"], 
+      "zipPov": +d["zipPov"], 
+      "statePov": +d["statePov"], 
+      "ntlPov": +d["ntlPov"],
+      "datasetZipPov": +d["datasetZipPov"], 
+      "receivingFacilityAddress": d["receivingFacilityAddress"],
+      "povTractFinal": +d["povTractFinal"],
+      "datasetTractPov": +d["datasetTractPov"],
+      "datasetStatePov": +d["datasetStatePov"],
+      //race
+      "zipRace": +d["zipRace"],      
+      "stateRace": +d["stateRace"],
+      "ntlRace": +d["ntlRace"],
+      "datasetZipRace": +d["datasetZipRace"],
+      "datasetStateRace": +d["datasetStateRace"],
+      "raceTractFinal": +d["raceTractFinal"],
+      "datasetTractRace": +d["datasetTractRace"],
+    }; });
 
-  var censusDump
+  var povcensusDump = []
+  var racecensusDump = []
     for (var i =0; i<povertydata.length-1; i++){
-      if (povertydata[i].RecZip === data.zip){
-        censusDump = povertydata[i].RecPcntPoverty
+      if (povertydata[i].receivingFacilityAddress === data.address){
+        povcensusDump.push(povertydata[i].povTractFinal)
+        povcensusDump.push(povertydata[i].datasetTractPov)
+        racecensusDump.push(povertydata[i].raceTractFinal)
+        racecensusDump.push(povertydata[i].datasetTractRace)
       };
     };
 
   var povdump;
+  var racedump;
   for (var i =0; i<povertydata.length-1; i++){
-      if (povertydata[i].Geography == data.zip){
-        povdump = [povertydata[i].percentPoverty, censusDump, povertydata[0].percentPoverty]
-      };
+      if (povertydata[i].receivingfacilityzipcode == data.zip){
+        povdump = [povertydata[i].zipPov, povertydata[i].datasetZipPov, povcensusDump[0], povcensusDump[1], povertydata[i].statePov, povertydata[i].datasetStatePov, povertydata[i].ntlPov]
+        racedump = [povertydata[i].zipRace, povertydata[i].datasetZipRace, racecensusDump[0], racecensusDump[1], povertydata[i].stateRace, povertydata[i].datasetStateRace, povertydata[i].ntlRace]
+      }
     }; 
+
+var labels = ["Site zipcode", "Dataset average by zipcode", "Site census tract", "Dataset average by tract", "State average", "Dataset average by state", "National average"]
 
 var x = d3.scale.linear()
     .domain([100, 0])
@@ -3131,7 +3289,7 @@ var x = d3.scale.linear()
     .attr("class", "povBars")
     .attr("width", 25)
     .attr("height", y)*/
-var barPadding = 3;
+var barPadding = 6;
 povSVG.selectAll("rect")
      .data(povdump)
      .enter()
@@ -3144,7 +3302,7 @@ povSVG.selectAll("rect")
      .attr("width", function(d){ return width - x(d)}).transition().duration(750)
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
-        if (i != 2) {
+        if (i == 0 || i == 2) {
           return document.getElementsByClassName(data.id)["importer"].style.fill
         }
         else {
@@ -3173,9 +3331,7 @@ povSVG.selectAll("label")
          .enter()
          .append("text")
          .text(function(d, i) {
-            if (i == 0) {return "Site zipcode"}
-            else if (i == 1) {return "Site census tract"}
-            else{return "Ntl. Average"}
+            return labels[i]
          })
 
          .attr("y", function(d, i) {
@@ -3186,12 +3342,8 @@ povSVG.selectAll("label")
          .attr("class", "percentLabel")
          //.attr("font-weight", "bold");
 
-  });
 
 
-
-
-  
   //minority chart
 
   d3.select(".povertyChart").append("div")
@@ -3202,7 +3354,7 @@ povSVG.selectAll("label")
     .attr("width", width)
     .attr("height", height);
 
-  d3.csv("data/minority.csv", function(rdata) {
+/*  d3.csv("data/minority.csv", function(rdata) {
     racedata = rdata.map(function(d) { return {"Geography": d["Geography"], "percentMinority": +d["percentMinority"], "RecFacName": d["RecFacName"], "RecZip": +d["RecZip"], "RecPcntNonwhite": +d["RecPcntNonwhite"]}});
   
   var censusDump
@@ -3215,9 +3367,9 @@ povSVG.selectAll("label")
   var racedump;
   for (var i =0; i<racedata.length-1; i++){
       if (racedata[i].Geography == data.zip){
-        racedump = [racedata[i].percentMinority, censusDump, racedata[0].percentMinority]
+        racedump = [racedata[i].percentMinority, censusDump, racedata[0].percentMinority] 
       };
-    }; 
+    }; */
 var x = d3.scale.linear()
     .domain([100,0])
     .range([0, width]);
@@ -3233,7 +3385,7 @@ var x = d3.scale.linear()
     .attr("class", "povBars")
     .attr("width", 25)
     .attr("height", y)*/
-var barPadding = 3;
+var barPadding = 6;
 rSVG.selectAll("rect")
      .data(racedump)
      .enter()
@@ -3246,7 +3398,7 @@ rSVG.selectAll("rect")
      .attr("width", function(d){ return width-x(d)}).transition().duration(750)
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
-        if (i != 2) {
+        if (i == 0 || i == 2) {
           return document.getElementsByClassName(data.id)["importer"].style.fill
         }
         else {
@@ -3292,92 +3444,34 @@ rSVG.selectAll("text")
 
 }
 
-yearData(data);
-
-function yearData(data){
-  d3.selectAll(".viewerText").append("div").attr("class", "yearData");
-  d3.select(".yearData").append("div")
-  .attr("class", "povLabel")
-  .html("<p>Imports by year")
-
-  d3.select(".yearData").append("div")
-    .attr("class", "yearChart")
-
-  var width = lambdaplusNOPX - 10
-  var height = lambdaNOPX/3
+function manifestsCharts(data){
+  d3.select(".viewerText").append("div").attr("class", "manifests")
 
 
-  //do work here getting imports by year for importer
-  var years= ["2007","2008","2009","2010","2011","2012"] 
-   var yearskey = {"2007":0,"2008":0,"2009":0,"2010":0,"2011":0,"2012":0}
-  for (var i = 0; i<importByYearGlobal.length; i++){
-    if (importByYearGlobal[i]["key"] == data.id){ //find matching importer
-          for (var k=0; k<importByYearGlobal[i]["values"].length; k++){
-            x=importByYearGlobal[i]["values"][k]["key"]
-              yearskey[x] = importByYearGlobal[i]["values"][k]["values"]["total_waste"]
-            } 
-          }
-        }
-   yearskey = [yearskey["2007"],yearskey["2008"],yearskey["2009"],yearskey["2010"],yearskey["2011"],yearskey["2012"]]
+  d3.csv("data/manifests.csv", function(mandata) {
+    manifestsdata = mandata.map(function(d) { return {
+      "siteID": d["siteID"], 
+      "year": d["year"], 
+      "filename": d["filename"], 
+    }; });
 
-  var maxi = d3.max(yearskey, function(d){return d})
-  var mini = d3.min(yearskey, function(d){return d})
-  
-  yearSVG =  d3.select(".yearChart").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+  //rollups
+  d3.select(".manifests")
+    .append('div')
+    .html("<br><span class = 'povLabel'>Available manifests for 2007-2012 </span>"); //could make it for only selected years...
 
-  var x = d3.scale.sqrt()
-    .domain([maxi, mini])
-    .range([0,width]);
+  for (a = 0; a<manifestsdata.length; a++){
+    if (manifestsdata[a].siteID == data.id){
+      //print year, file name
+      d3.select(".manifests").append('div').html("<a href='data/manifests/"+manifestsdata[a].year+"/"+manifestsdata[a].filename+".pdf"+"' target='_blank'>"+manifestsdata[a].filename+"</a>")
+    }
+  }
 
-  var barPadding = 3;
 
-  var tooltipBars = d3.tip()
-  .attr('class', 'd3-tip')
-  .offset([0, 0])
-  .html(function(d) {
-    return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
-
- yearSVG.call(tooltipBars)
-
-  yearSVG.selectAll("rect")
-     .data(yearskey)
-     .enter()
-     .append("rect")
-    .on("mouseover", function(d){
-    tooltipBars.show(d)
-   })
-    .on("mouseout", function(d){
-    tooltipBars.hide(d)
-   })
-    .attr("y", function(d, i) {
-        return i * (height / yearskey.length);
-     })
-     .attr("x", function(d) { return 0; })
-     .attr("height", height / yearskey.length - barPadding).transition().duration(750)
-     .attr("width", function(d){ return width - x(d)}).transition().duration(750)
-     .attr("class", data.id)
-     .attr("fill", function(d) {return document.getElementsByClassName(data.id)[0].style.fill})
-
-
-
-  yearSVG.selectAll("text")
-     .data(yearskey)
-     .enter()
-     .append("text")
-     .text(function(d,i) {
-      return years[i]
-     })
-      .attr("y", function(d, i) {
-            return i * (height / yearskey.length) + (height / yearskey.length - barPadding) / 1.1;
-         })
-      .attr("x", function(d) { return 16; })
-      .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
-}
 }
 
+//} viewer ends
 
 function exportViewer(data, latlongdump){
 
@@ -3469,8 +3563,14 @@ function viewerHelp(data, latlongdump){
 
 
 
-  d3.selectAll(".viewerText").html("<span class='importerName'>"+data.name+"</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a><p><span class = 'viewerCategory'>Total exports and rank</span><br><span class ='viewerData'>"+format(data.total_waste)+" "+data.units+"..........."+data.rank+"<p></span>")
+  d3.selectAll(".viewerText")
+    .append("div")
+    .style("width", "80%")
+  .html("<span class='importerName'>"+data.name+"</span><br><span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://maps.google.com/?q="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in Google Maps</a>")
 
+d3.select(".viewerText")
+.append("div")
+    .html("<br><span class = 'povLabel'>Total imports and rank (selected year(s)): </span><span class ='viewerData'><br>"+format(data.total_waste)+" "+data.units+"..........."+data.rank+"</span><p>");
 
 //exports by type
 d3.selectAll(".viewerText").append("div").attr("class", "typeChart");
@@ -3485,21 +3585,21 @@ d3.select(".typeChart").append("div")
   .html("Exports by type <p>")
 
 var width = lambdaplusNOPX -10
-var height = lambdaNOPX / (20/typedump.length)
+var height = lambdaNOPX / (10/typedump.length)
 var barheight = height/typedump.length
 
 typeSVG =  d3.select(".typeChart").append("svg")
   .attr("width", width)
   .attr("height", height);
 
-var tooltipBars = d3.tip()
+/*var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
-typeSVG.call(tooltipBars)
+typeSVG.call(tooltipBars)*/
 
 typedump.sort(function(a,b){return b[1]-a[1]})
 var maxi = d3.max(typedump, function(d){return d[1]})
@@ -3526,10 +3626,10 @@ typeSVG.selectAll("rect")
      .enter()
      .append("rect")
       .on("mouseover", function(d){
-      tooltipBars.show(d[1])
+    //  tooltipBars.show(d[1])
       })
       .on("mouseout", function(d){
-      tooltipBars.hide(d)
+    //  tooltipBars.hide(d)
       })
      .attr("y", function(d, i) {
         return i * barheight;
@@ -3566,7 +3666,7 @@ typeSVG.selectAll("text")
     .attr("class", "yearChart")
 
   var width = lambdaplusNOPX - 10
-  var height = lambdaNOPX/3
+  var height = lambdaNOPX/2
 
 
   //do work here getting imports by year for exporter
@@ -3593,8 +3693,8 @@ typeSVG.selectAll("text")
     .domain([maxi, mini])
     .range([0,width]);
 
-  var barPadding = 3;
-
+  var barPadding = 6;
+/*
  var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
@@ -3602,17 +3702,17 @@ typeSVG.selectAll("text")
     return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
- yearSVG.call(tooltipBars)
+ yearSVG.call(tooltipBars)*/
 
   yearSVG.selectAll("rect")
      .data(yearskey)
      .enter()
      .append("rect")
     .on("mouseover", function(d){
-    tooltipBars.show(d)
+   // tooltipBars.show(d)
    })
     .on("mouseout", function(d){
-    tooltipBars.hide(d)
+  //  tooltipBars.hide(d)
    })
     .attr("y", function(d, i) {
         return i * (height / yearskey.length);
@@ -3694,14 +3794,14 @@ function exDrawLinesOver(data, base){
     .domain([exGlobalMin, exGlobalMax]) 
     .range([2, 10])
 
-  var tooltipFlow = d3.tip()
+/*  var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d.total_waste) + " " + d.units + " to "+ d.name +"</span>";
   })
 
-  svg.call(tooltipFlow)
+  svg.call(tooltipFlow)*/
 
   //based on: http://bl.ocks.org/enoex/6201948
 
@@ -3773,8 +3873,8 @@ var pathArcs = arcGroup.selectAll(".arc")
             .style('stroke', "#f33")
             .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
             .style('cursor', "pointer")
-            .on("mouseover", function(d) {tooltipFlow.show(d)})//
-            .on("mouseout", function(d) {tooltipFlow.hide(d)})
+           // .on("mouseover", function(d) {tooltipFlow.show(d)})//
+           // .on("mouseout", function(d) {tooltipFlow.hide(d)})
             .call(lineTransition); 
 if (zoomed){
   arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
@@ -3847,7 +3947,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
     d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"height": lambdaNOPX/1.25+"px", "width": lambda, "right": 0, "bottom": 5+lambdaNOPX/1.25+"px"})
+        .style({"height": lambdaNOPX/1.25+"px", "width": "100%", "left": 0, "bottom": 5+lambdaNOPX/1.25+"px"})
 
     var result = colorKey.filter(function( obj ) {return obj.name == data.name;});
     result = result[0];
@@ -3860,7 +3960,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
       stringwork1.splice(0,0,tempString)
       if (stringwork1.length > 3) {stringwork1.splice(3, stringwork1.length-3)}
 
-      displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height",lambdaNOPX/1.25+"px")
+      displaySVG = d3.select(".mapDisplay").append("svg").attr("width", "100%").attr("height",lambdaNOPX/1.25+"px")
       displaySVG.selectAll("circle")
         .data(stringwork1)
         .enter()

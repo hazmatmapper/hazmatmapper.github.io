@@ -1,5 +1,5 @@
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Rockwell';
   color: white;
   background-color: white;
   max-width: 100%;
@@ -40,12 +40,12 @@ a{
 }
 .showDiv{
   position: absolute;
-  width: 33%;
+  width: 40%;
   left:34%;
 }
 .yearDiv{
   position: relative;
-  left: 66%;
+  left: 70%;
   width: 33%;
 }
 /*this is the class for all of the filter buttons*/
@@ -66,7 +66,7 @@ label {
   position: absolute;
   width: 75%;
   color:white;
-  font-family: 'Roboto', sans-serif;
+font-family: 'Rockwell';
   font-size: 10px;
 }
 .descriptions{
@@ -190,7 +190,7 @@ label {
 }
 .aboutText{
   color:white;
-  font-family: 'Roboto', sans-serif;
+font-family: 'Rockwell';
 }
 .exitAbout{
   cursor: pointer;
@@ -224,7 +224,7 @@ label {
 }
 .intro{
   font-size: 12px;
-  font-family: 'Roboto', sans-serif;
+font-family: 'Rockwell';
   color: white;
 }
 .viewerText{
@@ -247,22 +247,51 @@ label {
 .percentLabelDark{
   font-size: 8px;
   text-align: bottom;
-  fill: black
+  fill:  #b2b2b2;
 }
 .viewerData{
   font-size: 10px;
   color: #e8e8e8;
+}
+.triptych{
+  font-size: 10px;
+  color: #c2c2c2;
+}
+.triptych:hover{
+  cursor: pointer;
+}
+.triImports{
+    position:absolute;
+  left:0%;
+  width:33%;
+  text-align: center
+}
+.triDemos{
+  position:absolute;
+  left:34%;
+  width:33%;
+  text-align: center
+}
+.triManifests{
+    position:relative;
+  left:68%;
+  width:33%;
+  text-align: center
+
 }
 .povertyChart{
   border: none;
 }
 .yearChart{
   position:absolute;
-  border: none;
 }
 .yearData{
   position:absolute;
   border: none;
+}
+.typeChart{
+  position: absolute;
+  top:45%;
 }
 .raceLabel{
   font-size: 12px;
@@ -291,7 +320,7 @@ font-size: medium;
 text-align: center;
 width: 50%;
 vertical-align: middle;
-font-family: 'Roboto', sans-serif; 
+font-family: 'Rockwell';
 color:white;
 }
 
@@ -393,12 +422,12 @@ h3{
 
 
 .yaxis{
-  font-family: 'Roboto', sans-serif;
+font-family: 'Rockwell';
   font-size: 10px;
   fill: white;
 }
 .axis text{
-  font-family: 'Roboto', sans-serif;
+font-family: 'Rockwell';
   font-size: 10px;
   fill: white;
 }
