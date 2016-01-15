@@ -1722,12 +1722,13 @@ function callback(error, na, borders){
     .enter().append("path")
       .attr("d", path)
       .attr("class", function (d){
-        return d.gu_a3
+        return d["gu_a3"]
       })
       .attr("id", function (d){
         return d.postal
       })
       .on("mouseover", function (d){
+        console.log(d)
          if (view == "States" && d.gu_a3 == "USA"){statez(d);}}) //stateTool.show()
       .on("mouseout", function(d){stateTool.hide()})
   
@@ -3236,7 +3237,7 @@ var height = lambdaNOPX
     .attr("width", width)
     .attr("height", height);
 //match zips
-  d3.csv("data/completeDemographics.csv", function(povdata) {
+  d3.csv("data/completeDemographics.csv", function(povdata) { //move to top, embed in site info so not loading every time?
     povertydata = povdata.map(function(d) { return {
       "receivingfacilityzipcode": d["receivingfacilityzipcode"], 
       "zipPov": +d["zipPov"], 
@@ -3326,7 +3327,12 @@ povSVG.selectAll("text")
             }
          })
          .attr("y", function(d, i) {
-            return i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.1;
+            if (i == 2 || i == 4 || i == 6){
+              return i * (height / povdump.length) + (height / povdump.length - barPadding*2) / 1.1;
+            }
+            else{
+              return i * (height / povdump.length) + (height / povdump.length - barPadding*2) / 1.1;
+            }
          })
          .attr("x", function(d) { return 16; })
          .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 

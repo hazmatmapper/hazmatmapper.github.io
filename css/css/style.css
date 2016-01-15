@@ -113,10 +113,10 @@ font-family: 'Rockwell';
   background: #252525;
 }
 
-.CAN, .MEX {
-    fill: #cccccc;
+.CAN{
+  fill: #cccccc;
   stroke:white;
-    stroke-width: .5px;
+  stroke-width: .5px;
   fill-opacity: 1;
   cursor: pointer;
 }
