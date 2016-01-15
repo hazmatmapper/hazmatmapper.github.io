@@ -1722,13 +1722,13 @@ function callback(error, na, borders){
     .enter().append("path")
       .attr("d", path)
       .attr("class", function (d){
-        return d["gu_a3"]
+        console.log(d)
+        return d.properties.gu_a3
       })
       .attr("id", function (d){
-        return d.postal
+        return d.properties.postal
       })
       .on("mouseover", function (d){
-        console.log(d)
          if (view == "States" && d.gu_a3 == "USA"){statez(d);}}) //stateTool.show()
       .on("mouseout", function(d){stateTool.hide()})
   
@@ -2884,7 +2884,7 @@ function viewer(data, latlongdump){
   //set-up triptych: 1 (default) loads import; 2 loads demographicCharts; 3 loads manifests
   d3.select(".viewerText").append("div").attr("class", "triptych")
   d3.select(".triptych").append("div").attr("class", "triImports")
-    .text("Imports").attr("class", "infoLabels")
+    .text("Imports")
     .on("click", function(){
       d3.select(".importCharts").remove()
       d3.select(".povertyChart").remove()
@@ -2892,7 +2892,7 @@ function viewer(data, latlongdump){
       importCharts(data);
     })
   d3.select(".triptych").append("div").attr("class", "triDemos")
-    .text("Demographics").attr("class", "infoLabels")
+    .text("Demographics")
     .on("click", function(){
       d3.select(".importCharts").remove()
       d3.select(".povertyChart").remove()
@@ -2900,7 +2900,7 @@ function viewer(data, latlongdump){
       demographicCharts(data);
     })
   d3.select(".triptych").append("div").attr("class", "triManifests")
-    .text("Manifests").attr("class", "infoLabels")
+    .text("Manifests")
     .on("click", function(){
       d3.select(".importCharts").remove()
       d3.select(".povertyChart").remove()
@@ -3150,7 +3150,7 @@ typeSVG.append("g")
      .enter()
      .append("rect")
      .on("mouseover", function(d,i,j){
-      console.log(methdumper[i][j], "yep")
+      console.log(methdumper, methdumper[i][j], d, i, j)
       tooltipBars.show(d)
       })
      .on("mouseout", function(d){
