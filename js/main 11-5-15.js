@@ -1721,7 +1721,7 @@ function callback(error, na, borders){
     .data(topojson.feature(na, na.objects.na).features)
     .enter().append("path")
       .attr("d", path)
-      .attr("class", function (d){
+/*      .attr("class", function (d){
         console.log(d)
         return "x"
         //return d["gu_a3"]
@@ -1730,7 +1730,7 @@ function callback(error, na, borders){
         console.log(d)
         return "y"
        // return d.postal
-      })
+      })*/
       .on("mouseover", function(d){
          if (view == "States"){statez(d);}}) //stateTool.show()
       .on("mouseout", function(d){stateTool.hide()})
@@ -3804,7 +3804,8 @@ function exDrawLinesOver(data, base){
 
   var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
-  .offset([50, 50])
+  .style("left", (d3.event.pageX) + "px")     
+  .style("top", (d3.event.pageY - 28) + "px");    
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d.total_waste) + " " + d.units + " to "+ d.name +"</span>";
   })
