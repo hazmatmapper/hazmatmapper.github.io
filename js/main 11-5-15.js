@@ -3805,7 +3805,7 @@ function exDrawLinesOver(data, base){
   var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .style("left", (d3.event.pageX) + "px")     
-  .style("top", (d3.event.pageY - 28) + "px");    
+  .style("top", (d3.event.pageY - 28) + "px")   
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d.total_waste) + " " + d.units + " to "+ d.name +"</span>";
   })
