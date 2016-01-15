@@ -1215,7 +1215,7 @@ function choropleth(data){
       .duration(2500)
       .style({"fill": function(d){
         console.log(d)
-          var ddd = d.postal
+          var ddd = d.properties.postal
           if (chorodump[ddd]){  
             return color(chorodump[ddd]) 
           } else{
