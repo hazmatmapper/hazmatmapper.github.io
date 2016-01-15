@@ -1703,13 +1703,13 @@ function callback(error, na, borders){
 
   var name, sum, length;
 
-/*  stateTool = d3.tip()
+  stateTool = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white'>" + name + ": " + sum + " " + phaseformat[phase] + " at " + length+ " sites</span>";
   })
-  svg.call(stateTool)*/
+  svg.call(stateTool)
 
   b.selectAll('path')
     .data(topojson.feature(borders, borders.objects.borders).features)
@@ -1721,8 +1721,13 @@ function callback(error, na, borders){
     .data(topojson.feature(na, na.objects.na).features)
     .enter().append("path")
       .attr("d", path)
-      .attr("class", "feature")
-      .attr("id", function (d){return fips[d.id].abbreviation})
+      .attr("class", function (d){
+        return d["gu_a3"]
+      })
+      .attr("id", function (d){
+        //console.log(d)
+        return d.postal
+      })
       .on("mouseover", function(d){
          if (view == "States"){statez(d);}}) //stateTool.show()
      // .on("mouseout", function(d){stateTool.hide()})
