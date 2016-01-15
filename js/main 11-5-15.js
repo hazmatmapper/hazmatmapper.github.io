@@ -1210,7 +1210,7 @@ function choropleth(data){
     .domain([min, max])
     .range(['#bdd7e7','#6baed6','#3182bd','#08519c']);
 
-    d3.selectAll(".feature")
+    d3.selectAll(".USA")
       .transition()
       .duration(2500)
       .style({"fill": function(d){
@@ -1309,14 +1309,14 @@ var partition = d3.layout.partition()
     //.size([width, height])
     .value(function(d) { return d.size; });
 
-/*var tip = d3.tip()
+var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
-Isvg.call(tip)*/
+Isvg.call(tip)
 
 //d3.json("/js/thing.json", function(error, root) {
 //  var nodes = partition.nodes(root);
@@ -1729,8 +1729,8 @@ function callback(error, na, borders){
         return d.postal
       })
       .on("mouseover", function(d){
-         if (view == "States"){statez(d);}}) //stateTool.show()
-     // .on("mouseout", function(d){stateTool.hide()})
+         if (view == "States"){statez(d);}}) stateTool.show()
+      .on("mouseout", function(d){stateTool.hide()})
   
  /* c.selectAll('path')
     .data(topojson.feature(can, can.objects.provinces).features)
@@ -2139,14 +2139,14 @@ function importers(data){
     .domain([min+1, max]) //don't want min to be 0
     .range([15, 70])}
   
-/*  tooltip = d3.tip()
+  tooltip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
 
-  svg.call(tooltip)*/
+  svg.call(tooltip)
 
   imp = svg.append("g")
   imp.selectAll("circle")
@@ -2160,11 +2160,11 @@ function importers(data){
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     //.attr("id", function(d){return data.state})
     .on("mouseover", function(d){
-     // tooltip.show(d);
+      tooltip.show(d);
       highlight(d);
     })
     .on("mouseout", function(d){
-      //tooltip.hide(d);
+      tooltip.hide(d);
       dehighlight(d);
       //drawLinesOut(d);
     })
@@ -2401,14 +2401,14 @@ function drawLinesOver(data, base){
     .domain([globalMin, globalMax]) 
     .range([2, 10])
 
-/*  var tooltipFlow = d3.tip()
+  var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='text-size:8px'>" + format(d.total_waste) + " " + d.units + " from "+ d.name +"</span>";
   })
 
-  svg.call(tooltipFlow)*/
+  svg.call(tooltipFlow)
 
   //based on: http://bl.ocks.org/enoex/6201948
   arcGroup = svg.append('g');
@@ -2478,8 +2478,8 @@ var pathArcs = arcGroup.selectAll(".arc")
             .style("stroke", "#f33")
             .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
             .style('cursor', "pointer")
-           // .on("mouseover", function(d) {tooltipFlow.show(d)}) //
-           // .on("mouseout", function(d) {tooltipFlow.hide(d)})
+            .on("mouseover", function(d) {tooltipFlow.show(d)}) //
+            .on("mouseout", function(d) {tooltipFlow.hide(d)})
                 //'stroke-dasharray': '5'
             .call(lineTransition); 
 if (zoomed){
@@ -2800,11 +2800,11 @@ for (var j=0; j<latlongdump.length; j++){
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
     .on("mouseover", function(d){
-      //tooltip.show(d);
+      tooltip.show(d);
       highlight(d);
     }) 
     .on("mouseout", function(d){
-     // tooltip.hide(d);
+      tooltip.hide(d);
       dehighlight(d)}) 
     .on("click", function(d){drawLinesOut(d);importThis(d); clickyCheck = d.id; clicky(d); updateDisplay(d)})
   exp.selectAll("circle")
@@ -2969,24 +2969,24 @@ d3.select(".importCharts")
 
   var barPadding = 6;
 
-/*  var tooltipBars = d3.tip()
+  var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
- yearSVG.call(tooltipBars)*/
+ yearSVG.call(tooltipBars)
 
   yearSVG.selectAll("rect")
      .data(yearskey)
      .enter()
      .append("rect")
     .on("mouseover", function(d){
-   // tooltipBars.show(d)
+    tooltipBars.show(d)
    })
     .on("mouseout", function(d){
-  //  tooltipBars.hide(d)
+    tooltipBars.hide(d)
    })
     .attr("y", function(d, i) {
         return i * (height / yearskey.length);
@@ -3065,14 +3065,14 @@ typeSVG =  d3.select(".typeChart").append("svg")
   .attr("width", width)
   .attr("height", height);
 
-/*var tooltipBars = d3.tip()
+var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
-typeSVG.call(tooltipBars)*/
+typeSVG.call(tooltipBars)
 
 
 
@@ -3150,10 +3150,10 @@ typeSVG.append("g")
      .enter()
      .append("rect")
      .on("mouseover", function(d){
-      //tooltipBars.show(d)
+      tooltipBars.show(d)
       })
      .on("mouseout", function(d){
-      //tooltipBars.hide(d)
+      tooltipBars.hide(d)
       })
      .attr("y", function(d, i, j) {
         return j * barheight;
@@ -3597,14 +3597,14 @@ typeSVG =  d3.select(".typeChart").append("svg")
   .attr("width", width)
   .attr("height", height);
 
-/*var tooltipBars = d3.tip()
+var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
-typeSVG.call(tooltipBars)*/
+typeSVG.call(tooltipBars)
 
 typedump.sort(function(a,b){return b[1]-a[1]})
 var maxi = d3.max(typedump, function(d){return d[1]})
@@ -3631,10 +3631,10 @@ typeSVG.selectAll("rect")
      .enter()
      .append("rect")
       .on("mouseover", function(d){
-    //  tooltipBars.show(d[1])
+      tooltipBars.show(d[1])
       })
       .on("mouseout", function(d){
-    //  tooltipBars.hide(d)
+      tooltipBars.hide(d)
       })
      .attr("y", function(d, i) {
         return i * barheight;
@@ -3699,7 +3699,7 @@ typeSVG.selectAll("text")
     .range([0,width]);
 
   var barPadding = 6;
-/*
+
  var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
@@ -3707,17 +3707,17 @@ typeSVG.selectAll("text")
     return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
- yearSVG.call(tooltipBars)*/
+ yearSVG.call(tooltipBars)
 
   yearSVG.selectAll("rect")
      .data(yearskey)
      .enter()
      .append("rect")
     .on("mouseover", function(d){
-   // tooltipBars.show(d)
+    tooltipBars.show(d)
    })
     .on("mouseout", function(d){
-  //  tooltipBars.hide(d)
+    tooltipBars.hide(d)
    })
     .attr("y", function(d, i) {
         return i * (height / yearskey.length);
@@ -3799,14 +3799,14 @@ function exDrawLinesOver(data, base){
     .domain([exGlobalMin, exGlobalMax]) 
     .range([2, 10])
 
-/*  var tooltipFlow = d3.tip()
+  var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d.total_waste) + " " + d.units + " to "+ d.name +"</span>";
   })
 
-  svg.call(tooltipFlow)*/
+  svg.call(tooltipFlow)
 
   //based on: http://bl.ocks.org/enoex/6201948
 
@@ -3878,8 +3878,8 @@ var pathArcs = arcGroup.selectAll(".arc")
             .style('stroke', "#f33")
             .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
             .style('cursor', "pointer")
-           // .on("mouseover", function(d) {tooltipFlow.show(d)})//
-           // .on("mouseout", function(d) {tooltipFlow.hide(d)})
+            .on("mouseover", function(d) {tooltipFlow.show(d)})//
+            .on("mouseout", function(d) {tooltipFlow.hide(d)})
             .call(lineTransition); 
 if (zoomed){
   arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
