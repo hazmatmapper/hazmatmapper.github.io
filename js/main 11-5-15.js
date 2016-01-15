@@ -1721,7 +1721,7 @@ function callback(error, na, borders){
     .data(topojson.feature(na, na.objects.na).features)
     .enter().append("path")
       .attr("d", path)
-     .attr("class", "USA")
+      .attr("class", "USA")
       .attr("id", function (d){
         console.log(d)
         return "y"
