@@ -3029,7 +3029,8 @@ var height = lambdaNOPX/(10/typedump.length)
 //height min  = lambdaNOPX/5
 //height = lanox * 1.5 / 1/length
 
-var barheight = height/typedump.length
+var barheight = (height/typedump.length < 30) ? 30: height/typedump.length
+//var voteable = (age < 18) ? "Too young":"Old enough"
 
 //implement control for svgbuild here
 labelView = ["Type", "Disposal Method", "None"]
