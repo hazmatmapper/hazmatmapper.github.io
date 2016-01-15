@@ -1722,10 +1722,11 @@ function callback(error, na, borders){
     .enter().append("path")
       .attr("d", path)
       .attr("class", function (d){
+        console.log(d)
         return d["gu_a3"]
       })
       .attr("id", function (d){
-        //console.log(d)
+        console.log(d)
         return d.postal
       })
       .on("mouseover", function(d){
