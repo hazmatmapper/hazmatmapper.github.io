@@ -3149,7 +3149,7 @@ typeSVG.append("g")
      .enter()
      .append("rect")
      .on("mouseover", function(d,i,j){
-      console.log(methdumper[i][j])
+      console.log(methdumper[i][j], "yep")
       tooltipBars.show(d)
       })
      .on("mouseout", function(d){
