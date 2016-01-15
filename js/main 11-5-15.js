@@ -1692,10 +1692,10 @@ b = svg.append("g")
 
 
 queue()
-  .defer(d3.json, "data/na.json")
+  .defer(d3.json, "data/new jsons/na.json")
  // .defer(d3.json, "data/canada.json")
  // .defer(d3.json, "data/mex008.json")
-  .defer(d3.json, "data/borders.json")
+  .defer(d3.json, "data/new jsons/borders.json")
   .await(callback);
 
 function callback(error, na, borders){
