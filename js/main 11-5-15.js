@@ -1721,16 +1721,12 @@ function callback(error, na, borders){
     .data(topojson.feature(na, na.objects.na).features)
     .enter().append("path")
       .attr("d", path)
-/*      .attr("class", function (d){
-        console.log(d)
-        return "x"
-        //return d["gu_a3"]
-      })
+     .attr("class", "USA")
       .attr("id", function (d){
         console.log(d)
         return "y"
        // return d.postal
-      })*/
+      })
       .on("mouseover", function(d){
          if (view == "States"){statez(d);}}) //stateTool.show()
       .on("mouseout", function(d){stateTool.hide()})
