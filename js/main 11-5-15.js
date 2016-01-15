@@ -1725,7 +1725,6 @@ function callback(error, na, borders){
         return d.gu_a3
       })
       .attr("id", function (d){
-        console.log(d)
         return d.postal
       })
       .on("mouseover", function (d){
@@ -2679,7 +2678,7 @@ for (var o =0; o<latlongdump.length; o++) {
 for (var key in mexfips){database.push({"label": mexfips[key].FIELD2, "value": mexfips[key].FIELD2, "category": "Places"})}
 for (var key in fips){database.push({"label": fips[key].name, "value": fips[key].abbreviation, "category": "Places"})}
 
-/*$.widget( "custom.catcomplete", $.ui.autocomplete, {
+$.widget( "custom.catcomplete", $.ui.autocomplete, {
     _create: function() {
       this._super();
       this.widget().menu( "option", "items", "> :not(.ui-autocomplete-category)" );
@@ -2763,7 +2762,7 @@ $("#tags").keypress(function(e) {
         return false;
     }
 });
-  });*/
+  });
 
 //do sort and rank here
 latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
@@ -3150,7 +3149,7 @@ typeSVG.append("g")
      .enter()
      .append("rect")
      .on("mouseover", function(d){
-      console.log(methdumper)
+      console.log(methdumper[i][j])
       tooltipBars.show(d)
       })
      .on("mouseout", function(d){

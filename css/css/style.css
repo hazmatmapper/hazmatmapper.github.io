@@ -113,9 +113,6 @@ font-family: 'Rockwell';
   background: #252525;
 }
 
-
-
-
 .CAN, .MEX {
     fill: #cccccc;
   stroke:white;
@@ -268,21 +265,21 @@ font-family: 'Rockwell';
   left:0%;
   width:33%;
   text-align: center;
-  background: yellow;
+  background-color: yellow;
 }
 .triDemos{
   position:absolute;
   left:34%;
   width:33%;
   text-align: center;
-  background: red;
+  background-color: red;
 }
 .triManifests{
     position:relative;
   left:68%;
   width:33%;
   text-align: center;
-  background: green;
+  background-color: green;
 
 }
 .povertyChart{
