@@ -3068,7 +3068,7 @@ var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d, i, j) {
-    return "<span style='color:white' style='font-size:4px'>"+ mgmtTypeKey[j][i] + " " + format(d) + " " + data.units +"</span>";
+    return "<span style='color:white' style='font-size:4px'>"+ mgmtTypeKey[methdumper[j][i]] + ": " + format(d) + " " + data.units +"</span>";
   })
 
 typeSVG.call(tooltipBars)
