@@ -2962,7 +2962,7 @@ d3.select(".importCharts")
     .attr("width", width)
     .attr("height", height);
 
-  var x = d3.scale.sqrt()
+  var x = d3.scale.linear()
     .domain([maxi, mini])
     .range([0,width]);
 
@@ -3024,7 +3024,8 @@ d3.select(".typeChart").append("div")
 typedump = data.types
 
 var width = lambdaplusNOPX -10
-var height = lambdaNOPX / (10/typedump.length)
+var height = lambdaNOPX / 2
+
 
 //height max = lambdaNOPX*1.5 = lambdaNOPX*27
 //height min  = lambdaNOPX/5
@@ -3117,11 +3118,10 @@ summy = d3.sum(typesum)
 maxi = d3.max(typemax)
 mini = d3.min(typemin)
 
-//here, cut typedump/work to 6?
 
-var x = d3.scale.sqrt()
+var x = d3.scale.linear()
     .domain([summy, mini])
-    .range([0, width]);
+    .range([10, width]);
 /*
   var y = d3.scale.linear()
     .domain([0, 100])
@@ -3149,7 +3149,6 @@ typeSVG.append("g")
      .enter()
      .append("rect")
      .on("mouseover", function(d,i,j){
-      console.log(methdumper, methdumper[j][i], d, i, j)
       tooltipBarsType.show(d, i, j)
       })
      .on("mouseout", function(d){
@@ -3300,7 +3299,9 @@ povSVG.selectAll("rect")
      .enter()
      .append("rect")
      .attr("y", function(d, i) {
-        return i * (height / povdump.length);
+      if (i == 2 || i == 4 || i == 6){
+        return 1.25 * i * (height / povdump.length);}
+      else {return i * (height / povdump.length)}
      })
      .attr("x", function(d) { return 0; })
      .attr("height", height / povdump.length - barPadding).transition().duration(750)
@@ -3327,7 +3328,7 @@ povSVG.selectAll("text")
          })
          .attr("y", function(d, i) {
             if (i == 2 || i == 4 || i == 6){
-              return i * (height / povdump.length) + (height / povdump.length - barPadding*4) / 1.1;
+              return 1.25* i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.1;
             }
             else{
               return i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.1;
