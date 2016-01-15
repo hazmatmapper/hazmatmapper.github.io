@@ -1729,7 +1729,7 @@ function callback(error, na, borders){
         return d.postal
       })
       .on("mouseover", function(d){
-         if (view == "States"){statez(d);}}) stateTool.show()
+         if (view == "States"){statez(d);}}) //stateTool.show()
       .on("mouseout", function(d){stateTool.hide()})
   
  /* c.selectAll('path')
