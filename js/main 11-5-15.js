@@ -1200,7 +1200,6 @@ function choropleth(data){
     for (var i = 0; i<data.length; i++){
       chorodump[data[i]["key"]] = data[i]["values"]["total_waste"]
     } 
-    console.log(chorodump)
 
     //chorodump.sort(function(a,b) {return b.total_waste-a.total_waste;})
     var max = d3.max(d3.values(chorodump));
@@ -1214,7 +1213,6 @@ function choropleth(data){
       .transition()
       .duration(2500)
       .style({"fill": function(d){
-        console.log(d)
           var ddd = d.properties.postal
           if (chorodump[ddd]){  
             return color(chorodump[ddd]) 
@@ -1729,7 +1727,7 @@ function callback(error, na, borders){
         return d.properties.postal
       })
       .on("mouseover", function (d){
-         if (view == "States" && d.gu_a3 == "USA"){statez(d);}}) //stateTool.show()
+         if (view == "States" && d.properties.gu_a3 == "USA"){statez(d);}}) //stateTool.show()
       .on("mouseout", function(d){stateTool.hide()})
   
  /* c.selectAll('path')
@@ -1748,9 +1746,8 @@ function callback(error, na, borders){
 
 
   function statez(data){
-
-   name = d.gn_name
-   ddd = d.postal
+   name = data.properties.gn_name
+   ddd = data.properties.postal
    sum = chorodump[ddd]
    if (sum == undefined){sum = 0}
    sum = format(sum)

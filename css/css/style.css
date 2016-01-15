@@ -165,13 +165,13 @@ font-family: 'Rockwell';
   top: 5vh;
   height: 75%;
   width: 90%;
-  border: solid 1px yellow;
   background-color: #252525;
   ;
 }
 .aboutText{
   color:white;
-font-family: 'Rockwell';
+  font-size: 12px;
+  font-family: 'Rockwell';
 }
 .exitAbout{
   cursor: pointer;
