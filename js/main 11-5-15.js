@@ -2939,7 +2939,7 @@ d3.select(".importCharts")
     .attr("class", "yearChart")
 
   var width = lambdaplusNOPX - 10
-  var height = lambdaNOPX/2
+  var height = lambdaNOPX
 
 
   //do work here getting imports by year for importer
@@ -3024,7 +3024,7 @@ d3.select(".typeChart").append("div")
 typedump = data.types
 
 var width = lambdaplusNOPX -10
-var height = lambdaNOPX / 2
+var height = lambdaNOPX
 
 
 //height max = lambdaNOPX*1.5 = lambdaNOPX*27
@@ -3120,8 +3120,8 @@ mini = d3.min(typemin)
 
 
 var x = d3.scale.linear()
-    .domain([summy, mini])
-    .range([10, width]);
+    .domain([summy, mini*2])
+    .range([0, width]);
 /*
   var y = d3.scale.linear()
     .domain([0, 100])
@@ -3298,11 +3298,7 @@ povSVG.selectAll("rect")
      .data(povdump)
      .enter()
      .append("rect")
-     .attr("y", function(d, i) {
-      if (i == 2 || i == 4 || i == 6){
-        return 1.25 * i * (height / povdump.length);}
-      else {return i * (height / povdump.length)}
-     })
+     .attr("y", function(d, i) {return i * (height / povdump.length)})
      .attr("x", function(d) { return 0; })
      .attr("height", height / povdump.length - barPadding).transition().duration(750)
      .attr("width", function(d){ return width - x(d)}).transition().duration(750)
@@ -3327,12 +3323,7 @@ povSVG.selectAll("text")
             }
          })
          .attr("y", function(d, i) {
-            if (i == 2 || i == 4 || i == 6){
-              return 1.25* i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.1;
-            }
-            else{
               return i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.1;
-            }
          })
          .attr("x", function(d) { return 16; })
          .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
