@@ -1722,7 +1722,6 @@ function callback(error, na, borders){
     .enter().append("path")
       .attr("d", path)
       .attr("class", function (d){
-        console.log(d)
         return d.properties.gu_a3
       })
       .attr("id", function (d){
@@ -3069,7 +3068,7 @@ var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d, i, j) {
-    return "<span style='color:white' style='font-size:4px'>"+ methyTypeCheck[j][i] + " " + format(d) + " " + data.units +"</span>";
+    return "<span style='color:white' style='font-size:4px'>"+ mgmtTypeKey[j][i] + " " + format(d) + " " + data.units +"</span>";
   })
 
 typeSVG.call(tooltipBars)
