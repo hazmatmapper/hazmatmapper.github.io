@@ -116,7 +116,7 @@ font-family: 'Rockwell';
 
 
 
-.exporter{
+.CAN, .MEX {
     fill: #cccccc;
   stroke:white;
     stroke-width: .5px;
@@ -151,7 +151,7 @@ font-family: 'Rockwell';
 
 
 
-.feature {
+.USA {
   fill: #cccccc;
   stroke: white;
   stroke-width: .5px;
@@ -267,19 +267,22 @@ font-family: 'Rockwell';
     position:absolute;
   left:0%;
   width:33%;
-  text-align: center
+  text-align: center;
+  background: yellow;
 }
 .triDemos{
   position:absolute;
   left:34%;
   width:33%;
-  text-align: center
+  text-align: center;
+  background: red;
 }
 .triManifests{
     position:relative;
   left:68%;
   width:33%;
-  text-align: center
+  text-align: center;
+  background: green;
 
 }
 .povertyChart{

@@ -1214,7 +1214,7 @@ function choropleth(data){
       .transition()
       .duration(2500)
       .style({"fill": function(d){
-          var ddd = fips[d.id].abbreviation
+          var ddd = d.postal
           if (chorodump[ddd]){  
             return color(chorodump[ddd]) 
           } else{
@@ -1721,14 +1721,15 @@ function callback(error, na, borders){
     .data(topojson.feature(na, na.objects.na).features)
     .enter().append("path")
       .attr("d", path)
-      .attr("class", "USA")
+      .attr("class", function (d){
+        return d.gu_a3
+      })
       .attr("id", function (d){
         console.log(d)
-        return "y"
-       // return d.postal
+        return d.postal
       })
-      .on("mouseover", function(d){
-         if (view == "States"){statez(d);}}) //stateTool.show()
+      .on("mouseover", function (d){
+         if (view == "States" && d.gu_a3 == "USA"){statez(d);}}) //stateTool.show()
       .on("mouseout", function(d){stateTool.hide()})
   
  /* c.selectAll('path')
@@ -1748,12 +1749,12 @@ function callback(error, na, borders){
 
   function statez(data){
 
-   name = fips[data.id].name
-   ddd = fips[data.id].abbreviation
+   name = d.gn_name
+   ddd = d.postal
    sum = chorodump[ddd]
    if (sum == undefined){sum = 0}
    sum = format(sum)
-   length = siteCount[fips[data.id].abbreviation]
+   length = siteCount[ddd]
    if (length == undefined){length = 0}
   
 }
@@ -3149,6 +3150,7 @@ typeSVG.append("g")
      .enter()
      .append("rect")
      .on("mouseover", function(d){
+      console.log(methdumper)
       tooltipBars.show(d)
       })
      .on("mouseout", function(d){
@@ -3306,7 +3308,7 @@ povSVG.selectAll("rect")
      .attr("width", function(d){ return width - x(d)}).transition().duration(750)
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
-        if (i == 0 || i == 2) {
+        if (i == 0 || i == 2 || i == 4) {
           return document.getElementsByClassName(data.id)["importer"].style.fill
         }
         else {
@@ -3402,7 +3404,7 @@ rSVG.selectAll("rect")
      .attr("width", function(d){ return width-x(d)}).transition().duration(750)
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
-        if (i == 0 || i == 2) {
+        if (i == 0 || i == 2 || i == 4) {
           return document.getElementsByClassName(data.id)["importer"].style.fill
         }
         else {
