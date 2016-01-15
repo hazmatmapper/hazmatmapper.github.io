@@ -1692,13 +1692,13 @@ b = svg.append("g")
 
 
 queue()
-  .defer(d3.json, "data/us2.json")
-  .defer(d3.json, "data/canada.json")
-  .defer(d3.json, "data/mex008.json")
+  .defer(d3.json, "data/na.json")
+ // .defer(d3.json, "data/canada.json")
+ // .defer(d3.json, "data/mex008.json")
   .defer(d3.json, "data/borders.json")
   .await(callback);
 
-function callback(error, us, can, mex, borders){
+function callback(error, na, borders){
   svg.call(zoom);
 
   var name, sum, length;
@@ -1718,7 +1718,7 @@ function callback(error, us, can, mex, borders){
       .attr("class", "borders")
 
   u.selectAll("path")
-    .data(topojson.feature(us, us.objects.states).features)
+    .data(topojson.feature(na, na.objects.na).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "feature")
@@ -1727,7 +1727,7 @@ function callback(error, us, can, mex, borders){
          if (view == "States"){statez(d);}}) //stateTool.show()
      // .on("mouseout", function(d){stateTool.hide()})
   
-  c.selectAll('path')
+ /* c.selectAll('path')
     .data(topojson.feature(can, can.objects.provinces).features)
     .enter().append("path")
       .attr("d", path)
@@ -1739,7 +1739,7 @@ function callback(error, us, can, mex, borders){
     .enter().append("path")
       .attr("d", path)
       .attr("class", "exporter")
-     // .attr("id", function (d){console.log(d); return mexfips[d.properties.id]["FIELD2"]})
+     // .attr("id", function (d){console.log(d); return mexfips[d.properties.id]["FIELD2"]})*/
 
 
   function statez(data){
