@@ -3064,14 +3064,14 @@ typeSVG =  d3.select(".typeChart").append("svg")
   .attr("width", width)
   .attr("height", height);
 
-var tooltipBars = d3.tip()
+var tooltipBarsType = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
   .html(function(d, i, j) {
     return "<span style='color:white' style='font-size:4px'>"+ mgmtTypeKey[methdumper[j][i]] + ": " + format(d) + " " + data.units +"</span>";
   })
 
-typeSVG.call(tooltipBars)
+typeSVG.call(tooltipBarsType)
 
 
 
@@ -3121,7 +3121,7 @@ mini = d3.min(typemin)
 
 var x = d3.scale.sqrt()
     .domain([summy, mini])
-    .range([10, width]);
+    .range([0, width]);
 /*
   var y = d3.scale.linear()
     .domain([0, 100])

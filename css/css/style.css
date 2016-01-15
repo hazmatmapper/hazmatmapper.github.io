@@ -148,12 +148,7 @@ font-family: 'Rockwell';
 
 
 
-#importer{
-  /*stroke: red;
-  stroke-width:.5px;*/
-  cursor: pointer;
-}
-#exporter{
+#importer, #exporter{
   /*stroke: red;
   stroke-width:.5px;*/
   cursor: pointer;
@@ -245,7 +240,7 @@ font-family: 'Rockwell';
   color: #c2c2c2;
   text-decoration: underline;
 }
-.infoLabels:hover{
+.triImports:hover, .triDemos:hover, .triManifests:hover{
   text-decoration: none;
   cursor: pointer;
 }
@@ -254,7 +249,6 @@ font-family: 'Rockwell';
   left:0%;
   width:33%;
   text-align: center;
-  background-color: yellow;
   text-decoration: underline;
 }
 .triDemos{
@@ -262,7 +256,6 @@ font-family: 'Rockwell';
   left:34%;
   width:33%;
   text-align: center;
-  background-color: red;
   text-decoration: underline;
 }
 .triManifests{
@@ -270,7 +263,6 @@ font-family: 'Rockwell';
   left:68%;
   width:33%;
   text-align: center;
-  background-color: green;
   text-decoration: underline;
 
 }
@@ -288,11 +280,7 @@ font-family: 'Rockwell';
   position: absolute;
   top:45%;
 }
-.raceLabel{
-  font-size: 12px;
-  color: #c2c2c2;
-}
-.povLabel{
+.raceLabel, .povLabel{
   font-size: 12px;
   color: #c2c2c2;
 }
