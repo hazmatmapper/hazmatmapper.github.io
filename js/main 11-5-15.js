@@ -3148,7 +3148,7 @@ typeSVG.append("g")
      .data(function(d,i,j){return d})
      .enter()
      .append("rect")
-     .on("mouseover", function(d){
+     .on("mouseover", function(d,i,j){
       console.log(methdumper[i][j])
       tooltipBars.show(d)
       })
