@@ -2887,7 +2887,7 @@ function viewer(data, latlongdump){
   //set-up triptych: 1 (default) loads import; 2 loads demographicCharts; 3 loads manifests
   d3.select(".viewerText").append("div").attr("class", "triptych")
   d3.select(".triptych").append("div").attr("class", "triImports")
-    .text("Imports")
+    .text("Imports").attr("class", "infoLabels")
     .on("click", function(){
       d3.select(".importCharts").remove()
       d3.select(".povertyChart").remove()
@@ -2895,7 +2895,7 @@ function viewer(data, latlongdump){
       importCharts(data);
     })
   d3.select(".triptych").append("div").attr("class", "triDemos")
-    .text("Demographics")
+    .text("Demographics").attr("class", "infoLabels")
     .on("click", function(){
       d3.select(".importCharts").remove()
       d3.select(".povertyChart").remove()
@@ -2903,7 +2903,7 @@ function viewer(data, latlongdump){
       demographicCharts(data);
     })
   d3.select(".triptych").append("div").attr("class", "triManifests")
-    .text("Manifests")
+    .text("Manifests").attr("class", "infoLabels")
     .on("click", function(){
       d3.select(".importCharts").remove()
       d3.select(".povertyChart").remove()
@@ -3191,7 +3191,7 @@ typeSVG.append("g")
      .data(function(d,i,j){return d})
      .enter()
      .append("text")
-      .text(function(d, i, j) { return d})
+      .text(function(d, i, j) { return mgmtTypeKey[d]})
       .attr("y", function(d, i, j) {
       return j * barheight + (barheight - barPadding) / 1.1;
       })
@@ -3804,7 +3804,7 @@ function exDrawLinesOver(data, base){
 
   var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
-  .offset([0, 0])
+  .offset([0-d3.event.pageX, 0-d3.event.pageY])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d.total_waste) + " " + d.units + " to "+ d.name +"</span>";
   })

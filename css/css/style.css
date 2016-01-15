@@ -256,9 +256,11 @@ font-family: 'Rockwell';
 .triptych{
   font-size: 10px;
   color: #c2c2c2;
+  text-decoration: underline;
 }
 .triptych:hover{
   cursor: pointer;
+  text-decoration: none;
 }
 .triImports{
     position:absolute;
