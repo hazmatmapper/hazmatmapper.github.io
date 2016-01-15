@@ -1368,17 +1368,17 @@ Isvg.selectAll("rects")
       } else {siteViewerHelp = false} //tip.show(d); 
       if (filterDomain == "Type" && d.depth == 1 || filterDomain == "Site" && d.depth == 2 || filterDomain == "Disposal" && d.depth == 2 || filterDomain == undefined && d.depth == 2){
         var show = {"name": UNtypeKey[d.name]}
-        //tip.show(show)
+        tip.show(show)
       }
       if (filterDomain == "Type" && d.depth == 2 || filterDomain == "Site" && d.depth == 3 || filterDomain == "Disposal" && d.depth == 1 || filterDomain == undefined && d.depth == 3){
         var show = {"name": mgmtTypeKey[d.name]}
-        //tip.show(show)
+        tip.show(show)
       }
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
       icicleHighlight(d);
       //};  
     })
-    .on("mouseout", function(d){ icicleDehighlight(d); ;}) //tip.hide(d)
+    .on("mouseout", function(d){ icicleDehighlight(d); tip.hide(d);}) //
     .on('click', function(d){
 /*      if (filterDomain ==  "DisposalMethod" && d.depth == 1 || filterDomain ==  "Type" && d.depth == 2 || filterDomain ==  "Site" && d.depth == 3 || filterDomain ==  undefined && d.depth == 3){
         //show details of method here
@@ -3804,7 +3804,7 @@ function exDrawLinesOver(data, base){
 
   var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
-  .offset([0-d3.event.pageX, 0-d3.event.pageY])
+  .offset([50, 50])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d.total_waste) + " " + d.units + " to "+ d.name +"</span>";
   })
