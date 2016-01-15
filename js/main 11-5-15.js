@@ -765,7 +765,7 @@ labels.append("input")
       if (d == "Sites") {
         $("#tags").catcomplete( "enable" );
         mapDisplay()
-        svg.selectAll(".feature").transition().duration(2500).style({"fill": '#cccccc'}).style("stroke", "white");
+        svg.selectAll(".USA").transition().duration(2500).style({"fill": '#cccccc'}).style("stroke", "white");
         filterform.selectAll("input").property("disabled", false)
         showform.selectAll("input").property("disabled", false)
         filterform.selectAll("#Site").property("checked", true)
@@ -1200,7 +1200,7 @@ function choropleth(data){
     for (var i = 0; i<data.length; i++){
       chorodump[data[i]["key"]] = data[i]["values"]["total_waste"]
     } 
-
+    console.log(chorodump)
 
     //chorodump.sort(function(a,b) {return b.total_waste-a.total_waste;})
     var max = d3.max(d3.values(chorodump));
@@ -1214,6 +1214,7 @@ function choropleth(data){
       .transition()
       .duration(2500)
       .style({"fill": function(d){
+        console.log(d)
           var ddd = d.postal
           if (chorodump[ddd]){  
             return color(chorodump[ddd]) 
@@ -3031,7 +3032,7 @@ var height = lambdaNOPX
 //height min  = lambdaNOPX/5
 //height = lanox * 1.5 / 1/length
 
-var barheight = height/typedump.length
+var barheight = height/yearskey.length
 
 //implement control for svgbuild here
 labelView = ["Type", "Disposal Method", "None"]
