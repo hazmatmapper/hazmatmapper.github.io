@@ -3022,14 +3022,14 @@ d3.select(".typeChart").append("div")
 typedump = data.types
 
 var width = lambdaplusNOPX -10
-var height = lambdaNOPX/(10/typedump.length)
+var height = lambdaNOPX/(10/typedump.length) //define variably as below
 
 
 //height max = lambdaNOPX*1.5 = lambdaNOPX*27
 //height min  = lambdaNOPX/5
 //height = lanox * 1.5 / 1/length
 
-var barheight = (height/typedump.length < 30) ? 30: height/typedump.length
+var barheight = (height/typedump.length < 30) ? 30:height/typedump.length
 //var voteable = (age < 18) ? "Too young":"Old enough"
 
 //implement control for svgbuild here
