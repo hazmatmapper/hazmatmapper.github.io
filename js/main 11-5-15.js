@@ -3029,7 +3029,7 @@ var height = lambdaNOPX/(10/typedump.length)
 //height min  = lambdaNOPX/5
 //height = lanox * 1.5 / 1/length
 
-var barheight = height/yearskey.length
+var barheight = height/typedump.length
 
 //implement control for svgbuild here
 labelView = ["Type", "Disposal Method", "None"]
