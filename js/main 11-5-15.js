@@ -3022,7 +3022,7 @@ d3.select(".typeChart").append("div")
 typedump = data.types
 
 var width = lambdaplusNOPX -10
-var height = lambdaNOPX
+var height = lambdaNOPX/(10/typedump.length)
 
 
 //height max = lambdaNOPX*1.5 = lambdaNOPX*27
@@ -3163,7 +3163,7 @@ typeSVG.append("g")
         else {lastStart =0; return 0;} //return last d + spacing 
       })
      .attr("height", barheight - barPadding).transition().duration(750)
-     .attr("width", function(d, i, j){if (width -x(d)<10){return 10} else{return width - x(d)}})
+     .attr("width", function(d, i, j){if (width -x(d)<5){return 5} else{return width - x(d)}})
      .transition().duration(750)
      //.attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i, j) {
