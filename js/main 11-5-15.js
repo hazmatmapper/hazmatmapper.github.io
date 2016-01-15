@@ -3118,7 +3118,7 @@ mini = d3.min(typemin)
 
 
 var x = d3.scale.linear()
-    .domain([summy, mini*2])
+    .domain([summy, mini])
     .range([0, width]);
 /*
   var y = d3.scale.linear()
@@ -3163,7 +3163,7 @@ typeSVG.append("g")
         else {lastStart =0; return 0;} //return last d + spacing 
       })
      .attr("height", barheight - barPadding).transition().duration(750)
-     .attr("width", function(d, i, j){return width - x(d)})
+     .attr("width", function(d, i, j){if (width -x(d)<10){return 10} else{return width - x(d)}})
      .transition().duration(750)
      //.attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i, j) {
