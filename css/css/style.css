@@ -234,22 +234,18 @@ font-family: 'Rockwell';
   font-size: 10px;
   color: #e8e8e8;
 }
-
-.infoLabels{
-    font-size: 10px;
-  color: #c2c2c2;
-  text-decoration: underline;
-}
 .triImports:hover, .triDemos:hover, .triManifests:hover{
   text-decoration: none;
   cursor: pointer;
 }
 .triImports{
-    position:absolute;
+  position:absolute;
   left:0%;
   width:33%;
   text-align: center;
   text-decoration: underline;
+  font-size: 10px;
+  color: #c2c2c2;
 }
 .triDemos{
   position:absolute;
@@ -257,14 +253,17 @@ font-family: 'Rockwell';
   width:33%;
   text-align: center;
   text-decoration: underline;
+  font-size: 10px;
+  color: #c2c2c2;
 }
 .triManifests{
-    position:relative;
+  position:relative;
   left:68%;
   width:33%;
   text-align: center;
   text-decoration: underline;
-
+  font-size: 10px;
+  color: #c2c2c2;
 }
 .povertyChart{
   border: none;

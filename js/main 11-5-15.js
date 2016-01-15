@@ -3150,10 +3150,10 @@ typeSVG.append("g")
      .append("rect")
      .on("mouseover", function(d,i,j){
       console.log(methdumper, methdumper[j][i], d, i, j)
-      tooltipBars.show(d, i, j)
+      tooltipBarsType.show(d, i, j)
       })
      .on("mouseout", function(d){
-      tooltipBars.hide(d, i, j)
+      tooltipBarsType.hide(d, i, j)
       })
      .attr("y", function(d, i, j) {
         return j * barheight;
@@ -3327,10 +3327,10 @@ povSVG.selectAll("text")
          })
          .attr("y", function(d, i) {
             if (i == 2 || i == 4 || i == 6){
-              return i * (height / povdump.length) + (height / povdump.length - barPadding*2) / 1.1;
+              return i * (height / povdump.length) + (height / povdump.length - barPadding*4) / 1.1;
             }
             else{
-              return i * (height / povdump.length) + (height / povdump.length - barPadding*2) / 1.1;
+              return i * (height / povdump.length) + (height / povdump.length - barPadding) / 1.1;
             }
          })
          .attr("x", function(d) { return 16; })
