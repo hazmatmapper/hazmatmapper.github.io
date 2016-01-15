@@ -113,11 +113,10 @@ font-family: 'Rockwell';
   background: #252525;
 }
 
-.CAN{
+.CAN, .MEX, .USA{
   fill: #cccccc;
   stroke:white;
   stroke-width: .5px;
-  fill-opacity: 1;
   cursor: pointer;
 }
 
@@ -145,16 +144,6 @@ font-family: 'Rockwell';
   border: solid yellow 2px;
   cursor: pointer;
 }
-
-
-
-.USA {
-  fill: #cccccc;
-  stroke: white;
-  stroke-width: .5px;
-  cursor: pointer;
-}
-
 
 
 
@@ -266,6 +255,7 @@ font-family: 'Rockwell';
   width:33%;
   text-align: center;
   background-color: yellow;
+  text-decoration: underline;
 }
 .triDemos{
   position:absolute;
@@ -273,6 +263,7 @@ font-family: 'Rockwell';
   width:33%;
   text-align: center;
   background-color: red;
+  text-decoration: underline;
 }
 .triManifests{
     position:relative;
@@ -280,6 +271,7 @@ font-family: 'Rockwell';
   width:33%;
   text-align: center;
   background-color: green;
+  text-decoration: underline;
 
 }
 .povertyChart{

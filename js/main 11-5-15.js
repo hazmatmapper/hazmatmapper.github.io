@@ -3068,8 +3068,8 @@ typeSVG =  d3.select(".typeChart").append("svg")
 var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
-  .html(function(d) {
-    return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
+  .html(function(d, i, j) {
+    return "<span style='color:white' style='font-size:4px'>"+ methyTypeCheck[j][i] + " " + format(d) + " " + data.units +"</span>";
   })
 
 typeSVG.call(tooltipBars)
@@ -3150,11 +3150,11 @@ typeSVG.append("g")
      .enter()
      .append("rect")
      .on("mouseover", function(d,i,j){
-      console.log(methdumper, methdumper[i][j], d, i, j)
-      tooltipBars.show(d)
+      console.log(methdumper, methdumper[j][i], d, i, j)
+      tooltipBars.show(d, i, j)
       })
      .on("mouseout", function(d){
-      tooltipBars.hide(d)
+      tooltipBars.hide(d, i, j)
       })
      .attr("y", function(d, i, j) {
         return j * barheight;
