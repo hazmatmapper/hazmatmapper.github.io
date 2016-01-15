@@ -1723,11 +1723,11 @@ function callback(error, na, borders){
       .attr("d", path)
       .attr("class", function (d){
         console.log(d)
-        return d["gu_a3"]
+        //return d["gu_a3"]
       })
       .attr("id", function (d){
         console.log(d)
-        return d.postal
+       // return d.postal
       })
       .on("mouseover", function(d){
          if (view == "States"){statez(d);}}) //stateTool.show()
