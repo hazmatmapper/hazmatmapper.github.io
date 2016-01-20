@@ -4,11 +4,13 @@ body {
   background-color: white;
   max-width: 100%;
   overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 html {
   max-width: 100%;
   overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 a{
@@ -117,7 +119,6 @@ font-family: 'Rockwell';
   fill: #cccccc;
   stroke:white;
   stroke-width: .5px;
-  cursor: pointer;
 }
 
 .borders{
@@ -277,20 +278,17 @@ font-family: 'Rockwell';
 }
 .typeChart{
   position: absolute;
-  top:45%;
+  top:60%;
 }
 .raceLabel, .povLabel{
   font-size: 12px;
   color: #c2c2c2;
 }
-/*.Manifests{
-  text-align: left;
-    font-size: 16px;
-  color: #c2c2c2;
-  border: none;
-  width:50%;
-  height: 30%;
-}*/
+div.manifests, div.typeChart, div.povertyChart {
+  height: 400px;    
+  overflow: auto;
+  overflow-x:hidden;
+}
 
 
 
@@ -353,15 +351,6 @@ h3{
   height:35%;
 }
 
-.zoomBox{
-  stroke: black;
-  stroke-width: 3px;
-  fill: none;
-}
-
-.zoomBox:hover{
-  cursor:pointer;
-}
 
 .background {
     fill: transparent;

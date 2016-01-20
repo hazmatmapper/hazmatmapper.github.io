@@ -22,7 +22,7 @@ var viewClickCheck = false
 var checker = false; //checks to see whether we've run initial data crunching, essentially
 var methyTypeCheck = "Type";
 var povSVG;
-var zoomed = false; //are we zoomed into rust belt?
+var zoomed = false;
 var firstTime = true, otherTimes = false, latlongGlobal, importByYearGlobal, exportByYearGlobal, filter, currentYears, siteCount=[];
 var exporterInfo;
 var icicleDump;
@@ -64,359 +64,6 @@ var lambdaPlus = "300px"; lambdaplusNOPX = 300
 var chorodump;
 var format = d3.format("0,000");
 var phaseformat = {"Solids": "kg", "Liquids": "liters"}
-
-var mexfips = {
-  "0": {
-    "FIELD2":"Aguascalientes",
-    "FIELD3":""
-  },
-  "1": {
-    "FIELD2":"Baja California",
-    "FIELD3":""
-  },
-  "2": {
-    "FIELD2":"Baja California Sur",
-    "FIELD3":""
-  },
-  "3": {
-    "FIELD2":"Campeche",
-    "FIELD3":""
-  },
-  "5": {
-    "FIELD2":"Chiapas",
-    "FIELD3":""
-  },
-  "6": {
-    "FIELD2":"Chihuahua",
-    "FIELD3":""
-  },
-  "7": {
-    "FIELD2":"Coahuila",
-    "FIELD3":""
-  },
-  "8": {
-    "FIELD2":"Colima",
-    "FIELD3":""
-  },
-  "9": {
-    "FIELD2":"Distrito Federal",
-    "FIELD3":""
-  },
-  "13": {
-    "FIELD2":"Durango",
-    "FIELD3":""
-  },
-  "9": {
-    "FIELD2":"Guanajuato",
-    "FIELD3":""
-  },
-  "10": {
-    "FIELD2":"Guerrero",
-    "FIELD3":""
-  },
-  "14": {
-    "FIELD2":"Hidalgo State, Mexico",
-    "FIELD3":""
-  },
-  "15": {
-    "FIELD2":"Jalisco",
-    "FIELD3":""
-  },
-  "21": {
-    "FIELD2":"Mexico State, Mexico",
-    "FIELD3":""
-  },
-  "18": {
-    "FIELD2":"Michoacan",
-    "FIELD3":""
-  },
-  "16": {
-    "FIELD2":"Morelos",
-    "FIELD3":""
-  },
-  "17": {
-    "FIELD2":"Nayarit",
-    "FIELD3":""
-  },
-  "18": {
-    "FIELD2":"Nuevo Leon",
-    "FIELD3":""
-  },
-  "26": {
-    "FIELD2":"Oaxaca",
-    "FIELD3":""
-  },
-  "20": {
-    "FIELD2":"Puebla",
-    "FIELD3":""
-  },
-  "22": {
-    "FIELD2":"Quer�taro",
-    "FIELD3":""
-  },
-  "23": {
-    "FIELD2":"Quintana Roo",
-    "FIELD3":""
-  },
-  "25": {
-    "FIELD2":"San Luis Potosi",
-    "FIELD3":""
-  },
-  "24": {
-    "FIELD2":"Sinaloa",
-    "FIELD3":""
-  },
-  "28": {
-    "FIELD2":"Sonora",
-    "FIELD3":""
-  },
-  "27": {
-    "FIELD2":"Tabasco",
-    "FIELD3":""
-  },
-  "29": {
-    "FIELD2":"Tamaulipas",
-    "FIELD3":""
-  },
-  "31": {
-    "FIELD2":"Tlaxcala",
-    "FIELD3":""
-  },
-  "30": {
-    "FIELD2":"Veracruz",
-    "FIELD3":""
-  },
-  "32": {
-    "FIELD2":"Yucat�n",
-    "FIELD3":""
-  },
-  "33": {
-    "FIELD2":"Zacatecas",
-    "FIELD3":""
-  }
-}
-var fips= {
-  "2": {
-    "name": "Alaska",
-    "abbreviation": "AK"
-  },
-  "1": {
-    "name": "Alabama",
-    "abbreviation": "AL"
-  },
-  "5": {
-    "name": "Arkansas",
-    "abbreviation": "AR"
-  },
-  "60": {
-    "name": "American Samoa",
-    "abbreviation": "AS"
-  },
-  "4": {
-    "name": "Arizona",
-    "abbreviation": "AZ"
-  },
-  "6": {
-    "name": "California",
-    "abbreviation": "CA"
-  },
-  "8": {
-    "name": "Colorado",
-    "abbreviation": "CO"
-  },
-  "9": {
-    "name": "Connecticut",
-    "abbreviation": "CT"
-  },
-  "11": {
-    "name": "District of Columbia",
-    "abbreviation": "DC"
-  },
-  "10": {
-    "name": "Delaware",
-    "abbreviation": "DE"
-  },
-  "12": {
-    "name": "Florida",
-    "abbreviation": "FL"
-  },
-  "13": {
-    "name": "Georgia",
-    "abbreviation": "GA"
-  },
-  "66": {
-    "name": "Guam",
-    "abbreviation": "GU"
-  },
-  "15": {
-    "name": "Hawaii",
-    "abbreviation": "HI"
-  },
-  "19": {
-    "name": "Iowa",
-    "abbreviation": "IA"
-  },
-  "16": {
-    "name": "Idaho",
-    "abbreviation": "ID"
-  },
-  "17": {
-    "name": "Illinois",
-    "abbreviation": "IL"
-  },
-  "18": {
-    "name": "Indiana",
-    "abbreviation": "IN"
-  },
-  "20": {
-    "name": "Kansas",
-    "abbreviation": "KS"
-  },
-  "21": {
-    "name": "Kentucky",
-    "abbreviation": "KY"
-  },
-  "22": {
-    "name": "Louisiana",
-    "abbreviation": "LA"
-  },
-  "25": {
-    "name": "Massachusetts",
-    "abbreviation": "MA"
-  },
-  "24": {
-    "name": "Maryland",
-    "abbreviation": "MD"
-  },
-  "23": {
-    "name": "Maine",
-    "abbreviation": "ME"
-  },
-  "26": {
-    "name": "Michigan",
-    "abbreviation": "MI"
-  },
-  "27": {
-    "name": "Minnesota",
-    "abbreviation": "MN"
-  },
-  "29": {
-    "name": "Missouri",
-    "abbreviation": "MO"
-  },
-  "28": {
-    "name": "Mississippi",
-    "abbreviation": "MS"
-  },
-  "30": {
-    "name": "Montana",
-    "abbreviation": "MT"
-  },
-  "37": {
-    "name": "North Carolina",
-    "abbreviation": "NC"
-  },
-  "38": {
-    "name": "North Dakota",
-    "abbreviation": "ND"
-  },
-  "31": {
-    "name": "Nebraska",
-    "abbreviation": "NE"
-  },
-  "33": {
-    "name": "New Hampshire",
-    "abbreviation": "NH"
-  },
-  "34": {
-    "name": "New Jersey",
-    "abbreviation": "NJ"
-  },
-  "35": {
-    "name": "New Mexico",
-    "abbreviation": "NM"
-  },
-  "32": {
-    "name": "Nevada",
-    "abbreviation": "NV"
-  },
-  "36": {
-    "name": "New York",
-    "abbreviation": "NY"
-  },
-  "39": {
-    "name": "Ohio",
-    "abbreviation": "OH"
-  },
-  "40": {
-    "name": "Oklahoma",
-    "abbreviation": "OK"
-  },
-  "41": {
-    "name": "Oregon",
-    "abbreviation": "OR"
-  },
-  "42": {
-    "name": "Pennsylvania",
-    "abbreviation": "PA"
-  },
-  "72": {
-    "name": "Puerto Rico",
-    "abbreviation": "PR"
-  },
-  "44": {
-    "name": "Rhode Island",
-    "abbreviation": "RI"
-  },
-  "45": {
-    "name": "South Carolina",
-    "abbreviation": "SC"
-  },
-  "46": {
-    "name": "South Dakota",
-    "abbreviation": "SD"
-  },
-  "47": {
-    "name": "Tennessee",
-    "abbreviation": "TN"
-  },
-  "48": {
-    "name": "Texas",
-    "abbreviation": "TX"
-  },
-  "49": {
-    "name": "Utah",
-    "abbreviation": "UT"
-  },
-  "51": {
-    "name": "Virginia",
-    "abbreviation": "VA"
-  },
-  "78": {
-    "name": "Virgin Islands",
-    "abbreviation": "VI"
-  },
-  "50": {
-    "name": "Vermont",
-    "abbreviation": "VT"
-  },
-  "53": {
-    "name": "Washington",
-    "abbreviation": "WA"
-  },
-  "55": {
-    "name": "Wisconsin",
-    "abbreviation": "WI"
-  },
-  "54": {
-    "name": "West Virginia",
-    "abbreviation": "WV"
-  },
-  "56": {
-    "name": "Wyoming",
-    "abbreviation": "WY"
-  }
-}
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -785,18 +432,9 @@ labels.append("input")
   labels.append("label").text(function(d) {return d;})
   labels.append("text").html("&nbsp")
 
-
-/*  var form = d3.select("title").append("form")
-  form.append("input")
-    .attr({
-      type: 'search',
-      value: "Nonoperational"
-    })
-  form.append("label").text("search")*/
-
   //filter types selector
   filterTypes = ["Site", "Disposal", "Type"]
-  var show = d3.select(".filterSelector").append("div").attr("class", "filterDiv").html("<span class='viewerCategory'>Filter by:</span>")
+  var show = d3.select(".filterSelector").append("div").attr("class", "filterDiv").html("<span class='viewerCategory'>Show by:</span>")
   var filterform = d3.select(".filterDiv").append("form"), j=0;
 
   var labelEnter = filterform.selectAll("span")
@@ -839,9 +477,21 @@ labels.append("input")
   labelEnter.append("label").text(function(d) {return d;})
   labelEnter.append("text").html("&nbsp")
 
+var coordinates;
+
+var explanations = {"infoDemo": "Race is measured as percent nonwhite for site's census tract. Poverty defined as percent living in poverty within past 12 months (census tract level)", "info2008": "We currently have no data for 2008"}
+
+var controlToolTips = d3.tip()
+  .attr('class', 'd3-tip')
+  .html(function(d,x,y) {
+    console.log(x,y)
+    return "<span style='left:"+x+"' style='top:"+y+"' style='color:white' style='font-size:4px'>" + explanations[d] + "</span>";
+  })
+
+svg.call(controlToolTips)
 
   filterTypes = ["None", "Poverty", "Race"]
-  var show = d3.select(".filterSelector").append("div").attr("class", "showDiv").html("<span class='viewerCategory'>Show:</span>")
+  var show = d3.select(".filterSelector").append("div").attr("class", "showDiv").html("<span class='viewerCategory'>Overlay:</span>")
   var showform = d3.select(".showDiv").append("form"), j=0;
 
   var labelEnter = showform.selectAll("span")
@@ -860,11 +510,18 @@ labels.append("input")
       shader(d);
     });
   labelEnter.append("label")
-        .html(function(d) {if (d == "Poverty" || d == "Race") {return d+" <img src='/data/icons/info.svg' height='12' width='12' id='infoDemo'>"} else {return d}})
+        .html(function(d) {if (d == "Poverty" || d == "Race") {return d+" <img src='/data/icons/info.svg' height='12' width='12' id='info"+d+"''>"} else {return d}})
   labelEnter.append("text").html("&nbsp")
-    d3.select("#infoDemo")
+    d3.selectAll("#infoRace, #infoPoverty")
       .on("mouseover", function(){
-        alert('yep')
+        coordinates = [0,0]
+        coordinates = d3.mouse(this);
+        var x = coordinates[0];
+        var y = coordinates[1];
+        controlToolTips.show("infoDemo", x, y)
+      })
+      .on("mouseout", function(){
+        controlToolTips.hide()
       })
 
 
@@ -919,14 +576,18 @@ labels.append("input")
       yearChange();
 
     })
-    var tooly
+
     labelEnter.append("label")
       .html(function(d) {if (d == "2008") {return d+" <img src='/data/icons/info.svg' height='12' width='12' id='info2008'>"} else {return d}})
     labelEnter.append("br")
     d3.select("#info2008")
       .on("mouseover", function(){
-        alert('yep')
+       controlToolTips.show("info2008")
       })
+      .on("mouseout", function(){
+        controlToolTips.hide()
+      })
+
   //these only run first time
   setMap();
   setData(phase); 
@@ -1439,9 +1100,9 @@ Isvg.selectAll("rects")
 });
 
 //construct x axis
-var site = "importers"
-var type = "types"
-var method = "methods"
+var site = "Importers"
+var type = "Waste types"
+var method = "Disposal methods"
 if (filterDomain == undefined){
   domain = site 
 } else if (filterDomain == "Site") {
@@ -1727,7 +1388,7 @@ function callback(error, na, borders){
         return d.properties.postal
       })
       .on("mouseover", function (d){
-         if (view == "States" && d.properties.gu_a3 == "USA"){statez(d);}}) //stateTool.show()
+         if (view == "States" && d.properties.gu_a3 == "USA"){statez(d);stateTool.show()}})
       .on("mouseout", function(d){stateTool.hide()})
   
  /* c.selectAll('path')
@@ -2573,29 +2234,19 @@ function clicky(data){
 function highlight(data){
 
   Isvg.selectAll("rect") 
-      .transition().duration(500) 
+    .transition().duration(500) 
     .style({"opacity": ".2"})
   Isvg.selectAll("."+data.id) 
-  .transition().duration(500) 
+    .transition().duration(500) 
     .style({"opacity": "1"});
-
-  if (zoomed == false){
-    svg.selectAll("circle")
+  
+  svg.selectAll("circle")
     .transition().duration(500) 
     .style({"opacity": ".2"})
-    svg.selectAll("."+data.id) 
+  svg.selectAll("."+data.id) 
     .transition().duration(500) 
     .style({"opacity": "1"})
-  } else {
-    svg.selectAll("circle") 
-    .style({"opacity": ".2"})
-    .transition().duration(500) 
-    svg.selectAll("."+data.id) 
-    .transition().duration(500) 
-    .style({"opacity": "1"})
-    //.style({"stroke": "yellow", "stroke-width": "1px", "opacity": "1"});
-  }
-};
+}
 
 function dehighlight(data){
   if (data.id == name){
@@ -2673,8 +2324,8 @@ for (var o =0; o<latlongdump.length; o++) {
 }
 
 //mexfips.forEach( function (d) {database.push(d.FIELD2)})
-for (var key in mexfips){database.push({"label": mexfips[key].FIELD2, "value": mexfips[key].FIELD2, "category": "Places"})}
-for (var key in fips){database.push({"label": fips[key].name, "value": fips[key].abbreviation, "category": "Places"})}
+//for (var key in mexfips){database.push({"label": mexfips[key].FIELD2, "value": mexfips[key].FIELD2, "category": "Places"})}
+//for (var key in fips){database.push({"label": fips[key].name, "value": fips[key].abbreviation, "category": "Places"})}
 
 $.widget( "custom.catcomplete", $.ui.autocomplete, {
     _create: function() {
@@ -2937,7 +2588,7 @@ d3.select(".importCharts")
     .attr("class", "yearChart")
 
   var width = lambdaplusNOPX - 10
-  var height = lambdaNOPX
+  var height = (height100-100)/4
 
 
   //do work here getting imports by year for importer
@@ -3022,14 +2673,14 @@ d3.select(".typeChart").append("div")
 typedump = data.types
 
 var width = lambdaplusNOPX -10
-var height = lambdaNOPX/(10/typedump.length) //define variably as below
+var height = (height100-100)/(20/typedump.length) //define variably as below
 
 
 //height max = lambdaNOPX*1.5 = lambdaNOPX*27
 //height min  = lambdaNOPX/5
 //height = lanox * 1.5 / 1/length
 
-var barheight = (height/typedump.length < 30) ? 30:height/typedump.length
+var barheight = (height/typedump.length < 15) ? 15:height/typedump.length
 //var voteable = (age < 18) ? "Too young":"Old enough"
 
 //implement control for svgbuild here
@@ -3228,7 +2879,7 @@ d3.select(".povertyChart").append("div")
   .html("<p>% in poverty near site")
 
 var width = lambdaplusNOPX - 10
-var height = lambdaNOPX
+var height = (height100-100)/4
 
   povSVG =  d3.select(".povertyChart").append("svg")
     .attr("width", width)
@@ -3449,22 +3100,22 @@ function manifestsCharts(data){
   d3.select(".viewerText").append("div").attr("class", "manifests")
 
 
-  d3.csv("data/manifests.csv", function(mandata) {
+  d3.csv("data/allforMans.csv", function(mandata) {
     manifestsdata = mandata.map(function(d) { return {
-      "siteID": d["siteID"], 
+      "siteID": d["epaNumber"], 
       "year": d["year"], 
       "filename": d["filename"], 
     }; });
 
-  //rollups
+
   d3.select(".manifests")
     .append('div')
-    .html("<br><span class = 'povLabel'>Available manifests for 2007-2012 </span>"); //could make it for only selected years...
+    .html("<br><span class = 'povLabel'>Manifests for 2007-2012*</span><br><span class = 'percentLabel'>*At this time, only some manifests for each site are available. Keep checking in.</span>"); //could make it for only selected years...
 
   for (a = 0; a<manifestsdata.length; a++){
     if (manifestsdata[a].siteID == data.id){
       //print year, file name
-      d3.select(".manifests").append('div').html("<a href='data/manifests/"+manifestsdata[a].year+"/"+manifestsdata[a].filename+".pdf"+"' target='_blank'>"+manifestsdata[a].filename+"</a>")
+      d3.select(".manifests").append('div').html("<a href='data/manifests/"+manifestsdata[a].filename+".pdf"+"' target='_blank'>"+manifestsdata[a].filename+"</a>")
     }
   }
 

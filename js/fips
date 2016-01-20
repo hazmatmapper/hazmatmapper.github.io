@@ -1,0 +1,352 @@
+var mexfips = {
+  "0": {
+    "FIELD2":"Aguascalientes",
+    "FIELD3":""
+  },
+  "1": {
+    "FIELD2":"Baja California",
+    "FIELD3":""
+  },
+  "2": {
+    "FIELD2":"Baja California Sur",
+    "FIELD3":""
+  },
+  "3": {
+    "FIELD2":"Campeche",
+    "FIELD3":""
+  },
+  "5": {
+    "FIELD2":"Chiapas",
+    "FIELD3":""
+  },
+  "6": {
+    "FIELD2":"Chihuahua",
+    "FIELD3":""
+  },
+  "7": {
+    "FIELD2":"Coahuila",
+    "FIELD3":""
+  },
+  "8": {
+    "FIELD2":"Colima",
+    "FIELD3":""
+  },
+  "9": {
+    "FIELD2":"Distrito Federal",
+    "FIELD3":""
+  },
+  "13": {
+    "FIELD2":"Durango",
+    "FIELD3":""
+  },
+  "9": {
+    "FIELD2":"Guanajuato",
+    "FIELD3":""
+  },
+  "10": {
+    "FIELD2":"Guerrero",
+    "FIELD3":""
+  },
+  "14": {
+    "FIELD2":"Hidalgo State, Mexico",
+    "FIELD3":""
+  },
+  "15": {
+    "FIELD2":"Jalisco",
+    "FIELD3":""
+  },
+  "21": {
+    "FIELD2":"Mexico State, Mexico",
+    "FIELD3":""
+  },
+  "18": {
+    "FIELD2":"Michoacan",
+    "FIELD3":""
+  },
+  "16": {
+    "FIELD2":"Morelos",
+    "FIELD3":""
+  },
+  "17": {
+    "FIELD2":"Nayarit",
+    "FIELD3":""
+  },
+  "18": {
+    "FIELD2":"Nuevo Leon",
+    "FIELD3":""
+  },
+  "26": {
+    "FIELD2":"Oaxaca",
+    "FIELD3":""
+  },
+  "20": {
+    "FIELD2":"Puebla",
+    "FIELD3":""
+  },
+  "22": {
+    "FIELD2":"Quer�taro",
+    "FIELD3":""
+  },
+  "23": {
+    "FIELD2":"Quintana Roo",
+    "FIELD3":""
+  },
+  "25": {
+    "FIELD2":"San Luis Potosi",
+    "FIELD3":""
+  },
+  "24": {
+    "FIELD2":"Sinaloa",
+    "FIELD3":""
+  },
+  "28": {
+    "FIELD2":"Sonora",
+    "FIELD3":""
+  },
+  "27": {
+    "FIELD2":"Tabasco",
+    "FIELD3":""
+  },
+  "29": {
+    "FIELD2":"Tamaulipas",
+    "FIELD3":""
+  },
+  "31": {
+    "FIELD2":"Tlaxcala",
+    "FIELD3":""
+  },
+  "30": {
+    "FIELD2":"Veracruz",
+    "FIELD3":""
+  },
+  "32": {
+    "FIELD2":"Yucat�n",
+    "FIELD3":""
+  },
+  "33": {
+    "FIELD2":"Zacatecas",
+    "FIELD3":""
+  }
+}
+var fips= {
+  "2": {
+    "name": "Alaska",
+    "abbreviation": "AK"
+  },
+  "1": {
+    "name": "Alabama",
+    "abbreviation": "AL"
+  },
+  "5": {
+    "name": "Arkansas",
+    "abbreviation": "AR"
+  },
+  "60": {
+    "name": "American Samoa",
+    "abbreviation": "AS"
+  },
+  "4": {
+    "name": "Arizona",
+    "abbreviation": "AZ"
+  },
+  "6": {
+    "name": "California",
+    "abbreviation": "CA"
+  },
+  "8": {
+    "name": "Colorado",
+    "abbreviation": "CO"
+  },
+  "9": {
+    "name": "Connecticut",
+    "abbreviation": "CT"
+  },
+  "11": {
+    "name": "District of Columbia",
+    "abbreviation": "DC"
+  },
+  "10": {
+    "name": "Delaware",
+    "abbreviation": "DE"
+  },
+  "12": {
+    "name": "Florida",
+    "abbreviation": "FL"
+  },
+  "13": {
+    "name": "Georgia",
+    "abbreviation": "GA"
+  },
+  "66": {
+    "name": "Guam",
+    "abbreviation": "GU"
+  },
+  "15": {
+    "name": "Hawaii",
+    "abbreviation": "HI"
+  },
+  "19": {
+    "name": "Iowa",
+    "abbreviation": "IA"
+  },
+  "16": {
+    "name": "Idaho",
+    "abbreviation": "ID"
+  },
+  "17": {
+    "name": "Illinois",
+    "abbreviation": "IL"
+  },
+  "18": {
+    "name": "Indiana",
+    "abbreviation": "IN"
+  },
+  "20": {
+    "name": "Kansas",
+    "abbreviation": "KS"
+  },
+  "21": {
+    "name": "Kentucky",
+    "abbreviation": "KY"
+  },
+  "22": {
+    "name": "Louisiana",
+    "abbreviation": "LA"
+  },
+  "25": {
+    "name": "Massachusetts",
+    "abbreviation": "MA"
+  },
+  "24": {
+    "name": "Maryland",
+    "abbreviation": "MD"
+  },
+  "23": {
+    "name": "Maine",
+    "abbreviation": "ME"
+  },
+  "26": {
+    "name": "Michigan",
+    "abbreviation": "MI"
+  },
+  "27": {
+    "name": "Minnesota",
+    "abbreviation": "MN"
+  },
+  "29": {
+    "name": "Missouri",
+    "abbreviation": "MO"
+  },
+  "28": {
+    "name": "Mississippi",
+    "abbreviation": "MS"
+  },
+  "30": {
+    "name": "Montana",
+    "abbreviation": "MT"
+  },
+  "37": {
+    "name": "North Carolina",
+    "abbreviation": "NC"
+  },
+  "38": {
+    "name": "North Dakota",
+    "abbreviation": "ND"
+  },
+  "31": {
+    "name": "Nebraska",
+    "abbreviation": "NE"
+  },
+  "33": {
+    "name": "New Hampshire",
+    "abbreviation": "NH"
+  },
+  "34": {
+    "name": "New Jersey",
+    "abbreviation": "NJ"
+  },
+  "35": {
+    "name": "New Mexico",
+    "abbreviation": "NM"
+  },
+  "32": {
+    "name": "Nevada",
+    "abbreviation": "NV"
+  },
+  "36": {
+    "name": "New York",
+    "abbreviation": "NY"
+  },
+  "39": {
+    "name": "Ohio",
+    "abbreviation": "OH"
+  },
+  "40": {
+    "name": "Oklahoma",
+    "abbreviation": "OK"
+  },
+  "41": {
+    "name": "Oregon",
+    "abbreviation": "OR"
+  },
+  "42": {
+    "name": "Pennsylvania",
+    "abbreviation": "PA"
+  },
+  "72": {
+    "name": "Puerto Rico",
+    "abbreviation": "PR"
+  },
+  "44": {
+    "name": "Rhode Island",
+    "abbreviation": "RI"
+  },
+  "45": {
+    "name": "South Carolina",
+    "abbreviation": "SC"
+  },
+  "46": {
+    "name": "South Dakota",
+    "abbreviation": "SD"
+  },
+  "47": {
+    "name": "Tennessee",
+    "abbreviation": "TN"
+  },
+  "48": {
+    "name": "Texas",
+    "abbreviation": "TX"
+  },
+  "49": {
+    "name": "Utah",
+    "abbreviation": "UT"
+  },
+  "51": {
+    "name": "Virginia",
+    "abbreviation": "VA"
+  },
+  "78": {
+    "name": "Virgin Islands",
+    "abbreviation": "VI"
+  },
+  "50": {
+    "name": "Vermont",
+    "abbreviation": "VT"
+  },
+  "53": {
+    "name": "Washington",
+    "abbreviation": "WA"
+  },
+  "55": {
+    "name": "Wisconsin",
+    "abbreviation": "WI"
+  },
+  "54": {
+    "name": "West Virginia",
+    "abbreviation": "WV"
+  },
+  "56": {
+    "name": "Wyoming",
+    "abbreviation": "WY"
+  }
+}
