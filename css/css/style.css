@@ -38,16 +38,16 @@ a{
 }
 .filterDiv{
   position: absolute;
-  width: 33%;
+  width: 100%;
 }
 .showDiv{
   position: absolute;
   width: 40%;
-  left:34%;
+  left:40%;
 }
 .yearDiv{
   position: relative;
-  left: 70%;
+  left: 0%;
   width: 33%;
 }
 /*this is the class for all of the filter buttons*/
@@ -68,14 +68,11 @@ label {
   position: absolute;
   width: 75%;
   color:white;
-font-family: 'Rockwell';
+  font-family: 'Rockwell';
   font-size: 10px;
 }
 .descriptions{
-  background: #252525;
   position:absolute;
-      border-radius: 2px;
-  padding: 2px;
 }
 
 .footer{
@@ -85,7 +82,7 @@ font-family: 'Rockwell';
   background-color: #252525;
   color: yellow;
   font-size:12px;
-    border-radius: 5px;
+  border-radius: 5px;
   padding: 5px;
 }
 .aboutFooter{
@@ -114,13 +111,16 @@ font-family: 'Rockwell';
   width: 95%;
   background: #252525;
 }
+.long{
+  width: 100%;
+  background-color:orange;
+}
 
 .CAN, .MEX, .USA{
   fill: #cccccc;
   stroke:white;
   stroke-width: .5px;
 }
-
 .borders{
   fill: none;
   stroke: black;
@@ -183,7 +183,7 @@ font-family: 'Rockwell';
 #resetter{
   position: absolute;
   top: 20px;
-  right: 160px
+  right: 150px
 }
 #resetter:hover{
   cursor:pointer;
