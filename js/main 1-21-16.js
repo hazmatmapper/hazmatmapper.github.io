@@ -464,16 +464,7 @@ d3.select(".barWrap")
   labelEnter.append("label").text(function(d) {return d;})
   labelEnter.append("text").html("&nbsp")
 
-var explanations = {"info2008": "We currently have no data for 2008"}
-
-var controlToolTips = d3.tip()
-  .attr('class', 'd3-tip')
-  .html(function(d) {
-    return "<span style='color:white' style='font-size:4px'>" + explanations[d] + "</span>";
-  })
-
-svg.call(controlToolTips)
-
+  //overlay
   filterTypes = ["None", "Poverty", "Race"]
   var show = d3.select(".filterSelector").append("div").attr("class", "showDiv").html("<span class='viewerCategory'>Overlay:</span>")
   var showform = d3.select(".showDiv").append("form"), j=0;
@@ -538,8 +529,15 @@ svg.call(controlToolTips)
       d3.selectAll("#exporters").transition().duration(1200).attr("r", 0).remove()
       otherTimes = true
       yearChange();
-
     })
+
+    var explanations = {"info2008": "We currently have no data for 2008"}
+    var controlToolTips = d3.tip()
+      .attr('class', 'd3-tip')
+      .html(function(d) {
+        return "<span style='color:white' style='font-size:4px'>" + explanations[d] + "</span>";
+    })
+    svg.call(controlToolTips)
 
     labelEnter.append("label")
       .html(function(d) {if (d == "2008") {return d+" <img src='/data/icons/info.svg' height='12' width='12' id='info2008'>"} else {return d}})
@@ -751,11 +749,12 @@ function shader(data){
 
     dump = [];
     for (var i = 0; i<latlongReset.length; i++){
-      dump[latlongReset[i]["id"]] = latlongReset[i][data] //sub thing here
+      if (latlongReset[i][data] != "-"){
+      dump[latlongReset[i]["id"]] = latlongReset[i][data]}
     } 
 
-    var max = d3.max(d3.values(dump));
-    var min = d3.min(d3.values(dump)); // need to do national calc, probably not zips
+    var max = d3.max(d3.values(dump), Number);
+    var min = d3.min(d3.values(dump), Number);
 
   var color = d3.scale.quantile()
     .domain([min, max])
@@ -888,36 +887,6 @@ function choropleth(data){
        .attr("fill", "white")
 } 
 
-
-
-/*function icicleAxis(){
-  //domain calculator
-var site = ["total", "importers"]
-var type = ["total", "types"]
-var method = ["total", "methods"]
-if (filterDomain == undefined){
-  domain = site 
-} else if (filterDomain == "Site") {
-  domain = site
-} else if (filterDomain == "Type") {
-  domain = type
-} else if (filterDomain == "DisposalMethod") {
-  domain = method
-}
-
-var yax  = d3.scale.ordinal()
-    .domain(domain)
-    .range([0, -50]);
-
-var yAxis = d3.svg.axis()
-    .scale(yax)
-    //.orient("left");
-IAsvg.append("g")
-      .attr("class", "axis")
-      .attr("transform", "translate("+10+","+10+")rotate(-90)")
-      .call(yAxis);
-}*/
-
 function icicle(data){
 var y = d3.scale.linear()
     .range([0, height100- 10-(2* (lambdaNOPX/1.25))]);
@@ -934,7 +903,8 @@ var partition = d3.layout.partition()
 
 var tip = d3.tip()
   .attr('class', 'd3-tip')
-  .offset([-10, 0])
+  .direction("s")
+  .offset([10, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
@@ -1086,82 +1056,9 @@ Isvg.append("g")
 Isvg.append("g")
       .attr("class", "y axis")
     .append("text")
-    .attr("transform", "translate("+80+","+lambdaNOPX/1.25+")rotate(-90)")
+    .attr("transform", "translate("+80+","+ (height100 - 2* (lambdaNOPX/1.25)+margin.bottom)/2+")rotate(-90)")
     .style("text-anchor", "middle")
     .text("Proportion of Total Waste")
-
-/*function clicked(d) {
-  if (document.getElementsByClassName(d.name)["importer"]){lastImporter = d.name; iceCheck = document.getElementsByClassName(d.name)["importer"].style["fill"]}
-  x.domain([d.x, d.x + d.dx]);
-  y.domain([d.y, 1]).range([d.y ? 20 : 0, lambdaNOPX/2 - margin.bottom]);
-
-
-
-  //reconstruct x axis
-var xdomain = d.value/sum
-var xscale = d3.scale.linear()
-    .domain([0, xdomain])
-    .range([10, width100-lambdaNOPX*2-15]);
-var xheight = (lambdaNOPX/2)-margin.bottom
-var xAxis = d3.svg.axis()
-    .scale(xscale)
-    .ticks(10)
-    .tickFormat(d3.format(".0%"))
-    .orient("bottom");
-
-Isvg.selectAll("g")
-    .remove()
-Isvg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0,"+xheight+")")
-      .call(xAxis)
-  .append("text")
-    .attr("y", margin.bottom+5)
-    .attr("x", (width100-lambdaNOPX*2)/2)
-    .style("text-anchor", "middle")
-    .text("Proportion of Total Waste");
-
-  Isvg.selectAll("rect")
-      .attr("x", function(d) { return x(d.x); })
-      .attr("y", function(d) { return y(d.y); })
-      .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
-      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); })
-
-//create temp domain for changing axis
-  //calculate range for axis based on depth
-  var range;
-  var display;
-  var boxy = parseInt(document.getElementsByClassName(d.name)[0].attributes[2].value)
-  var boxheight = parseInt(document.getElementsByClassName(d.name)[0].attributes[4].value)
-  var midpoint = (boxy+boxheight)/2
-  var height = lambdaNOPX/2
-  if (d.depth == 0) {range = [0, height/4.5, height*2/4.5, height*3/4.5]; display = domain; // remove viewer and lines
-    d3.select(".viewerText").remove()
-    d3.select(".povertyChart").remove()
-    d3.selectAll(".yearData").remove()
-    drawLinesOut()
-  }
-  if (d.depth == 1) {range = [0, midpoint, midpoint+boxheight, midpoint+(boxheight*2)]; display = domain}
-  if (d.depth == 2) {range = [0, midpoint, midpoint+boxheight]; display = [domain[1], domain[2], domain[3]]}
-  if (d.depth == 3) {range = [0, midpoint]; display = [domain[2], domain[3]]}
-
-  var yax  = d3.scale.ordinal()
-    .domain(display)
-    .range(range);
-
-  var yAxis = d3.svg.axis()
-    .scale(yax)
-    .orient("left");
-
-  IAsvg.selectAll("g")
-      .remove()
-  IAsvg.append("g")
-      .attr("class", "axis")
-      .attr("transform", "translate("+(width100-lambdaNOPX*2)/16+","+5+")")
-      .call(yAxis);
-  };*/
-
-
 };
 
 function icicleFilter(data){
@@ -1546,27 +1443,33 @@ d3.csv("data/completeDemographics.csv", function(povdata) { //move to top, embed
       "datasetTractRace": +d["datasetTractRace"],
     }; });
 
-  var povcensusDump = []
-  var racecensusDump = []
-    for (var i =0; i<povertydata.length-1; i++){
-      if (povertydata[i].receivingFacilityAddress === data.address){
-        povcensusDump.push(povertydata[i].povTractFinal)
-        povcensusDump.push(povertydata[i].datasetTractPov)
-        racecensusDump.push(povertydata[i].raceTractFinal)
-        racecensusDump.push(povertydata[i].datasetTractRace)
-      };
-    };
-
-  var povdump;
-  var racedump;
-  for (var i =0; i<povertydata.length-1; i++){
-      if (povertydata[i].receivingfacilityzipcode == data.zip){
-        povdump = [povertydata[i].zipPov, povertydata[i].datasetZipPov, povcensusDump[0], povcensusDump[1], povertydata[i].statePov, povertydata[i].datasetStatePov, povertydata[i].ntlPov]
-        racedump = [povertydata[i].zipRace, povertydata[i].datasetZipRace, racecensusDump[0], racecensusDump[1], povertydata[i].stateRace, povertydata[i].datasetStateRace, povertydata[i].ntlRace]
-      }
-    };
+for (var k = 0; k<latlongReset.length; k++){
+    for (var i =0; i<povdata.length; i++){
+      if (latlongReset[k].address == povdata[i].receivingFacilityAddress){
+        latlongReset[k]["Poverty"] = povdata[i].povTractFinal
+        latlongReset[k]["datasetTractPov"] = povdata[i].datasetTractPov
+        latlongReset[k]["Race"] = povdata[i].raceTractFinal
+        latlongReset[k]["datasetTractRace"] = povdata[i].datasetTractRace
+    } 
+  }
+}
+for (var k = 0; k<latlongReset.length; k++){
+    for (var i =0; i<povdata.length; i++){
+      if (latlongReset[k].zip == povdata[i].receivingfacilityzipcode){
+      latlongReset[k]["zipPov"] = povdata[i].zipPov
+      latlongReset[k]["statePov"] = povdata[i].statePov
+      latlongReset[k]["ntlPov"] = povdata[i].ntlPov
+      latlongReset[k]["datasetZipPov"] = povdata[i].datasetZipPov
+      latlongReset[k]["datasetStatePov"] = povdata[i].datasetStatePov
+      latlongReset[k]["zipRace"] = povdata[i].zipRace
+      latlongReset[k]["stateRace"] = povdata[i].stateRace
+      latlongReset[k]["ntlRace"] = povdata[i].ntlRace
+      latlongReset[k]["datasetZipRace"] = povdata[i].datasetZipRace
+      latlongReset[k]["datasetStateRace"] = povdata[i].datasetStateRace
+    } 
+  }
+}
   })
-console.log(latlongRdump)
 
 latlongRdump = latlongReset;
 
@@ -1739,7 +1642,7 @@ function drawLinesOver(data, base){
 
   var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
-  .offset([0, 0])
+  .direction('e')
   .html(function(d) {
     return "<span style='color:white' style='text-size:8px'>" + format(d.total_waste) + " " + d.units + " from "+ d.name +"</span>";
   })
@@ -2205,6 +2108,7 @@ d3.select(".viewerText")
 
   var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
+  .direction('e')
   .offset([0, 0])
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
@@ -2278,6 +2182,7 @@ typeSVG =  d3.select(".typeChart").append("svg")
 
 var tooltipBarsType = d3.tip()
   .attr('class', 'd3-tip')
+  .direction('e')
   .offset([0, 0])
   .html(function(d, i, j) {
     return "<span style='color:white' style='font-size:4px'>"+ mgmtTypeKey[methdumper[j][i]] + ": " + format(d) + " " + data.units +"</span>";
@@ -2389,50 +2294,12 @@ var width = lambdaplusNOPX - 10
 var height = (height100-100)/(20/7)
 var barheight = (height/7 < 15) ? 15:height/7
 
-  povSVG =  d3.select(".povertyChart").append("svg")
-    .attr("width", width)
-    .attr("height", height);
-//match zips
-  d3.csv("data/completeDemographics.csv", function(povdata) { //move to top, embed in site info so not loading every time?
-    povertydata = povdata.map(function(d) { return {
-      "receivingfacilityzipcode": d["receivingfacilityzipcode"], 
-      "zipPov": +d["zipPov"], 
-      "statePov": +d["statePov"], 
-      "ntlPov": +d["ntlPov"],
-      "datasetZipPov": +d["datasetZipPov"], 
-      "receivingFacilityAddress": d["receivingFacilityAddress"],
-      "povTractFinal": +d["povTractFinal"],
-      "datasetTractPov": +d["datasetTractPov"],
-      "datasetStatePov": +d["datasetStatePov"],
-      //race
-      "zipRace": +d["zipRace"],      
-      "stateRace": +d["stateRace"],
-      "ntlRace": +d["ntlRace"],
-      "datasetZipRace": +d["datasetZipRace"],
-      "datasetStateRace": +d["datasetStateRace"],
-      "raceTractFinal": +d["raceTractFinal"],
-      "datasetTractRace": +d["datasetTractRace"],
-    }; });
+povSVG =  d3.select(".povertyChart").append("svg")
+  .attr("width", width)
+  .attr("height", height);
 
-  var povcensusDump = []
-  var racecensusDump = []
-    for (var i =0; i<povertydata.length-1; i++){
-      if (povertydata[i].receivingFacilityAddress === data.address){
-        povcensusDump.push(povertydata[i].povTractFinal)
-        povcensusDump.push(povertydata[i].datasetTractPov)
-        racecensusDump.push(povertydata[i].raceTractFinal)
-        racecensusDump.push(povertydata[i].datasetTractRace)
-      };
-    };
-
-  var povdump;
-  var racedump;
-  for (var i =0; i<povertydata.length-1; i++){
-      if (povertydata[i].receivingfacilityzipcode == data.zip){
-        povdump = [povertydata[i].zipPov, povertydata[i].datasetZipPov, povcensusDump[0], povcensusDump[1], povertydata[i].statePov, povertydata[i].datasetStatePov, povertydata[i].ntlPov]
-        racedump = [povertydata[i].zipRace, povertydata[i].datasetZipRace, racecensusDump[0], racecensusDump[1], povertydata[i].stateRace, povertydata[i].datasetStateRace, povertydata[i].ntlRace]
-      }
-    }; 
+var  povdump = [data.zipPov, data.datasetZipPov, data.Poverty, data.datasetTractPov, data.statePov, data.datasetStatePov, data.ntlPov]
+var  racedump = [data.zipRace, data.datasetZipRace, data.Race, data.datasetTractRace, data.stateRace, data.datasetStateRace, data.ntlRace]
 
 var labels = ["Site zipcode", "Dataset average by zipcode", "Site census tract", "Dataset average by tract", "State average", "Dataset average by state", "National average"]
 
@@ -2511,7 +2378,7 @@ rSVG.selectAll("rect")
         }
      })
 rSVG.selectAll("text")
-         .data(povdump)
+         .data(racedump)
          .enter()
          .append("text")
          .text(function(d,i) {
@@ -2524,7 +2391,6 @@ rSVG.selectAll("text")
          })
          .attr("x", 0)
          .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
-  });
 }
 
 function manifestsCharts(data){
@@ -2608,44 +2474,6 @@ function exportViewer(data, latlongdump){
           })
         }
 function viewerHelp(data, latlongdump){
-/*  var names=[]
-  for (i=0;i<latlongdump.length;i++){names.push(latlongdump[i].name)}
-  z=JSON.stringify(names)
-  names=[]
-  for (i=0;i<latlongdump[0].types.length;i++){names.push(latlongdump[0].types[i])}
-  r=JSON.stringify(names)
-  
-  //sort data
-  //Largest chemical
-  // Create items array
-  latlongdump[0].types.sort(function(a,b) {return b.type-a.type;})
-  //console.log(latlongdump[0].types.type[1])
-  stuff=[]
-  for (var x=0;x<latlongdump.length;x++){
-  latlongdump[x].types.sort(function(a,b) {return b[1]-a[1];})
-  stuff.push(latlongdump[x].types[0])
-  }
-  stuff.sort(function(a,b){return b[1]-a[1]})
-  */
-  /*
-  data.types.sort(function(a, b)
-  {
-    return b[1] - a[1];
-  });
-
-  //biggest export partner
-  latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;})
-  */
-
-
-  //combine and rank
-  /*var ExportTypeSum = d3.nest()
-  .key(function(d) { return latlongdump[0].types; }) // set type as key
-  .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} })
-  .entries(data);*/
-
-
-
   d3.selectAll(".viewerText")
     .append("div")
     .style("width", "80%")
@@ -2655,17 +2483,100 @@ d3.select(".viewerText")
 .append("div")
     .html("<br><span class = 'povLabel'>Total imports and rank for selected year(s) </span><span class ='viewerData'><br>"+format(data.total_waste)+" "+data.units+"..........."+data.rank+"</span><p>");
 
-//exports by type
-d3.selectAll(".viewerText").append("div").attr("class", "typeChart");
+//exports by year
+d3.selectAll(".viewerText").append("div").attr("class", "importCharts");
+
+  d3.selectAll(".importCharts").append("div").attr("class", "yearData");
+  d3.select(".yearData").append("div")
+  .attr("class", "povLabel")
+  .html("Exports by year")
+
+  d3.select(".yearData").append("div")
+    .attr("class", "yearChart")
+
+  //do work here getting imports by year for exporter
+  var years= ["2007","2008","2009","2010","2011","2012"] 
+   var yearskey = {"2007":0,"2008":0,"2009":0,"2010":0,"2011":0,"2012":0}
+  for (var i = 0; i<exportByYearGlobal.length; i++){
+    if (exportByYearGlobal[i]["key"] == data.long){ //find matching importer
+          for (var k=0; k<exportByYearGlobal[i]["values"].length; k++){
+            x=exportByYearGlobal[i]["values"][k]["key"]
+              yearskey[x] = exportByYearGlobal[i]["values"][k]["values"]["total_waste"]
+            } 
+          }
+        }
+   yearskey = [yearskey["2007"],yearskey["2008"],yearskey["2009"],yearskey["2010"],yearskey["2011"],yearskey["2012"]]
+
+  var maxi = d3.max(yearskey, function(d){return d})
+  var mini = d3.min(yearskey, function(d){return d})
+  
+  var width = lambdaplusNOPX - 10
+  var height = (height100-100)/(20/yearskey.length)
+  var barheight = (height/yearskey.length < 15) ? 15:height/yearskey.length
+
+  yearSVG =  d3.select(".yearChart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  var x = d3.scale.linear()
+    .domain([maxi, mini])
+    .range([0,width]);
+
+  var barPadding = 15;
+
+ var tooltipBars = d3.tip()
+  .attr('class', 'd3-tip')
+  .direction('e')
+  .offset([0, 0])
+  .html(function(d) {
+    return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
+  })
+
+ yearSVG.call(tooltipBars)
+
+  yearSVG.selectAll("rect")
+     .data(yearskey)
+     .enter()
+     .append("rect")
+    .on("mouseover", function(d){
+    tooltipBars.show(d)
+   })
+    .on("mouseout", function(d){
+    tooltipBars.hide(d)
+   })
+    .attr("y", function(d, i) {
+        return i * barheight;
+     })
+     .attr("x", function(d) { return 0; })
+     .attr("height", barheight - barPadding).transition().duration(750)
+     .attr("width", function(d){ return width - x(d)}).transition().duration(750)
+     .attr("class", data.id)
+     .attr("fill", function(d) {return document.getElementsByClassName(data.id)[0].style.fill})
+
+  yearSVG.selectAll("text")
+     .data(yearskey)
+     .enter()
+     .append("text")
+     .text(function(d,i) {
+      return years[i]
+     })
+      .attr("y", function(d, i) {
+            return i * barheight + barheight - barPadding + 8;
+         })
+      .attr("x", 0)
+     .attr("class", "percentLabel")
+
+//exporter types
+d3.selectAll(".yearChart").append("div").attr("class", "typeChart");
+
+d3.select(".typeChart").append("div")
+  .attr("class", "povLabel")
+  .html("Exports by type for selected year(s)")
 
 typedump = []
 for (var e=0; e<data.types.length; e++){
   typedump[e] = [data.types[e].key,data.types[e].values.total_waste]
 }
-
-d3.select(".typeChart").append("div")
-  .attr("class", "povLabel")
-  .html("Exports by type for selected year(s)")
 
 var width = lambdaplusNOPX -10
 var height = (height100-100)/(20/typedump.length) //define variably as below
@@ -2678,6 +2589,7 @@ typeSVG =  d3.select(".typeChart").append("svg")
 var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
   .offset([0, 0])
+  .direction("e")
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
@@ -2688,7 +2600,7 @@ typedump.sort(function(a,b){return b[1]-a[1]})
 var maxi = d3.max(typedump, function(d){return d[1]})
 var mini = d3.min(typedump, function(d){return d[1]})
 
-var x = d3.scale.sqrt()
+var x = d3.scale.linear()
     .domain([maxi, mini])
     .range([0, width]);
 
@@ -2724,93 +2636,10 @@ typeSVG.selectAll("text")
             }
          })
          .attr("y", function(d, i) {
-            return i * barheight + (barheight - barPadding) / .6;
+            return i * barheight + barheight - barPadding + 8;
          })
          .attr("x", 0)
          .attr("class", "percentLabel")
-
-
-  d3.selectAll(".viewerText").append("div").attr("class", "yearData");
-  d3.select(".yearData").append("div")
-  .attr("class", "povLabel")
-  .html("Exports by year")
-
-  d3.select(".yearData").append("div")
-    .attr("class", "yearChart")
-
-  var width = lambdaplusNOPX - 10
-  var height = (height100-100)/4
-
-
-  //do work here getting imports by year for exporter
-  var years= ["2007","2008","2009","2010","2011","2012"] 
-   var yearskey = {"2007":0,"2008":0,"2009":0,"2010":0,"2011":0,"2012":0}
-  for (var i = 0; i<exportByYearGlobal.length; i++){
-    if (exportByYearGlobal[i]["key"] == data.long){ //find matching importer
-          for (var k=0; k<exportByYearGlobal[i]["values"].length; k++){
-            x=exportByYearGlobal[i]["values"][k]["key"]
-              yearskey[x] = exportByYearGlobal[i]["values"][k]["values"]["total_waste"]
-            } 
-          }
-        }
-   yearskey = [yearskey["2007"],yearskey["2008"],yearskey["2009"],yearskey["2010"],yearskey["2011"],yearskey["2012"]]
-
-  var maxi = d3.max(yearskey, function(d){return d})
-  var mini = d3.min(yearskey, function(d){return d})
-  
-  yearSVG =  d3.select(".yearChart").append("svg")
-    .attr("width", width)
-    .attr("height", height);
-
-  var x = d3.scale.sqrt()
-    .domain([maxi, mini])
-    .range([0,width]);
-
-  var barPadding = 12;
-
- var tooltipBars = d3.tip()
-  .attr('class', 'd3-tip')
-  .offset([0, 0])
-  .html(function(d) {
-    return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
-  })
-
- yearSVG.call(tooltipBars)
-
-  yearSVG.selectAll("rect")
-     .data(yearskey)
-     .enter()
-     .append("rect")
-    .on("mouseover", function(d){
-    tooltipBars.show(d)
-   })
-    .on("mouseout", function(d){
-    tooltipBars.hide(d)
-   })
-    .attr("y", function(d, i) {
-        return i * (height / yearskey.length);
-     })
-     .attr("x", function(d) { return 0; })
-     .attr("height", height / yearskey.length - barPadding).transition().duration(750)
-     .attr("width", function(d){ return width - x(d)}).transition().duration(750)
-     .attr("class", data.id)
-     .attr("fill", function(d) {return document.getElementsByClassName(data.id)[0].style.fill})
-
-
-
-  yearSVG.selectAll("text")
-     .data(yearskey)
-     .enter()
-     .append("text")
-     .text(function(d,i) {
-      return years[i]
-     })
-      .attr("y", function(d, i) {
-            return i * (height / yearskey.length) + (height / yearskey.length - barPadding) / .6;
-         })
-      .attr("x", 0)
-     .attr("class", "percentLabel")
-
 
 };
 };
@@ -2869,8 +2698,8 @@ function exDrawLinesOver(data, base){
 
   var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
-  .style("left", (d3.event.pageX) + "px")     
-  .style("top", (d3.event.pageY - 28) + "px")   
+  .offset([0,0])
+  .direction("e") 
   .html(function(d) {
     return "<span style='color:white' style='font-size:4px'>" + format(d.total_waste) + " " + d.units + " to "+ d.name +"</span>";
   })
@@ -3040,7 +2869,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
     d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": 5+lambdaNOPX/.85+"px"})
+        .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": (lambdaNOPX/.85)-5+"px"})
 
     var result = colorKey.filter(function( obj ) {return obj.name == data.name;});
     result = result[0];
