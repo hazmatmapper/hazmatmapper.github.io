@@ -313,7 +313,7 @@ function setControls(){
     .style({"position": "absolute", "top": height100 - 2* (lambdaNOPX/1.25), "height": 15, "width": lambda, "right": 110})
 */
   Isvg = d3.select(".barWrap").append("svg")
-    .style({ "position": "absolute", "top": 0, "height": height100 - 2* (lambdaNOPX/1.25)+margin.bottom, "width": lambdaNOPX+margin.bottom, "right": 0})
+    .style({ "position": "absolute", "top": 0, "height": height100 - 2* (lambdaNOPX/1.25)+margin.bottom, "width": lambdaNOPX+margin.bottom, "right": 0}) 
 
 var form = d3.select(".title").append("form")
 var labels = form.selectAll("span").data([0]).enter().append("span")
@@ -425,7 +425,7 @@ labels.append("input")
 d3.select(".barWrap")
     .append("div")
     .attr("class", "filterDiv")
-    .style("bottom", (height100/2)+"px")
+    .style("top", height100 - 2* (lambdaNOPX/1.25)+"px")
 
   filterTypes = ["Site", "Disposal", "Type"]
   var filterform = d3.select(".filterDiv").append("form"), j=0;
@@ -2144,10 +2144,6 @@ d3.select(".viewerText")
   d3.select(".yearData").append("div")
     .attr("class", "yearChart")
 
-  var width = lambdaplusNOPX - 10
-  var height = (height100-100)/4
-
-
   //do work here getting imports by year for importer
   var years= ["2007","2008","2009","2010","2011","2012"] 
    var yearskey = {"2007":0,"2008":0,"2009":0,"2010":0,"2011":0,"2012":0}
@@ -2164,6 +2160,9 @@ d3.select(".viewerText")
   var maxi = d3.max(yearskey, function(d){return d})
   var mini = d3.min(yearskey, function(d){return d})
   
+  var width = lambdaplusNOPX - 10
+  var height = (height100-100)/4
+
   yearSVG =  d3.select(".yearChart").append("svg")
     .attr("width", width)
     .attr("height", height);
@@ -2172,7 +2171,7 @@ d3.select(".viewerText")
     .domain([maxi, mini])
     .range([0,width]);
 
-  var barPadding = 12;
+  var barPadding = 15;
 
   var tooltipBars = d3.tip()
   .attr('class', 'd3-tip')
@@ -2181,7 +2180,9 @@ d3.select(".viewerText")
     return "<span style='color:white' style='font-size:4px'>" + format(d) + " " + data.units +"</span>";
   })
 
- yearSVG.call(tooltipBars)
+  yearSVG.call(tooltipBars)
+
+  var barheight = (height/6 < 15) ? 15:height/6
 
   yearSVG.selectAll("rect")
      .data(yearskey)
@@ -2194,10 +2195,10 @@ d3.select(".viewerText")
     tooltipBars.hide(d)
    })
     .attr("y", function(d, i) {
-        return i * (height / yearskey.length);
+        return i * barheight;
      })
      .attr("x", 0)
-     .attr("height", height / yearskey.length - barPadding).transition().duration(750)
+     .attr("height", barheight - barPadding).transition().duration(750)
      .attr("width", function(d){ return width - x(d)}).transition().duration(750)
      .attr("class", data.id)
      .attr("fill", function(d) {console.log(document.getElementsByClassName(data.id)); return document.getElementsByClassName(data.id)["importer"].style.fill})
@@ -2212,7 +2213,7 @@ d3.select(".viewerText")
       return years[i]
      })
       .attr("y", function(d, i) {
-            return i * (height / yearskey.length) + (height / yearskey.length - barPadding) / .6;
+            return i * barheight + barPadding;
          })
       .attr("x", 0)
       .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
@@ -2241,6 +2242,7 @@ var barheight = (height/typedump.length < 15) ? 15:height/typedump.length
 var j=0
 
 typeSVG =  d3.select(".typeChart").append("svg")
+  .attr("background-color", "red")
   .attr("width", width)
   .attr("height", height);
 
@@ -2334,7 +2336,7 @@ typeSVG.append("g")
      .append("text")
       .text(function(d) { return d[0]})
       .attr("y", function(d, i, j) {
-      return i * barheight + (barheight - barPadding) / .6;
+      return i * barheight + barheight - barPadding + 8;
       })
       .attr("x", function(d, i, j) {if (x(work[i][j-1])) {
         lastStart += spacing + width - x(work[i][j-1])
@@ -2928,7 +2930,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
   d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": 5+lambdaNOPX/.85+"px"})
+        .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.85+"px"})
 
   globalMean = sum/latlongReset.length
   exglobalMean = sum/exlatlongReset.length
