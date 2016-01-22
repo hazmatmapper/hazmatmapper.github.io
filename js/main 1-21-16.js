@@ -90,7 +90,7 @@ function initialize(){
   projection = d3.geo.albers()
   .center([9,43])
   //.rotate([100,0])
-  .scale((height100-lambdaNOPX-50)*2) //491, 578 . at 578, 750 is fine. at 491, not so much.
+  .scale((height100-lambdaNOPX-75)*2) //491, 578 . at 578, 750 is fine. at 491, not so much.
   .translate([(width100)/2, (height100-lambdaNOPX)/2]);
 
   function updateWindow(){
@@ -464,7 +464,7 @@ d3.select(".barWrap")
   labelEnter.append("label").text(function(d) {return d;})
   labelEnter.append("text").html("&nbsp")
 
-var explanations = {"infoDemo": "Race is measured as percent nonwhite for site's census tract. Poverty defined as percent living in poverty within past 12 months (census tract level)", "info2008": "We currently have no data for 2008"}
+var explanations = {"info2008": "We currently have no data for 2008"}
 
 var controlToolTips = d3.tip()
   .attr('class', 'd3-tip')
@@ -494,15 +494,8 @@ svg.call(controlToolTips)
       shader(d);
     });
   labelEnter.append("label")
-        .html(function(d) {if (d == "Poverty" || d == "Race") {return d+" <img src='/data/icons/info.svg' height='12' width='12' id='info"+d+"''>"} else {return d}})
+        .html(function(d) {return d})
   labelEnter.append("text").html("&nbsp")
-    d3.selectAll("#infoRace, #infoPoverty")
-      .on("mouseover", function(){
-        controlToolTips.show("infoDemo")
-      })
-      .on("mouseout", function(){
-        controlToolTips.hide()
-      })
 
 
   //filter years selector
@@ -775,7 +768,7 @@ function shader(data){
           return color(dump[d.id]) 
         }
       })
-    lookup = {"Race": "percent nonwhite at site zipcode", "Poverty": "percent in poverty at site zipcode"}
+    lookup = {"Race": "Race is defined as % minority (nonwhite, incl. Hispanic) in site's census tract. Data from 2012 American Community Survey 5 year estimate.", "Poverty": "Poverty defined as % in poverty within previous 12 months, at the census tract level.  Data from 2012 American Community Survey 5 year estimate."}
     d3.select(".descriptions").remove()
     d3.select(".barWrap")
       .append("div")
@@ -786,7 +779,7 @@ function shader(data){
     d3.select(".barWrap")
           .append("div")
           .attr("class", "mapDisplay")
-          .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": 5+lambdaNOPX/.85+"px"})
+          .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.85+"px"})
 
     var results = color.quantiles()
     
@@ -859,7 +852,7 @@ function choropleth(data){
     d3.select(".barWrap")
           .append("div")
           .attr("class", "mapDisplay")
-          .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": 5+lambdaNOPX/.85+"px"})
+          .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.85+"px"})
 
     var results = color.quantiles()
     
@@ -1508,7 +1501,7 @@ for (var j=0; j<latlongRdump.length; j++){
 if (firstTime) {latlongGlobal = latlongRdump}
 
 latlongReset = latlongRdump;
-d3.csv("data/poverty.csv", function(povdata) {
+/*d3.csv("data/poverty.csv", function(povdata) {
     povertydata = povdata.map(function(d) { return {"Geography": d["Geography"], "percentPoverty": +d["percentPoverty"], "RecFacName": d["RecFacName"], "RecZip": +d["RecZip"], "RecPcntPoverty": +d["RecPcntPoverty"]}; });
 
 //find the povs
@@ -1531,16 +1524,53 @@ d3.csv("data/minority.csv", function(rdata) {
   }
 }
 
-})
+})*/
+d3.csv("data/completeDemographics.csv", function(povdata) { //move to top, embed in site info so not loading every time?
+    povertydata = povdata.map(function(d) { return {
+      "receivingfacilityzipcode": d["receivingfacilityzipcode"], 
+      "zipPov": +d["zipPov"], 
+      "statePov": +d["statePov"], 
+      "ntlPov": +d["ntlPov"],
+      "datasetZipPov": +d["datasetZipPov"], 
+      "receivingFacilityAddress": d["receivingFacilityAddress"],
+      "povTractFinal": +d["povTractFinal"],
+      "datasetTractPov": +d["datasetTractPov"],
+      "datasetStatePov": +d["datasetStatePov"],
+      //race
+      "zipRace": +d["zipRace"],      
+      "stateRace": +d["stateRace"],
+      "ntlRace": +d["ntlRace"],
+      "datasetZipRace": +d["datasetZipRace"],
+      "datasetStateRace": +d["datasetStateRace"],
+      "raceTractFinal": +d["raceTractFinal"],
+      "datasetTractRace": +d["datasetTractRace"],
+    }; });
+
+  var povcensusDump = []
+  var racecensusDump = []
+    for (var i =0; i<povertydata.length-1; i++){
+      if (povertydata[i].receivingFacilityAddress === data.address){
+        povcensusDump.push(povertydata[i].povTractFinal)
+        povcensusDump.push(povertydata[i].datasetTractPov)
+        racecensusDump.push(povertydata[i].raceTractFinal)
+        racecensusDump.push(povertydata[i].datasetTractRace)
+      };
+    };
+
+  var povdump;
+  var racedump;
+  for (var i =0; i<povertydata.length-1; i++){
+      if (povertydata[i].receivingfacilityzipcode == data.zip){
+        povdump = [povertydata[i].zipPov, povertydata[i].datasetZipPov, povcensusDump[0], povcensusDump[1], povertydata[i].statePov, povertydata[i].datasetStatePov, povertydata[i].ntlPov]
+        racedump = [povertydata[i].zipRace, povertydata[i].datasetZipRace, racecensusDump[0], racecensusDump[1], povertydata[i].stateRace, povertydata[i].datasetStateRace, povertydata[i].ntlRace]
+      }
+    };
+  })
+console.log(latlongRdump)
 
 latlongRdump = latlongReset;
 
-
-
-
-
 icicle(window[filterDomain]);
-//icicleAxis();
 importers(latlongRdump);
 mapDisplay();
 }
@@ -2095,7 +2125,7 @@ function viewer(data, latlongdump){
   d3.select(".viewerText")
     .append("div")
     .style("width", "80%")
-    .html("<span class='importerName'>"+data.name+"</span><br> <span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://epamap14.epa.gov/ejmap/ejmap.aspx?wherestr="+data.address+" "+data.city+" "+data.state+"' target='_blank'>Open in EPA's EJView</a><p>")
+    .html("<span class='importerName'>"+data.name+"</span><br> <span class ='viewerData'>"+data.address+", "+data.city+", "+data.state+"</span><br><a href='http://ejscreen.epa.gov/mapper/' target='_blank'>Open in EPA's EJSCREEN</a><p>")
 
   //set-up triptych: 1 (default) loads import; 2 loads demographicCharts; 3 loads manifests
   d3.select(".viewerText").append("div").attr("class", "triptych")
@@ -2161,7 +2191,7 @@ d3.select(".viewerText")
   var mini = d3.min(yearskey, function(d){return d})
   
   var width = lambdaplusNOPX - 10
-  var height = (height100-100)/4
+  var height = (height100-100)/(20/yearskey.length)
 
   yearSVG =  d3.select(".yearChart").append("svg")
     .attr("width", width)
@@ -2182,7 +2212,7 @@ d3.select(".viewerText")
 
   yearSVG.call(tooltipBars)
 
-  var barheight = (height/6 < 15) ? 15:height/6
+  var barheight = (height/yearskey.length < 15) ? 15:height/yearskey.length
 
   yearSVG.selectAll("rect")
      .data(yearskey)
@@ -2213,7 +2243,7 @@ d3.select(".viewerText")
       return years[i]
      })
       .attr("y", function(d, i) {
-            return i * barheight + barPadding;
+            return i * barheight + barheight - barPadding + 8;
          })
       .attr("x", 0)
       .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
@@ -2222,7 +2252,7 @@ d3.select(".viewerText")
 
 
 //imports by type
-d3.selectAll(".importCharts").append("div").attr("class", "typeChart");
+d3.selectAll(".yearChart").append("div").attr("class", "typeChart");
 
 d3.select(".typeChart").append("div")
   .attr("class", "povLabel")
@@ -2231,7 +2261,7 @@ d3.select(".typeChart").append("div")
 typedump = data.types
 
 var width = lambdaplusNOPX -10
-var height = (height100-100)/(20/typedump.length) //define variably as below
+var height = (height100-100)/(20/typedump.length)  //define variably as below
 
 //height max = lambdaNOPX*1.5 = lambdaNOPX*27
 //height min  = lambdaNOPX/5
@@ -2356,7 +2386,8 @@ d3.select(".povertyChart").append("div")
   .html("<p>% in poverty near site")
 
 var width = lambdaplusNOPX - 10
-var height = (height100-100)/3
+var height = (height100-100)/(20/7)
+var barheight = (height/7 < 15) ? 15:height/7
 
   povSVG =  d3.select(".povertyChart").append("svg")
     .attr("width", width)
@@ -2415,9 +2446,9 @@ povSVG.selectAll("rect")
      .data(povdump)
      .enter()
      .append("rect")
-     .attr("y", function(d, i) {return i * (height / povdump.length)})
+     .attr("y", function(d, i) {return i * barheight})
      .attr("x", function(d) { return 0; })
-     .attr("height", height / povdump.length - barPadding).transition().duration(750)
+     .attr("height", barheight - barPadding).transition().duration(750)
      .attr("width", function(d){ return width - x(d)}).transition().duration(750)
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
@@ -2440,7 +2471,7 @@ povSVG.selectAll("text")
             }
          })
          .attr("y", function(d, i) {
-              return i * (height / povdump.length) + (height / povdump.length - barPadding) / .6;
+              return i * barheight +barheight - barPadding +8;
          })
          .attr("x", 0)
          .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
@@ -2465,10 +2496,10 @@ rSVG.selectAll("rect")
      .enter()
      .append("rect")
      .attr("y", function(d, i) {
-        return i * (height / racedump.length);
+        return i * barheight;
      })
      .attr("x", function(d) { return 0; })
-     .attr("height", height / racedump.length - barPadding).transition().duration(750)
+     .attr("height", barheight - barPadding).transition().duration(750)
      .attr("width", function(d){ return width-x(d)}).transition().duration(750)
      .attr("class", function(d, i){ if (i == 0){return data.id}})
      .attr("fill", function(d, i) {
@@ -2489,7 +2520,7 @@ rSVG.selectAll("text")
             }
          })
          .attr("y", function(d, i) {
-              return i * (height / povdump.length) + (height / povdump.length - barPadding) / .6;
+              return i * barheight +barheight - barPadding +8;
          })
          .attr("x", 0)
          .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 

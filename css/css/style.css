@@ -278,14 +278,13 @@ font-family: 'Rockwell';
 }
 .typeChart{
   position: absolute;
-  top:60%;
 }
 .raceLabel, .povLabel{
   font-size: 12px;
   color: #c2c2c2;
 }
 div.manifests, div.typeChart, div.povertyChart {
-  height: 400px;    
+  height: 100%;    
   overflow: auto;
   overflow-x:hidden;
 }
