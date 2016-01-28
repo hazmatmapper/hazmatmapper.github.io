@@ -108,8 +108,8 @@ function initialize(){
   d3.select(".footer")
     .append("div")
     .attr("class", "aboutFooter")
-    .text("About")
-    .on("click", function(){
+    .html("<a href='abouts/help.html' class='about' target='_blank'>About</a>")
+/*    .on("click", function(){
       d3.select("body")
       .append("div")
       .attr("class", "about")
@@ -121,7 +121,7 @@ function initialize(){
         d3.select(".about").remove()
         d3.select(".exitAbout").remove()
       })
-    })  
+    })*/  
   d3.select(".footer")
   .append("text")
   .attr("class", "data")
@@ -796,7 +796,7 @@ function shader(data){
     d3.select(".barWrap")
       .append("div")
       .attr("class", "descriptions")
-      .style({"bottom": lambdaNOPX/1.15+"px", "height": (lambdaNOPX/.85)-(lambdaNOPX/1.15)+"px"}) 
+      .style({"bottom": lambdaNOPX/.5+"px", "height": (lambdaNOPX/.85)-(lambdaNOPX/.85)+"px"}) 
       .html("<span class = 'importerName'>"+data+"</span>....<span class = 'viewerData'>"+lookup[data]+"</span>")
     d3.select(".mapDisplay").remove()
     d3.select(".barWrap")

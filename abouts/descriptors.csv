@@ -28,18 +28,18 @@ Landfill or surface impoundment,Landfill or surface impoundment that will be clo
 Deepwell or underground injection,Deepwell or underground injection (with or without treatment; this waste was counted as hazardous waste),
 Discharge to sewer/POTW or NPDES,Discharge to sewer/POTW or NPDES (with prior storage - with or without treatment),
 Off site treatment,"The site receiving this waste stored/bulked and transferred the waste with no treatment or recovery, fuel blending, or disposal at that receiving site.",
-"Environmentally hazardous substances, solid, n.o.s.","This substance is hazardous to the environment due to the various chemicals in the waste.  It is a solid and not otherwise specified, so specific hazards are unknown.  <a href='https://en.wikipedia.org/wiki/Environmentally_hazardous' target='_blank'>Wikipedia</a>",UN3077
+"Environmentally hazardous substances, solid, n.o.s.",This substance is hazardous to the environment due to the various chemicals in the waste.   <a href='https://en.wikipedia.org/wiki/Environmentally_hazardous' target='_blank'>Wikipedia</a>,UN3077
 Isopropanol or  Isopropyl alcohol,Description coming soon….,UN1219
 "Flammable liquids, n.o.s.","Liquids that give off a vapor capable of catching fire.  The substance is not otherwise specified, so specific hazards are unknown.  <a href='https://en.wikipedia.org/wiki/Flammable_liquid' target='_blank'>Wikipedia</a>",UN1993
-"Paint including paint, lacquer, enamel, stain, shellac solutions, varnish, polish, liquid filler, and liquid lacquer base","A liquid used to coat other substances for color or protection.  It becomes a solid once dry.  Paint related materials are hazardous because they contain Volatile Organic Compounds (VOCs), which can range from irritants to carginogens.  <a href='https://en.wikipedia.org/wiki/Paint#Dangers' target='_blank'>Wikipedia [Paint]</a>, <a href='https://en.wikipedia.org/wiki/Volatile_organic_compound#Health_risks' target = '_blank'>Wikipedia [VOCs]</a>",UN1263
+"Paint including paint, lacquer, enamel, stain, shellac solutions, varnish, polish, liquid filler, and liquid lacquer base","Paint related materials are hazardous because they contain Volatile Organic Compounds (VOCs), which can range from irritants to carginogens.  <a href='https://en.wikipedia.org/wiki/Paint#Dangers' target='_blank'>Wikipedia [Paint]</a>, <a href='https://en.wikipedia.org/wiki/Volatile_organic_compound#Health_risks' target = '_blank'>Wikipedia [VOCs]</a>",UN1263
 "Self-heating solid, inorganic, n.o.s.",Description coming soon….,UN3190
 "Aerosols, corrosive, Packing Group II or III, (each not exceeding 1 L capacity)",Description coming soon….,UN1950
-"Toxic liquids, flammable, organic, n.o.s.","A carbon-containg liquid, which gives off a vapor capable of catching fire.  The substance is not otherwise specified, so specific hazards are unknown.  The substance is identified as toxic because of a specified amount of damage it has on a living organism.  <a href='https://en.wikipedia.org/wiki/Toxicity' target = '_blank'>Wikipedia [Toxicity]</a>, <a href='https://en.wikipedia.org/wiki/Flammable_liquid' target='_blank'>Wikipedia [Flammable liquid]</a>",UN2929
+"Toxic liquids, flammable, organic, n.o.s.","A carbon-containg liquid, which gives off a vapor capable of catching fire.   <a href='https://en.wikipedia.org/wiki/Toxicity' target = '_blank'>Wikipedia [Toxicity]</a>, <a href='https://en.wikipedia.org/wiki/Flammable_liquid' target='_blank'>Wikipedia [Flammable liquid]</a>",UN2929
 "Batteries, wet, filled with acid, electric storage",Description coming soon….,UN2794
-"Hazardous waste, solid, n.o.s.","This waste is in the solid state and can cause harm to or danger the health of humans and/or the environment.  The waste is not otherwise specified, so specific hazards are unknown.   <a href='http://www3.epa.gov/epawaste/hazard/' target='_blank'>EPA</a>",NA3077
+"Hazardous waste, solid, n.o.s.",This waste is in the solid state and can cause harm to or danger the health of humans and/or the environment.   <a href='http://www3.epa.gov/epawaste/hazard/' target='_blank'>EPA</a>,NA3077
 "Carbon, activated",Description coming soon….,UN1362
 "Resin solution, flammable",Description coming soon….,UN1866
-"Corrosive liquid, basic, inorganic, n.o.s.","A corrosive liquid is one which can degrade another substance, typically a solid.  This substance is inorganic due to the compound containing no carbon, and acidic because it has a pH < 7.  The substance is not otherwise specified, so the specific hazards are unknown.     ",UN3266
+"Corrosive liquid, basic, inorganic, n.o.s.","A corrosive liquid is one which can degrade another substance, typically a solid.  This substance is inorganic due to the compound containing no carbon, and acidic because it has a pH < 7. ",UN3266
 Trichloroethylene,Description coming soon….,UN1710
 Sulfuric acid with more than 51 percent acid,Description coming soon….,UN1830
 "Environmentally hazardous substances, liquid, n.o.s.",Description coming soon….,UN3082
@@ -50,7 +50,7 @@ Sulfuric acid with more than 51 percent acid,Description coming soon….,UN1830
 "Batteries, wet, non-spillable, electric storage",Description coming soon….,UN2800
 "Lead compounds, soluble, n.o.s.",Description coming soon….,UN2291
 "Corrosive solid, acidic, inorganic, n.o.s.",Description coming soon….,UN3260
-"Flammable liquids, toxic, n.o.s.","Liquids that give off a vapor capable of catching fire.  The substance is identified as toxic because of a specified amount of damage it has on a living organism.   The substance is also not otherwise specified, so the specific hazareds are unknown.   <a href='https://en.wikipedia.org/wiki/Toxicity' target = '_blank'>Wikipedia [Toxicity]</a>, <a href='https://en.wikipedia.org/wiki/Flammable_liquid' target='_blank'>Wikipedia [Flammable liquid]</a>",UN1992
+"Flammable liquids, toxic, n.o.s.","Liquids that give off a vapor capable of catching fire.  The substance is identified as toxic because of a specified amount of damage it has on a living organism. <a href='https://en.wikipedia.org/wiki/Toxicity' target = '_blank'>Wikipedia [Toxicity]</a>, <a href='https://en.wikipedia.org/wiki/Flammable_liquid' target='_blank'>Wikipedia [Flammable liquid]</a>",UN1992
 "Amines, liquid, corrosive, n.o.s,  or   Polyamines, liquid, corrosive, n.o.s.",Description coming soon….,UN2735
 Not available,Description coming soon….,MN1177
 Not available,Description coming soon…., N1177

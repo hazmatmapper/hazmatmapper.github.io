@@ -17,6 +17,11 @@ a{
   color: red;
   font-size: 10px;
 }
+a.about{
+  color: yellow;
+  font-size: 12px;
+  text-decoration: none;
+}
 
 /*#showHide{
   position: absolute;
@@ -90,6 +95,10 @@ label {
   left: 5px;
   cursor: pointer; 
 }
+.help{
+  font-size:12px;
+  color: black;
+}
 .data{
   position:absolute;
   left: 100px;
@@ -161,28 +170,6 @@ label {
 }
 
 
-
-
-
-
-/*the text that comes up in the about window*/
-.about{
-  position: absolute;
-  left: 10vh;
-  top: 5vh;
-  height: 75%;
-  width: 90%;
-  background-color: #252525;
-  ;
-}
-.aboutText{
-  color:white;
-  font-size: 12px;
-  font-family: 'Rockwell';
-}
-.exitAbout{
-  cursor: pointer;
-}
 
 
 
@@ -310,8 +297,7 @@ color:white;
 }
 
 h3{
-  color: red;
-  cursor: pointer;
+  color: black;
 }
 
 

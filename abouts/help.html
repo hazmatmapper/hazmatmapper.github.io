@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>HazMatMapper: Help</title>
+<head>
+	<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+ <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+<style>
+html {
+  max-width: 100%;
+}
+body {
+  font-family: 'Rockwell';
+  color: white;
+  background-color: white;
+  max-width: 100%;
+}
+a{
+  color: red;
+  font-size: 10px;
+}
+.help{
+  font-size:12px;
+  color: black;
+}
+h3{
+  color: black;
+}
+</style>
+</head>
+<body>
+<h3>What is this site?</h3>
+<p class = "help">This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. 
+<p class = "help"> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site.
+<p class = "help"> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method.</p>
+<h3>How do I use this site?</h3>
+<p class = "help"> Subquestions here </p>
+<h3>What is this data?</h3>
+<p class = "help">We received the EPA hazardous waste records for HazMatMapper as 971 scanned PDFs of regulatory forms. Each PDF contained an average of seven manifests, or bundles of unique shipments. A shipment is a collection of waste containers made discrete by its United Nations waste type classification, the kind of container holding the waste, or the intended processing method. Each manifest recorded anywhere from 1-74―but most frequently only one―shipment(s) of waste. For instance, a manifest might contain three shipments, with the first shipment comprising four metal drums of flammable waste paint, the second comprising two metal drums of material containing mercury, and the third comprising three burlap bags of the same mercury-containing material. To assemble a spatial database of the shipments records, we first separated each manifest into unique shipments and then hand-coded each shipment with the common attributes included in the PDFs: exporter name, address (geocoded using the Bing Maps batch geocoding service), port of entry, importer name and address, waste type and container, and planned processing method. Click <a href='data/manifests/CA.2010.HW.cmwnw%20inc-alcan%20bc.decOCR.pdf' target='_blank'>here</a> to see a sample manifest. Over 118,000 containers of waste were imported into the US between 2007 and 2012 as recorded by the nearly 10,000 manifests.</p>
+<h3>Why is there liquid and solid waste?</h3>
+<p class = "help">We maintain the separation between solid and liquid waste in HazMatMapper given ambiguity in conversions between different hazardous elements. While this distinction is useful for analysis of the dataset, it does not reflect the regulatory definition of hazardous waste, which hinges on different notions of “solid” (40 USC. Sec 261.2. 2012).</p>
+<h3>Why are there liquid wastes under the solid category and vice versa?</h3>
+<p class = "help"> Because people report things in volume vs. weight.</p>
+<h3>What does N.O.S. mean?</h3>
+<p class = "help"> The waste is not otherwise specified, so specific hazards are unknown</p>
+<h3>Who are you?</h3>
+
+ <!--<script src="lib/d3.v3.js"></script>-->
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>  
+<script src="js/tip.js"></script>
+<!--<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>-->
+<script src="lib/queue.js"></script>
+<script src="lib/topojson.v1.min.js"></script>
+
+</body>
+</html>
