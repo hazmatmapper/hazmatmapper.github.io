@@ -1,36 +1,572 @@
-type,description
-"Flammable liquids, n.o.s.",loren ipsum
-"Environmentally hazardous substances, solid, n.o.s.",loren ipsum ch
-MERUCRY,loren ipsum hg
-PAINT,loren ipsum paint
-TOLUENE,loren ipsum
-LEAD,pb
-Metals recovery,"Metals recovery including retorting, smelting, chemical, etc."
-Solvents recovery,"Solvents recovery (distillation, extraction, etc)"
-Other recovery,"Other recovery or reclamation for reuse including acid regeneration, organics recovery, etc."
-Energy recovery,Energy recovery at this site - used as fuel (includes on-site fuel blending before energy recovery)
-Fuel blending,Fuel blending prior to energy recovery at another site (waste generated either on site or received from off site)
-Incineration,Incineration - thermal destruction other than use as a fuel (includes any preparation prior to burning)
-Chemical destruction,Chemical reduction with or without precipitation (includes any preparation or final processes for consolidation of residuals)
-Cyanide destruction,Cyanide destruction with or without precipitation (includes any preparation or final processes for consolidation of residuals)
-Wet air oxidation,Wet air oxidation (includes any preparation or final processes for consolidation of residuals)
-Chemical oxidation,Chemical oxidation (includes any preparation or final processes for consolidation of residuals)
-Other chemical precipitation,Other chemical precipitation with or without pre-treatment (includes processes for consolidation of residuals)
-Biological treatment,Biological treatment with or without precipitation (includes any preparation or final processes for consolidation of residuals)
-Adsorption (as the major component of treatment),Adsorption (as the major component of treatment)
-Air or steam stripping ,Air or steam stripping (as the major component of treatment)
-Sludge treatment and/or dewatering,Sludge treatment and/or dewatering (as the major component of treatment)
-Other chemical precipitation,Other chemical precipitation
-Absorption (as the major component of treatment),Absorption (as the major component of treatment)
-Stabilization or chemical fixation,Stabilization or chemical fixation prior to disposal at another site (as the major component of treatment)
-Macro-encapsulation,Macro-encapsulation prior to disposal at another site (as the major component of treatment)
-Neutralization only,Neutralization only (no other treatment)
-Evaporation,Evaporation (as the major component of treatment; not reportable as H071-H083)
-Settling or clarification,Settling or clarification (as the major component of treatment; not reportable as H071-H083)
-Phase separation,Phase separation (as the major component of treatment; not reportable as H071-H083)
-Other treatment,Other treatment (specified in comments)
-Land treatment or application,Land treatment or application (to include on-site treatment and/or stabilization)
-Landfill or surface impoundment,Landfill or surface impoundment that will be closed as landfill (to include prior treatment and/or stabilization)
-Deepwell or underground injection,Deepwell or underground injection (with or without treatment; this waste was counted as hazardous waste)
-Discharge to sewer/POTW or NPDES,Discharge to sewer/POTW or NPDES (with prior storage - with or without treatment)
-Off site treatment,"The site receiving this waste stored/bulked and transferred the waste with no treatment or recovery, fuel blending, or disposal at that receiving site."
+type,description,
+Metals recovery,"Metals recovery including retorting, smelting, chemical, etc.",
+Solvents recovery,"Solvents recovery (distillation, extraction, etc)",
+Other recovery,"Other recovery or reclamation for reuse including acid regeneration, organics recovery, etc.",
+Energy recovery,Energy recovery at this site - used as fuel (includes on-site fuel blending before energy recovery),
+Fuel blending,Fuel blending prior to energy recovery at another site (waste generated either on site or received from off site),
+Incineration,Incineration - thermal destruction other than use as a fuel (includes any preparation prior to burning),
+Chemical destruction,Chemical reduction with or without precipitation (includes any preparation or final processes for consolidation of residuals),
+Cyanide destruction,Cyanide destruction with or without precipitation (includes any preparation or final processes for consolidation of residuals),
+Wet air oxidation,Wet air oxidation (includes any preparation or final processes for consolidation of residuals),
+Chemical oxidation,Chemical oxidation (includes any preparation or final processes for consolidation of residuals),
+Other chemical precipitation,Other chemical precipitation with or without pre-treatment (includes processes for consolidation of residuals),
+Biological treatment,Biological treatment with or without precipitation (includes any preparation or final processes for consolidation of residuals),
+Adsorption (as the major component of treatment),Adsorption (as the major component of treatment),
+Air or steam stripping ,Air or steam stripping (as the major component of treatment),
+Sludge treatment and/or dewatering,Sludge treatment and/or dewatering (as the major component of treatment),
+Other chemical precipitation,Other chemical precipitation,
+Absorption (as the major component of treatment),Absorption (as the major component of treatment),
+Stabilization or chemical fixation,Stabilization or chemical fixation prior to disposal at another site (as the major component of treatment),
+Macro-encapsulation,Macro-encapsulation prior to disposal at another site (as the major component of treatment),
+Neutralization only,Neutralization only (no other treatment),
+Evaporation,Evaporation (as the major component of treatment; not reportable as H071-H083),
+Settling or clarification,Settling or clarification (as the major component of treatment; not reportable as H071-H083),
+Phase separation,Phase separation (as the major component of treatment; not reportable as H071-H083),
+Other treatment,Other treatment (specified in comments),
+Land treatment or application,Land treatment or application (to include on-site treatment and/or stabilization),
+Landfill or surface impoundment,Landfill or surface impoundment that will be closed as landfill (to include prior treatment and/or stabilization),
+Deepwell or underground injection,Deepwell or underground injection (with or without treatment; this waste was counted as hazardous waste),
+Discharge to sewer/POTW or NPDES,Discharge to sewer/POTW or NPDES (with prior storage - with or without treatment),
+Off site treatment,"The site receiving this waste stored/bulked and transferred the waste with no treatment or recovery, fuel blending, or disposal at that receiving site.",
+"Environmentally hazardous substances, solid, n.o.s.","This substance is hazardous to the environment due to the various chemicals in the waste.  It is a solid and not otherwise specified, so specific hazards are unknown.  <a href='https://en.wikipedia.org/wiki/Environmentally_hazardous' target='_blank'>Wikipedia</a>",UN3077
+Isopropanol or  Isopropyl alcohol,Description coming soon….,UN1219
+"Flammable liquids, n.o.s.","Liquids that give off a vapor capable of catching fire.  The substance is not otherwise specified, so specific hazards are unknown.  <a href='https://en.wikipedia.org/wiki/Flammable_liquid' target='_blank'>Wikipedia</a>",UN1993
+"Paint including paint, lacquer, enamel, stain, shellac solutions, varnish, polish, liquid filler, and liquid lacquer base","A liquid used to coat other substances for color or protection.  It becomes a solid once dry.  Paint related materials are hazardous because they contain Volatile Organic Compounds (VOCs), which can range from irritants to carginogens.  <a href='https://en.wikipedia.org/wiki/Paint#Dangers' target='_blank'>Wikipedia [Paint]</a>, <a href='https://en.wikipedia.org/wiki/Volatile_organic_compound#Health_risks' target = '_blank'>Wikipedia [VOCs]</a>",UN1263
+"Self-heating solid, inorganic, n.o.s.",Description coming soon….,UN3190
+"Aerosols, corrosive, Packing Group II or III, (each not exceeding 1 L capacity)",Description coming soon….,UN1950
+"Toxic liquids, flammable, organic, n.o.s.","A carbon-containg liquid, which gives off a vapor capable of catching fire.  The substance is not otherwise specified, so specific hazards are unknown.  The substance is identified as toxic because of a specified amount of damage it has on a living organism.  <a href='https://en.wikipedia.org/wiki/Toxicity' target = '_blank'>Wikipedia [Toxicity]</a>, <a href='https://en.wikipedia.org/wiki/Flammable_liquid' target='_blank'>Wikipedia [Flammable liquid]</a>",UN2929
+"Batteries, wet, filled with acid, electric storage",Description coming soon….,UN2794
+"Hazardous waste, solid, n.o.s.","This waste is in the solid state and can cause harm to or danger the health of humans and/or the environment.  The waste is not otherwise specified, so specific hazards are unknown.   <a href='http://www3.epa.gov/epawaste/hazard/' target='_blank'>EPA</a>",NA3077
+"Carbon, activated",Description coming soon….,UN1362
+"Resin solution, flammable",Description coming soon….,UN1866
+"Corrosive liquid, basic, inorganic, n.o.s.","A corrosive liquid is one which can degrade another substance, typically a solid.  This substance is inorganic due to the compound containing no carbon, and acidic because it has a pH < 7.  The substance is not otherwise specified, so the specific hazards are unknown.     ",UN3266
+Trichloroethylene,Description coming soon….,UN1710
+Sulfuric acid with more than 51 percent acid,Description coming soon….,UN1830
+"Environmentally hazardous substances, liquid, n.o.s.",Description coming soon….,UN3082
+"Corrosive liquids, n.o.s.",Description coming soon….,UN1760
+"Water-reactive solid, n.o.s.",Description coming soon….,UN2813
+"Petroleum distillates, n.o.s. or  Petroleum products, n.o.s.",Description coming soon….,UN1268
+"Corrosive liquid, acidic, organic, n.o.s.",Description coming soon….,UN3265
+"Batteries, wet, non-spillable, electric storage",Description coming soon….,UN2800
+"Lead compounds, soluble, n.o.s.",Description coming soon….,UN2291
+"Corrosive solid, acidic, inorganic, n.o.s.",Description coming soon….,UN3260
+"Flammable liquids, toxic, n.o.s.","Liquids that give off a vapor capable of catching fire.  The substance is identified as toxic because of a specified amount of damage it has on a living organism.   The substance is also not otherwise specified, so the specific hazareds are unknown.   <a href='https://en.wikipedia.org/wiki/Toxicity' target = '_blank'>Wikipedia [Toxicity]</a>, <a href='https://en.wikipedia.org/wiki/Flammable_liquid' target='_blank'>Wikipedia [Flammable liquid]</a>",UN1992
+"Amines, liquid, corrosive, n.o.s,  or   Polyamines, liquid, corrosive, n.o.s.",Description coming soon….,UN2735
+Not available,Description coming soon….,MN1177
+Not available,Description coming soon…., N1177
+Lithium battery,Description coming soon….,UN3090
+"Solids containing flammable liquid, n.o.s.",Description coming soon….,UN3175
+"Flammable solid, inorganic, n.o.s.",Description coming soon….,UN3178
+"Corrosive liquids, flammable, n.o.s.",Description coming soon….,UN2920
+"Compressed gas, flammable, n.o.s.",Description coming soon….,UN1954
+"Pyrophoric liquids, organic, n.o.s.",Description coming soon….,UN2845
+"Compressed gas, toxic, flammable, n.o.s. Inhalation Hazard Zone A",Description coming soon….,UN1953
+"Helium, refrigerated liquid (cryogenic liquid)",Description coming soon….,UN1963
+"Compressed gas, toxic, n.o.s. Inhalation Hazard Zone A",Description coming soon….,UN1955
+"Hydrogen, refrigerated liquid (cryogenic liquid)",Description coming soon….,UN1966
+"Hydrocarbon gas mixture, compressed, n.o.s.",Description coming soon….,UN1964
+"Phosphorus pentasulfide, free from yellow or white phosphorus",Description coming soon….,UN1340
+"Organic peroxide type E, liquid",Description coming soon….,UN3107
+"Organic peroxide type D, solid",Description coming soon….,UN3106
+"Oxidizing solid, n.o.s.",Description coming soon….,UN1479
+"Corrosive solids, n.o.s.",Description coming soon….,UN1759
+"Pyrophoric solids, organic, n.o.s.",Description coming soon….,UN2846
+Sodium dithionite or Sodium hydrosulfite,Description coming soon….,UN1384
+Zinc powder or Zinc dust,Description coming soon….,UN1436
+"Organic peroxide type D, liquid",Description coming soon….,UN3105
+"Water-reactive solid, corrosive, n.o.s.",Description coming soon….,UN3131
+"Flammable solids, organic, n.o.s.",Description coming soon….,UN1325
+"Organic peroxide type C, solid",Description coming soon….,UN3104
+Not available,Description coming soon….,RN0 3Y97
+"Organic peroxide type C, liquid",Description coming soon….,UN3103
+"Organic peroxide type F, solid",Description coming soon….,UN3110
+"Cyanides, inorganic, solid, n.o.s.",Description coming soon….,UN1588
+Sodium azide,Description coming soon….,UN1687
+"Cyanide solutions, n.o.s.",Description coming soon….,UN1935
+"Toxic solids, organic, n.o.s.",Description coming soon….,UN2811
+Lighter refills containing flammable gas not exceeding 4 fluid ounces (7.22 cubic inches) and 65 grams of flammable gas,Description coming soon….,UN1057
+"Pesticides, solid, toxic, n.o.s.",Description coming soon….,UN2588
+"Batteries, wet, filled with alkali, electric storage",Description coming soon….,UN2795
+"Hydrazine, aqueous solution with not more than 37 percent hydrazine, by mass",Description coming soon….,UN3293
+"Toxic, liquids, organic, n.o.s.",Description coming soon….,UN2810
+"Flammable liquids, corrosive, n.o.s.",Description coming soon….,UN2924
+"Phosphorus, white dry or Phosphorus, white, under water or Phosphorus white, in solution or Phosphorus, yellow dry or Phosphorus, yellow, under water or  Phosphorus, yellow, in solution",Description coming soon….,UN1381
+"Solids containing corrosive liquid, n.o.s.",Description coming soon….,UN3244
+Phosphorus trichloride,Description coming soon….,UN1809
+Not available,Description coming soon…., N04B17
+"Dichloroisocyanuric acid, dry or Dichloroisocyanuric acid salts",Description coming soon….,UN2465
+"Phosphorus, amorphous",Description coming soon….,UN1338
+"Hydrogen peroxide and peroxyacetic acid mixtures, stabilized with acids, water and not more than 5 percent peroxyacetic acid",Description coming soon….,UN3149
+Not available,Description coming soon….,AN04B17
+"Nitric acid other than red fuming, with at least 65 percent, but  not more than 70 percent nitric acid",Description coming soon….,UN2031
+"Flammable solids, corrosive, organic, n.o.s.",Description coming soon….,UN2925
+"Magnesium or Magnesium alloys with more than 50 percent magnesium in pellets, turnings or ribbons",Description coming soon….,UN1869
+"Toxic liquid, inorganic, n.o.s.",Description coming soon….,UN3287
+"Flammable solid, corrosive, inorganic, n.o.s.",Description coming soon….,UN3180
+"Pyrophoric solid, inorganic, n.o.s.",Description coming soon….,UN3200
+"Corrosive liquid, acidic, inorganic, n.o.s.",Description coming soon….,UN3264
+Hydrochloric acid,Description coming soon….,UN1789
+"Flammable solids, toxic, organic, n.o.s.",Description coming soon….,UN2926
+Sodium hydroxide solution,Description coming soon….,UN1824
+Aluminum smelting by-products  or   Aluminum remelting by-products,This substance is the left over product from extracting aluminum.  <a href='https://en.wikipedia.org/wiki/Smelting' target='_blank'>Wikipedia</a>,UN3170
+Not available,Description coming soon….,NN112-97091
+Not available,Description coming soon….,RN112-97091
+"Water-reactive solid, self-heating, n.o.s.",Description coming soon….,UN3135
+Mercury,Description coming soon….,UN2809
+Not available,Description coming soon….,ON2711
+Not available,Description coming soon….,
+Not available,Description coming soon….,MN4177
+"Batteries, dry, containing potassium hydroxide solid, electric, storage",Description coming soon….,UN3028
+"Methylamine, anhydrous",Description coming soon….,UN1061
+"Oxygen, compressed",Description coming soon….,UN1072
+"Hydrogen fluoride, anhydrous",Description coming soon….,UN1052
+Dinitrogen tetroxide,Description coming soon….,UN1067
+Boron trifluoride,Description coming soon….,UN1008
+"Hydrogen bromide, anhydrous",Description coming soon….,UN1048
+Arsine,Description coming soon….,UN2188
+"Compressed gas, n.o.s.",Description coming soon….,UN1956
+Methyl mercaptan,Description coming soon….,UN1064
+"Tetrafluoroethylene, stabilized",Description coming soon….,UN1081
+"Aldehydes, flammable, toxic, n.o.s.",Description coming soon….,UN1988
+Phosphine,Description coming soon….,UN2199
+"Water-reactive liquid, n.o.s.",Description coming soon….,UN3148
+Methyl chloroacetate,Description coming soon….,UN2295
+Phosphorus oxychloride,Description coming soon….,UN1810
+Hypochlorite solutions,Description coming soon….,UN1791
+"Hydrogen peroxide, stabilized  or   Hydrogen peroxide aqueous solutions, stabilized with more than 60 percent hydrogen peroxide",Description coming soon….,UN2015
+"Corrosive liquids, oxidizing, n.o.s.",Description coming soon….,UN3093
+"Oxidizing liquid, corrosive, n.o.s.",Description coming soon….,UN3098
+"Corrosive solids, oxidizing, n.o.s.",Description coming soon….,UN3084
+"Oxidizing liquid, n.o.s.",Description coming soon….,UN3139
+Sodium persulfate,Description coming soon….,UN1505
+"Oxidizing liquid, toxic, n.o.s.",Description coming soon….,UN3099
+"Sodium sulfide, anhydrous  or  Sodium sulfide with less than 30 percent water of crystallization",Description coming soon….,UN1385
+"Calcium hypochlorite, dry  or  Calcium hypochlorite mixtures dry with more than 39 percent available chlorine (8.8 percent available oxygen)",Description coming soon….,UN1748
+"Oxidizing solid, toxic, n.o.s.",Description coming soon….,UN3087
+"Trinitrophenol, wetted or Picric acid, wetted with not less than 30 percent water, by mass",Description coming soon….,UN1344
+"Hydrazine, aqueous solutions, with more than 37% hydrazine, by mass",Description coming soon….,UN2030
+Carbon disulfide,Description coming soon….,UN1131
+"Sodium hydrosulfide, with less than 25 percent water of crystallization",Description coming soon….,UN2318
+"Oxidizing solid, corrosive, n.o.s.",Description coming soon….,UN3085
+"Hydrofluoric acid, with more than 60 percent strength",Description coming soon….,UN1790
+Ammonium sulfide solution,Description coming soon….,UN2683
+"Corrosive solid, acidic, organic, n.o.s.",Description coming soon….,UN3261
+"Corrosive liquids, toxic, n.o.s.",Description coming soon….,UN2922
+"Hydrogen chloride, anhydrous",Description coming soon….,UN1050
+Titanium sponge granules or Titanium sponge powders,Description coming soon….,UN2878
+Silver nitrate,Description coming soon….,UN1493
+Chromic acid solution,Description coming soon….,UN1755
+"Corrosive solids, water-reactive, n.o.s.",Description coming soon….,UN3096
+"Perchloric acid with more than 50 percent but not more than 72 percent acid, by mass",Description coming soon….,UN1873
+"Organometallic substance, liquid, water-reactive, flammable",Description coming soon….,UN3399
+"Sodium cyanide, solid",Description coming soon….,UN1689
+"Nitrocellulose with alcohol with not less than 25 percent alcohol by mass, and with not more than 12.6 percent nitrogen, by dry mass",Description coming soon….,UN2556
+Sodium borohydride,Description coming soon….,UN1426
+"Alkali metal alcoholates, self-heating, corrosive, n.o.s.",Description coming soon….,UN3206
+"Corrosive liquids, water-reactive, n.o.s.",Description coming soon….,UN3094
+"Hydrogen peroxide, aqueous solutions with more than 40 percent but not more than 60 percent hydrogen peroxide (stabilized as necessary)",Description coming soon….,UN2014
+"Aluminum powder, uncoated",Description coming soon….,UN1396
+"Ammonia solutions, relative density between 0.880 and 0.957 at 15 degrees C in water, with more than 10 percent but not more than 35 percent ammonia",Description coming soon….,UN2672
+"Nitroguanidine, wetted or Picrite, wetted with not less than 20 percent water, by mass",Description coming soon….,UN1336
+"Organometallic substance, liquid, pyrophoric, water-reactive",Description coming soon….,UN3394
+Sulfur dioxide,Description coming soon….,UN1079
+Not available,Description coming soon….,UN3076
+"Vinyl bromide, stabilized",Description coming soon….,UN1085
+Dimethyl sulfide,Description coming soon….,UN1164
+"Ammonia, anhydrous",Description coming soon….,UN1005
+Hydrogen sulfide,Description coming soon….,UN1053
+Ethylene oxide or Ethylene oxide with nitrogen up to a total pressure of 1MPa (10 bar) at 50 degrees C,Description coming soon….,UN1040
+"Carbon monoxide, compressed",Description coming soon….,UN1016
+Chlorine,Description coming soon….,UN1017
+Ethane,Description coming soon….,UN1035
+Nitrous oxide,Description coming soon….,UN1070
+"Liquefied gas, flammable, n.o.s.",Description coming soon….,UN3161
+"Methane, compressed or Natural gas, compressed (with high methane content)",Description coming soon….,UN1971
+Ethylene,Description coming soon….,UN1962
+"Propylene see also Petroleum gases, liquefied",Description coming soon….,UN1077
+"Petroleum gases, liquefied or Liquefied petroleum gas",Description coming soon….,UN1075
+"Methyl chloride, or Refrigerant gas R 40",Description coming soon….,UN1063
+"Hydrogen, compressed",Description coming soon….,UN1049
+Sulfur hexafluoride,Description coming soon….,UN1080
+Diethyl ether or Ethyl ether,Description coming soon….,UN1155
+"Butadienes, stabilized or Butadienes and Hydrocarbon mixture, stabilized, containing more than 40% butadienes",Description coming soon….,UN1010
+"Butylene see also Petroleum gases, liquefied",Description coming soon….,UN1012
+"Dimethylamine, anhydrous",Description coming soon….,UN1032
+"Toxic liquids, corrosive, organic, n.o.s.",Description coming soon….,UN2927
+Boron trifluoride diethyl etherate,Description coming soon….,UN2604
+"Potassium cyanide, solid",Description coming soon….,UN1680
+Allylamine,Description coming soon….,UN2334
+"Isobutylene see also Petroleum gases, liquefied",Description coming soon….,UN1055
+"Deuterium, compressed",Description coming soon….,UN1957
+"Vinyl methyl ether, stabilized",Description coming soon….,UN1087
+"Isobutane see also Petroleum gases, liquefied",Description coming soon….,UN1969
+Trifluoroacetyl chloride,Description coming soon….,UN3057
+Not available,Description coming soon….,UN3051
+Tungsten hexafluoride,Description coming soon….,UN2196
+"Chloroacetophenone, solid, (CN)",Description coming soon….,UN1697
+Potassium phosphide,Description coming soon….,UN2012
+Sulfuryl chloride,Description coming soon….,UN1834
+"Acrolein, stabilized",Description coming soon….,UN1092
+"Metal powders, flammable, n.o.s.",Description coming soon….,UN3089
+Sodium,Description coming soon….,UN1428
+"Substituted nitrophenol pesticides, liquid, toxic",Description coming soon….,UN3014
+"Toxic solids, oxidizing, n.o.s.",Description coming soon….,UN3086
+Sodium nitrite,Description coming soon….,UN1500
+2-(2-Aminoethoxy) ethanol,Description coming soon….,UN3055
+tert-Butyl hypochlorite,Description coming soon….,UN3255
+Ammonium nitrate based fertilizer,Description coming soon….,UN2067
+Potassium permanganate,Description coming soon….,UN1490
+Formic acid with more than 85% acid by mass,Description coming soon….,UN1779
+1-Bromo-3-chloropropane,Description coming soon….,UN2688
+"Toxic solids, corrosive, organic, n.o.s.",Description coming soon….,UN2928
+Glycerol alpha-monochlorohydrin,Description coming soon….,UN2689
+Phosphorus pentoxide,Description coming soon….,UN1807
+"Flammable solid, toxic, inorganic, n.o.s.",Description coming soon….,UN3179
+"Water-reactive solid, flammable, n.o.s.",Description coming soon….,UN3132
+"Trichloroisocyanuric acid, dry",Description coming soon….,UN2468
+Sodium nitrate,Description coming soon….,UN1498
+Dimethyl disulfide,Description coming soon….,UN2381
+"Nitrocellulose, solution, flammable with not more than 12.6 percent nitrogen, by mass, and not more than 55 percent nitrocellulose",Description coming soon….,UN2059
+Thionyl chloride,Description coming soon….,UN1836
+Methylhydrazine,Description coming soon….,UN1244
+"Water-reactive solid, toxic, n.o.s.",Description coming soon….,UN3134
+Methyl chloromethyl ether,Description coming soon….,UN1239
+"Organic peroxide type E, solid",Description coming soon….,UN3108
+"Acetylene, dissolved",Description coming soon….,UN1001
+Boron trichloride,Description coming soon….,UN1741
+"Toxic solids, flammable, organic, n.o.s.",Description coming soon….,UN2930
+"Lead perchlorate, solid",Description coming soon….,UN1470
+"Refrigerant gases, n.o.s.",Description coming soon….,UN1078
+Dichlorodifluoromethane or  Refrigerant gas R 12,Description coming soon….,UN1028
+Ethyl mercaptan,Description coming soon….,UN2363
+"Methyl acetylene and propadiene mixtures, stabilized",Description coming soon….,UN1060
+"Caustic alkali liquids, n.o.s.",Description coming soon….,UN1719
+"Isosorbide dinitrate mixture with not less than 60 percent lactose, mannose, starch or calcium hydrogen phosphate",Description coming soon….,UN2907
+"Water-reactive liquid, toxic, n.o.s.",Description coming soon….,UN3130
+"Water-reactive liquid, corrosive, n.o.s.",Description coming soon….,UN3129
+"Aluminum chloride, anhydrous",Description coming soon….,UN1726
+"Ammonium nitrate, with not more than 0.2% total combustible material, including any organic substance, calculated as carbon to the exclusion of any other added substance",Description coming soon….,UN1942
+"Organic peroxide type F, liquid",Description coming soon….,UN3109
+"Sodium sulfide, hydrated with not less than 30 percent water",Description coming soon….,UN1849
+Azodicarbonamide,Description coming soon….,UN3242
+Butanols,Description coming soon….,UN1120
+Self-reactive solid type D,Description coming soon….,UN3226
+"Butane see also Petroleum gases, liquefied",Description coming soon….,UN1011
+"Ketones, liquid, n.o.s.",Description coming soon….,UN1224
+"Magnesium, powder or Magnesium alloys, powder",Description coming soon….,UN1418
+"Toxic solid, inorganic, n.o.s.",Description coming soon….,UN3288
+"Pentaerythrite tetranitrate mixture, desensitized, solid, n.o.s. or Pentaerythritol tetranitrate mixture, desensitized, solid, n.o.s. or PETN mixture, desensitized, solid, n.o.s. with more than 10 percent but not more than 20 percent PETN, by mass",Description coming soon….,UN3344
+"Alkali metal dispersions,  or   Alkaline earth metal dispersions",Description coming soon….,UN1391
+"Trimethylamine, anhydrous",Description coming soon….,UN1083
+Not available,Description coming soon….,IN2 3B07
+Silane,Description coming soon….,UN2203
+Chlorosulfonic acid (with or without sulfur trioxide),Description coming soon….,UN1754
+"Corrosive solids, toxic, n.o.s.",Description coming soon….,UN2923
+"Nitric oxide, compressed",Description coming soon….,UN1660
+"Oxygen difluoride, compressed",Description coming soon….,UN2190
+Not available,Description coming soon….,BO6499
+"Mercaptans, liquid, flammable, toxic, n.o.s. or  Mercaptan mixtures, liquid, flammable, toxic, n.o.s.",Description coming soon….,UN1228
+Sodium peroxide,Description coming soon….,UN1504
+Tributylphosphane,Description coming soon….,UN3254
+Not available,Description coming soon….,BO6699
+Not available,Description coming soon…., N2 3B07
+"Solids containing toxic liquid, n.o.s.",Description coming soon….,UN3243
+"Corrosive solids, self-heating, n.o.s.",Description coming soon….,UN3095
+"Phenylenediamines (o-, m-, p-)",Description coming soon….,UN1673
+Not available,Description coming soon….,UN1084
+Cyclopropane,Description coming soon….,UN1027
+Carbon dioxide,Description coming soon….,UN1013
+"Toxic solids, water-reactive, n.o.s.",Description coming soon….,UN3125
+"Radioactive material, surface contaminated objects (SCO-I or SCO-II) non fissile or fissile-excepted",Description coming soon….,UN2913
+"Arsenical pesticides, liquid, flammable, toxic, flash point less than 23 degrees C",Description coming soon….,UN2760
+Soda lime with more than 4 percent sodium hydroxide,Description coming soon….,UN1907
+Not available,Description coming soon….,UN2663
+Not available,Description coming soon….,UN3058
+Dimethyldichlorosilane,Description coming soon….,UN1162
+Methyldichlorosilane,Description coming soon….,UN1242
+Not available,Description coming soon….,UN3207
+Not available,Description coming soon….,UN13436
+"Aluminum silicon powder, uncoated",Description coming soon….,UN1398
+Benzoyl chloride,Description coming soon….,UN1736
+Sodium methylate,Description coming soon….,UN1431
+Not available,Description coming soon….,UN1284
+Not available,Description coming soon….,AY2307
+Not available,Description coming soon….,UY2307
+"Chlorosilanes, water-reactive, flammable, corrosive, n.o.s.",Description coming soon….,UN2988
+Triethylamine,Description coming soon….,UN1296
+"Calcium hypochlorite, hydrated  or   Calcium hypochlorite, hydrated mixtures, with not less than 5.5 percent but not more than 16 percent water",Description coming soon….,UN2880
+Butyronitrile,Description coming soon….,UN2411
+"Esters, n.o.s.",Description coming soon….,UN3272
+Diethyl carbonate,Description coming soon….,UN2366
+Methyl iodide,Description coming soon….,UN2644
+Not available,Description coming soon….,UN118
+Benzoquinone,Description coming soon….,UN2587
+Acetyl chloride,Description coming soon….,UN1717
+Calcium hydride,Description coming soon….,UN1404
+"Hydrogen peroxide, aqueous solutions with not less than 8 percent but less than 20 percent hydrogen peroxide (stabilized as necessary)",Description coming soon….,UN2984
+"Organophosphorus compound, liquid, toxic, n.o.s.",Description coming soon….,UN3278
+"Methacrylonitrile, stabilized",Description coming soon….,UN3079
+Not available,Description coming soon….,NA5000
+Not available,Description coming soon….,MY6177
+Not available,Description coming soon….,LY6177
+Lithium batteries packed with equipment,Description coming soon….,UN3091
+Not available,Description coming soon….,UN1054
+Not available,Description coming soon….,UN2445
+Not available,Description coming soon….,UN1980
+"Helium, compressed",Description coming soon….,UN1046
+"Propane see also Petroleum gases, liquefied",Description coming soon….,UN1978
+"Vinyl chloride, stabilized  ",Description coming soon….,UN1086
+Silicon tetrafluoride,Description coming soon….,UN1859
+"Cyanogen chloride, stabilized",Description coming soon….,UN1589
+Cyanogen,Description coming soon….,UN1026
+Bromine trifluoride,Description coming soon….,UN1746
+Iodine pentafluoride,Description coming soon….,UN2495
+Nickel carbonyl,Description coming soon….,UN1259
+"Pesticides, liquid, toxic, n.o.s.",Description coming soon….,UN2902
+Not available,Description coming soon….,UY2717
+Not available,Description coming soon….,UN8098
+Not available,Description coming soon….,UN3588
+"Flammable liquid, toxic, corrosive, n.o.s.",Description coming soon….,UN3286
+Paraformaldehyde,Description coming soon….,UN2213
+Lithium,Description coming soon….,UN1415
+Polyester resin kit,Description coming soon….,UN3269
+"Acetic acid, glacial  or  Acetic acid solution, with more than 80 percent acid, by mass",Description coming soon….,UN2789
+Osmium tetroxide,Description coming soon….,UN2471
+Not available,Description coming soon….,RY2307
+Not available,Description coming soon…., Y2307
+"Pyrophoric metals, n.o.s., or Pyrophoric alloys, n.o.s.",Description coming soon….,UN1383
+Bromine,Description coming soon….,UN1744
+Allyl glycidyl ether,Description coming soon….,UN2219
+"Self-heating solid, organic, n.o.s.",Description coming soon….,UN3088
+Ethylene oxide and chlorotetrafluoroethane mixture with not more than 8.8 percent ethylene oxide,Description coming soon….,UN3297
+Not available,Description coming soon….,UN3203
+"Nitroglycerin, solution in alcohol, with more than 1 percent but not more than 5 percent nitroglycerin",Description coming soon….,UN3064
+Not available,Description coming soon….,UN18588
+"Sodium fluoride, solid",Description coming soon….,UN1690
+"Carbon dioxide, solid or Dry ice",Description coming soon….,UN1845
+Not available,Description coming soon….,SY2307
+Not available,Description coming soon….,MY2307
+"Aldehydes, n.o.s.",Description coming soon….,UN1989
+Arsenic trioxide,Description coming soon….,UN1561
+Potassium bromate,Description coming soon….,UN1484
+Octanes,Description coming soon….,UN1262
+"Isocyanates, flammable, toxic, n.o.s. or Isocyanate solutions, flammable, toxic, n.o.s. flash point less than 23 degrees C",Description coming soon….,UN2478
+Not available,Description coming soon….,UN1425
+"Alkali metal alloys, liquid, n.o.s.",Description coming soon….,UN14??
+"Hydrobromic acid, with more than 49 percent hydrobromic acid",Description coming soon….,UN1788
+Not available,Description coming soon….,UN1930
+Not available,Description coming soon….,UN1226
+Aluminum ferrosilicon powder,Description coming soon….,UN1395
+"Paper, unsaturated oil treated incompletely dried (including carbon paper)",Description coming soon….,UN1379
+Ethylene oxide and pentafluoroethane mixture with not more than 7.9 percent ethylene oxide,Description coming soon….,UN3298
+Not available,Description coming soon….,UN1936
+Chromium oxychloride,Description coming soon….,UN1758
+"Hydrazine, anhydrous",Description coming soon….,UN2029
+Boron tribromide,Description coming soon….,UN2692
+Not available,Description coming soon….,UN1934
+"Bisulfites, aqueous solutions, n.o.s.",Description coming soon….,UN2693
+Not available,Description coming soon…., Y1121
+Not available,Description coming soon…., Y4077
+Not available,Description coming soon….,KY6177
+Not available,Description coming soon….,RY6177
+Not available,Description coming soon…., Y7171
+"Medicine, solid, toxic, n.o.s.",Description coming soon….,UN3249
+Not available,Description coming soon….,DY7447
+Not available,Description coming soon….,EY7447
+Not available,Description coming soon….,AY7447
+Not available,Description coming soon….,AY8447
+"1-Chloro-2,2,2-trifluoroethane or  Refrigerant gas R 133a",Description coming soon….,UN1983
+Not available,Description coming soon….,UN1979
+"Nitrogen, compressed",Description coming soon….,UN1066
+"Air, compressed",Description coming soon….,UN1002
+Dimethyl ether,Description coming soon….,UN1033
+"Hydrocarbon gas mixture, liquefied, n.o.s.",Description coming soon….,UN1965
+Not available,Description coming soon….,AY2717
+"1,1,1,2-Tetrafluoroethane or  Refrigerant gas R 134a",Description coming soon….,UN3159
+Sulfuryl fluoride,Description coming soon….,UN2191
+"Insecticide gases, toxic, n.o.s.",Description coming soon….,UN1967
+Phosgene,Description coming soon….,UN1076
+Bromine pentafluoride,Description coming soon….,UN1745
+Phosphoric acid solution,Description coming soon….,UN1805
+"Tellurium compound, n.o.s.",Description coming soon….,UN3284
+"Isocyanates, toxic, n.o.s. or   Isocyanate solutions, toxic, n.o.s., flash point more than 61 degrees C and boiling point less than 300 degrees C",Description coming soon….,UN2206
+Ammonium persulfate,Description coming soon….,UN1444
+Not available,Description coming soon….,LY2307
+"Isocyanates, toxic, flammable, n.o.s. or   Isocyanate solutions, toxic, flammable, n.o.s., flash point not less than 23 degrees C but not more than 61 degrees C and boiling point less than 300 degrees C",Description coming soon….,UN3080
+"Ammonium hydrogendifluoride, solution",Description coming soon….,UN2817
+Not available,Description coming soon….,OY2307
+Calcium carbide,Description coming soon….,UN1402
+Calcium,Description coming soon….,UN1401
+Thioglycol,Description coming soon….,UN2966
+"Corrosive liquid, basic, organic, n.o.s.",Description coming soon….,UN3267
+"Corrosive solid, basic, inorganic, n.o.s.",Description coming soon….,UN3262
+"Mercaptans, liquid, flammable, n.o.s. or Mercaptan mixture, liquid, flammable, n.o.s.",Description coming soon….,UN3336
+Sodium methylate solutions in alcohol,Description coming soon….,UN1289
+Hexamethylenetetramine,Description coming soon….,UN1328
+"Chromium trioxide, anhydrous",Description coming soon….,UN1463
+Cyanogen bromide,Description coming soon….,UN1889
+Phenyl isocyanate,Description coming soon….,UN2487
+"Toxic liquid, corrosive, inorganic, n.o.s.",Description coming soon….,UN3289
+Benzyl chloroformate,Description coming soon….,UN1739
+Sulfur chlorides,Description coming soon….,UN1828
+"Sulfur trioxide, stabilized",Description coming soon….,UN1829
+Not available,Description coming soon….,UN2899
+"Corrosive solid, basic, organic, n.o.s.",Description coming soon….,UN3263
+"Acrylic acid, stabilized",Description coming soon….,UN2218
+"Ammonia solution, relative density less than 0.880 at 15 degrees C in water, with more than 35 percent but not more than 50 percent ammonia",Description coming soon….,UN2073
+"Medicine, liquid, flammable, toxic, n.o.s.",Description coming soon….,UN3248
+"Corrosive solids, flammable, n.o.s.",Description coming soon….,UN2921
+"Adhesives, containing a flammable liquid",Description coming soon….,UN1133
+Not available,Description coming soon….,UN1283
+"Aluminum powder, coated",Description coming soon….,UN1309
+Potassium persulfate,Description coming soon….,UN1492
+"Gas, refrigerated liquid, n.o.s. (cryogenic liquid)",Description coming soon….,UN3158
+"Calcium hypochlorite mixtures, dry, with more than 10 percent but not more than 39 percent available chlorine",Description coming soon….,UN2208
+"Self-reactive liquid type C, temperature controlled",Description coming soon….,UN3233
+Diphenyldichlorosilane,Description coming soon….,UN1769
+"Printing ink, flammable or Printing ink related material (including printing ink thinning or reducing compound), flammable",Description coming soon….,UN1210
+Not available,Description coming soon….,DY2307
+Trimethylchlorosilane,Description coming soon….,UN1298
+"Vanadium pentoxide, non-fused form",Description coming soon….,UN2862
+"Stannic chloride, anhydrous",Description coming soon….,UN1827
+"Potassium sulfide, hydrated with not less than 30 percent water of crystallization",Description coming soon….,UN1847
+Motor fuel anti-knock mixtures,Description coming soon….,UN1649
+Not available,Description coming soon….,UN2914
+Copper cyanide,Description coming soon….,UN1587
+"Radioactive material, low specific activity (LSA-I) non fissile or fissile-excepted",Description coming soon….,UN2912
+"Radioactive material, low specific activity (LSA-II) non fissile or fissile-excepted",Description coming soon….,UN3321
+"Radioactive material, excepted package-limited quantity of material",Description coming soon….,UN2910
+Not available,Description coming soon….,TY5637
+Not available,Description coming soon….,OY9117
+Not available,Description coming soon….,LY2177
+Not available,Description coming soon….,KY2177
+Not available,Description coming soon….,AY9447
+Not available,Description coming soon….,EY0447
+Acetone,Description coming soon….,UN1090
+Not available,Description coming soon….,UY2327
+Not available,Description coming soon….,AY2327
+Not available,Description coming soon….,AY2271
+Not available,Description coming soon….,RY2271
+Not available,Description coming soon….,LY2271
+Not available,Description coming soon….,SY2271
+Not available,Description coming soon….,IY2271
+Not available,Description coming soon….,MY2271
+Not available,Description coming soon….,MY6809
+Not available,Description coming soon….,NY6809
+Not available,Description coming soon….,RY6809
+Not available,Description coming soon….,UN9149
+"Nitric acid, red fuming",Description coming soon….,UN2032
+n-Butyl isocyanate,Description coming soon….,UN2485
+"Metallic substance, water-reactive, n.o.s.",Description coming soon….,UN3208
+"Medicine, liquid, toxic, n.o.s.",Description coming soon….,UN1851
+Not available,Description coming soon….,UN1315
+"Organoarsenic compound, liquid, n.o.s.",Description coming soon….,UN3280
+Tetrachloroethylene,Description coming soon….,UN1897
+Thiophosgene,Description coming soon….,UN2474
+Not available,Description coming soon….,UN1478
+Not available,Description coming soon….,UN2072
+"Nitrates, inorganic, n.o.s.",Description coming soon….,UN1477
+Thioglycolic acid,Description coming soon….,UN1940
+Fluorosilicic acid,Description coming soon….,UN1778
+Titanium tetrachloride,Description coming soon….,UN1838
+Ethyl chloroformate,Description coming soon….,UN1182
+Acetic anhydride,Description coming soon….,UN1715
+Not available,Description coming soon….,UN1568
+Barium,Description coming soon….,UN1400
+Pyrrolidine,Description coming soon….,UN1922
+"Bombs, smoke, non-explosive, with corrosive liquid, without initiating device",Description coming soon….,UN2028
+Chromosulfuric acid,Description coming soon….,UN2240
+"1,2-Dichloro-1,1,2,2- tetrafluoroethane or   Refrigerant gas R 114",Description coming soon….,UN1958
+2-Methyl-2-butene,Description coming soon….,UN2460
+"Organophosphorus pesticides, liquid, toxic",Description coming soon….,UN3018
+Ethyl chloride,Description coming soon….,UN1037
+"Vinyl fluoride, stabilized",Description coming soon….,UN1860
+"Methyl fluoride, or Refrigerant gas R 41",Description coming soon….,UN2454
+"Trifluorochloroethylene, stabilized",Description coming soon….,UN1082
+"Propadiene, stabilized",Description coming soon….,UN2200
+"Argon, compressed",Description coming soon….,UN1006
+"Toxic solid, corrosive, inorganic, n.o.s.",Description coming soon….,UN3290
+Hexafluoroacetone,Description coming soon….,UN2420
+Nitrosyl chloride,Description coming soon….,UN1069
+Carbonyl sulfide,Description coming soon….,UN2204
+Not available,Description coming soon….,UN1366
+Methyl isocyanate,Description coming soon….,UN2480
+"Oxygen generator, chemical (including when contained in associated equipment, e.g., passenger service units (PSUs), portable breathing equipment (PBE), etc).",Description coming soon….,UN3356
+"Potassium hydroxide, solution",Description coming soon….,UN1814
+"Battery fluid, acid",Description coming soon….,UN2796
+Not available,Description coming soon….,UN1530
+Hexadecyltrichlorosilane,Description coming soon….,UN1781
+"Phenol, solid",Description coming soon….,UN1671
+Trifluoroacetic acid,Description coming soon….,UN2699
+Iron pentacarbonyl,Description coming soon….,UN1994
+"Compressed gas, oxidizing, n.o.s.",Description coming soon….,UN3156
+Toluene diisocyanate,Description coming soon….,UN2078
+"Acetic acid solution, not less than 50 percent but not more than 80 percent acid, by mass",Description coming soon….,UN2790
+Methanol,Description coming soon….,UN1230
+"Organophosphorus pesticides, solid, toxic",Description coming soon….,UN2783
+"Mercaptans, liquid, toxic, flammable, n.o.s. or   Mercaptan mixtures, liquid, toxic, flammable, n.o.s., flash point not less than 23 degrees ",Description coming soon….,UN3071
+"Formaldehyde solutions, flammable",Description coming soon….,UN1198
+Mercury gluconate,Description coming soon….,UN1637
+"Titanium powder, dry",Description coming soon….,UN2546
+"Titanium trichloride, pyrophoric or Titanium trichloride mixtures, pyrophoric",Description coming soon….,UN2441
+"Ammonium polysulfide, solution",Description coming soon….,UN2818
+"Disinfectant, liquid, corrosive, n.o.s.",Description coming soon….,UN1903
+Ferric nitrate,Description coming soon….,UN1466
+Sulfur,Description coming soon….,UN1350
+2-Chloropyridine,Description coming soon….,UN2822
+Bromoacetyl bromide,Description coming soon….,UN2513
+Dimethyl sulfate,Description coming soon….,UN1595
+Phosphorus pentachloride,Description coming soon….,UN1806
+Not available,Description coming soon….,UN2089
+Tetrahydrofuran,Description coming soon….,UN2056
+Xanthates,Description coming soon….,UN3342
+"Vinyl acetate, stabilized",Description coming soon….,UN1301
+Phenol solutions,Description coming soon….,UN2821
+Tetramethylammonium hydroxide solution,Description coming soon….,UN1835
+Calcium peroxide,Description coming soon….,UN1457
+Triallylamine,Description coming soon….,UN2610
+"Hydrocarbons, liquid, n.o.s.",Description coming soon….,UN3295
+Not available,Description coming soon….,UN1480
+Aluminum nitrate,Description coming soon….,UN1438
+Not available,Description coming soon….,UN3195
+Not available,Description coming soon….,UN3062
+"Pesticides, liquid, toxic, flammable, n.o.s. flash point not less than 23 degrees C",Description coming soon….,UN2903
+Nonanes,Description coming soon….,UN1920
+Not available,Description coming soon….,UN2082
+"Flammable solid, organic, molten, n.o.s.",Description coming soon….,UN3176
+Ethanol  or  Ethyl alcohol  or   Ethanol solutions  or  Ethyl alcohol solutions,Description coming soon….,UN1170
+Xylenes,Description coming soon….,UN1307
+Not available,Description coming soon….,N/A
+"Hazardous waste, liquid, n.o.s.",Description coming soon….,NA3082
+"Liquefied gas, n.o.s.",Description coming soon….,UN3163
+Ethyl methyl ketone or  Methyl ethyl ketone,Description coming soon….,UN1193
+Lead dioxide,Description coming soon….,UN1872
+Not available,Description coming soon….,UN1998
+Not available,Description coming soon….,LN0078
+Not available,Description coming soon….,LN2078
+Not available,Description coming soon….,SN0178
+"Aluminum bromide, solution",Description coming soon….,UN2580
+Not available,Description coming soon….,VN0118
+"Sulfuric acid, spent","Sulfuric acid is a liquid that can degrade other substances due to its high acidity.  The acid is considered spent because it is no longer at the strength it once was or it has been contaminated by another substance.  <a href='http://www.digitalrefining.com/article/1000330,Spent_sulphuric_acid_regeneration__SAR__process.html#.VqOldvkrLIU' target='_blank'>DigitalRefining.com</a>",UN1832
+Zirconium scrap,Description coming soon….,UN1932
+Not available,Description coming soon….,EN2208
+"Pesticides, liquid, flammable, toxic, flash point less than 23 degrees C",Description coming soon….,UN3021
+Fumaryl chloride,Description coming soon….,UN1780
+"Tars, liquid including road oils and cutback bitumens",Description coming soon….,UN1999
+"Combustible liquid, n.o.s.",Description coming soon….,NA1993
+Perchloryl fluoride,Description coming soon….,UN3083
+Ethyldichloroarsine,Description coming soon….,UN1892
+Not available,Description coming soon….,EC0599
+Not available,Description coming soon….,EC0699
+Not available,Description coming soon….,EN4207
+Not available,Description coming soon….,EN4208
+Not available,Description coming soon….,IY7117
+Not available,Description coming soon….,TY4077
+Not available,Description coming soon….,RY4077
+Not available,Description coming soon….,VY0177
+Not available,Description coming soon….,SY2178
+Not available,Description coming soon….,WY9117
+Not available,Description coming soon….,RY2327
+Not available,Description coming soon….,UN1258
+Not available,Description coming soon….,UN1883
+Not available,Description coming soon….,UN3032

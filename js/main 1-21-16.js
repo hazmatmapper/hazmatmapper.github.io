@@ -53,8 +53,7 @@ var displaySVG;
 var facilityName = {"name": ""}
 //var activePlace = 666
 //var pathHelp;
-var IMPradius;
-var EXPradius;
+var flanneryScale;
 var lineStroke
 var u, c, m, b, imp, exp, arcGroup, ports;
 var filterTypesYear, filterTypesSignal;
@@ -410,7 +409,7 @@ labels.append("input")
         $("#tags").catcomplete( "disable" );
         d3.selectAll(".mapDisplay").remove()
         filterform.selectAll("input").property("disabled", true)
-        showform.selectAll("input").property("disabled", true)
+        showform.selectAll("input").property("disabled", function(d){if (d=="Poverty" || d=="Race"){return true}})
       } 
       d3.selectAll(".arc").remove()
       svg.selectAll("circle").transition().duration(1200).attr("r", 0).remove()
@@ -465,7 +464,7 @@ d3.select(".barWrap")
   labelEnter.append("text").html("&nbsp")
 
   //overlay
-  filterTypes = ["None", "Poverty", "Race"]
+  filterTypes = ["None", "Poverty", "Race", "EPA Regions"]
   var show = d3.select(".filterSelector").append("div").attr("class", "showDiv").html("<span class='viewerCategory'>Overlay:</span>")
   var showform = d3.select(".showDiv").append("form"), j=0;
 
@@ -739,13 +738,37 @@ d3.csv("data/"+phase+".csv", function(data) {
 
 function shader(data){
   if (data == "None"){
+    e.selectAll("path").style({"stroke": "none"})
+    m.selectAll("text").style({"opacity": 0})
     svg.selectAll("#importer")
-    .style({"fill": defaultColor, "fill-opacity": "1"})
+      .style({"fill": defaultColor, "fill-opacity": "1"})
+
+  }
+  else if (data == "EPA Regions"){
+    var epaTool = d3.tip()
+    .attr('class', 'd3-tip')
+    .direction("w")
+    .offset([0, 0])
+    .html(function(d) {
+      return "<span style='color:white'>EPA Region " +d.properties.region+ "</span>";
+    })
+    svg.call(epaTool)
+    m.selectAll("text").style({
+        "opacity": .5
+      })
+    e.selectAll("path").style({
+        "stroke": "#777",
+        "stroke-dasharray": "2,2",
+        "stroke-linejoin": "round"})
+    .on("mouseover", function (d){epaTool.show(d)})
+    .on("mouseout", function(d){epaTool.hide(d)})
+  }
+  else if (data == "Poverty" || data == "Race"){
+    svg.selectAll("#importer")
+      .style({"fill": defaultColor, "fill-opacity": "1"})
     d3.select(".descriptions").remove()
     d3.select(".mapDisplay").remove()
     mapDisplay()
-  }
-  else{
 
     dump = [];
     for (var i = 0; i<latlongReset.length; i++){
@@ -767,6 +790,7 @@ function shader(data){
           return color(dump[d.id]) 
         }
       })
+    
     lookup = {"Race": "Race is defined as % minority (nonwhite, incl. Hispanic) in site's census tract. Data from 2012 American Community Survey 5 year estimate.", "Poverty": "Poverty defined as % in poverty within previous 12 months, at the census tract level.  Data from 2012 American Community Survey 5 year estimate."}
     d3.select(".descriptions").remove()
     d3.select(".barWrap")
@@ -778,7 +802,7 @@ function shader(data){
     d3.select(".barWrap")
           .append("div")
           .attr("class", "mapDisplay")
-          .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.85+"px"})
+          .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.88+"px"})
 
     var results = color.quantiles()
     
@@ -851,7 +875,7 @@ function choropleth(data){
     d3.select(".barWrap")
           .append("div")
           .attr("class", "mapDisplay")
-          .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.85+"px"})
+          .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.88+"px"})
 
     var results = color.quantiles()
     
@@ -864,7 +888,7 @@ function choropleth(data){
     var stringwork2 = [results[2]+" - "+max+" "+phaseformat[phase], results[1]+" - "+results[2]+" "+phaseformat[phase], results[0]+" - "+results[1]+" "+phaseformat[phase], min+" - "+results[0]+" "+phaseformat[phase], " no imports"]
     var squareData = [[16, '#08519c'], [16, '#3182bd'],[16, '#6baed6'],[16, '#bdd7e7'], [16,'#eff3ff']]
 
-    displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height", lambda)
+    displaySVG = d3.select(".mapDisplay").append("svg").attr("width", "100%").attr("height",lambdaNOPX/1.25+"px")
     displaySVG.selectAll("rect")
       .data(squareData)
       .enter()
@@ -1128,18 +1152,18 @@ var path = d3.geo.path()
   .projection(projection);
 
 u = svg.append("g")
-c = svg.append("g")
+e = svg.append("g")
 m = svg.append("g")
 b = svg.append("g")
 
 queue()
   .defer(d3.json, "data/new jsons/na.json")
- // .defer(d3.json, "data/canada.json")
+  .defer(d3.json, "data/new jsons/epa.json")
  // .defer(d3.json, "data/mex008.json")
   .defer(d3.json, "data/new jsons/borders.json")
   .await(callback);
 
-function callback(error, na, borders){
+function callback(error, na, epa, borders){
   svg.call(zoom);
 
   var name, sum, length;
@@ -1152,11 +1176,29 @@ function callback(error, na, borders){
   })
   svg.call(stateTool)
 
+  e.selectAll("path")
+    .data(topojson.feature(epa, epa.objects.epa).features)
+    .enter().append("path")
+      .attr("d", path)
+      .attr("class", "epa")
+
   b.selectAll('path')
     .data(topojson.feature(borders, borders.objects.borders).features)
     .enter().append("path")
       .attr("d", path)
       .attr("class", "borders")
+
+  m.selectAll("path")
+    .data(topojson.feature(epa, epa.objects.epa).features)
+    .enter().append("text")
+        .style({
+        "fill": "#252525",
+        "opacity": 0,
+        "font-size": "20px",
+        "font-weight": 300
+        })
+        .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; })
+        .text(function(d) {return d.properties.region; });
 
   u.selectAll("path")
     .data(topojson.feature(na, na.objects.na).features)
@@ -1202,22 +1244,28 @@ function callback(error, na, borders){
 
 function zoomer() {
   if (view == "States"){return}
-  if (zoom.scale() > 1) {zoomed = true} else {return zoom.translate([0,0]); zoom.scale(1)} //control slippiness for arcgroup
-  
+  if (zoom.scale() > 1) {zoomed = true} //else {return zoom.translate([0,0]); zoom.scale(1)} //control slippiness for arcgroup
+/*
+var t = d3.event.translate,
+    s = d3.event.scale;
 
-  u.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+t[0] = Math.max(-(width100/2 - s*55), Math.min(t[0], width100/2 - s*55));
+t[1] = Math.max(-(height100/2 - s*55), Math.min(t[1], height100/2 - s*55));
+  */
+
+  u.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
-/*  c.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+  b.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
-  m.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );*/
-  b.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+  e.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
-  imp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return IMPradius(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
-  exp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return EXPradius(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
-  if(arcGroup){arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+  m.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );      
+  imp.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" ) //may need to fix to calculate based on import max?
+  exp.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
+  if(arcGroup){arcGroup.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})}
 }
 
@@ -1254,63 +1302,21 @@ function reset() {
           .style({"left": "0px"})
         viewClickCheck = false
       }
+
   u.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", .5 / zoom.scale() + "px" );
-  c.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+  e.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", .5 / zoom.scale() + "px" );
   m.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", .5 / zoom.scale() + "px" );
   b.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
   imp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return IMPradius(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
+      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
   exp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return EXPradius(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
+      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
   if (arcGroup){arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-.selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})}
- /* b.transition()
-      .duration(750)
-      .style("stroke-width", "1px")
-      .attr("transform", "");
-  u.transition()
-      .duration(750)
-      .style("stroke-width", "1px")
-      .attr("transform", "");
-  c.transition()
-      .duration(750)
-      .style("stroke-width", "1px")
-      .attr("transform", "");
-  m.transition()
-      .duration(750)
-      .style("stroke-width", "1px")
-      .attr("transform", "");
-
-  imp.transition()
-      .selectAll('circle')
-      .duration(750)
-      //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
-      .attr("transform", "")
-      .attr("r", function (d){return IMPradius(d.total_waste)})
-  ports.transition()
-      .selectAll('circle')
-      .duration(750)
-      //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return "1px"}} )
-      .attr("transform", "")
-      .attr("r", 3)
-  exp.transition()
-      .selectAll('circle')
-      .duration(750)
-      //.style("stroke-width", function (d) {if (d.id == clickyCheck) {return "5px"} else {return ".5px"}} )
-      .attr("transform", "")
-      .attr("r", function (d){return EXPradius(d.total_waste)})
-  if(arcGroup){
-  arcGroup.transition()
-      .selectAll(".arc")
-      .duration(750)
-      .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
-      //.style("stroke-width", "1.5px")
-      .attr("transform", "");
-  }*/
+      .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})}
 }
 
 function dataCrunch(data){
@@ -1347,23 +1353,7 @@ for (var i =0; i<facilitySum.length; i++){
   }; 
 };
 
-
-
-//put total for each type here
-/*for (var i =0; i<typeByFacility.length; i++){
-  var p = typeByFacility[i]["key"]
-  for (var n =0; n<typeByFacility[i]["values"].length; n++){
-    for (var j=0; j<latlongRdump.length; j++){
-      if (typeByFacility[i]["values"][n]["key"] == latlongRdump[j].id){
-        var obj = [p, typeByFacility[i]["values"][n]["values"]["total_waste"]]
-        latlongRdump[j].types.push(obj)
-      };
-    }; 
-  };
-};*/
-
 //total by type and meth
-
 for (var e =0; e<typeAndMethByFacility.length; e++){
   for (var j=0; j<latlongRdump.length; j++){
     if (typeAndMethByFacility[e]["key"] == latlongRdump[j].id){
@@ -1396,32 +1386,8 @@ for (var j=0; j<latlongRdump.length; j++){
   latlongRdump[j].rank = j+1+"/"+latlongRdump.length}
 
 if (firstTime) {latlongGlobal = latlongRdump}
-
 latlongReset = latlongRdump;
-/*d3.csv("data/poverty.csv", function(povdata) {
-    povertydata = povdata.map(function(d) { return {"Geography": d["Geography"], "percentPoverty": +d["percentPoverty"], "RecFacName": d["RecFacName"], "RecZip": +d["RecZip"], "RecPcntPoverty": +d["RecPcntPoverty"]}; });
 
-//find the povs
-  for (var k = 0; k<latlongReset.length; k++){
-    for (var i =0; i<povertydata.length; i++){
-      if (latlongReset[k].zip == povertydata[i].Geography){
-      latlongReset[k]["Poverty"] = povertydata[i].percentPoverty
-    } 
-  }
-}
-})
-
-d3.csv("data/minority.csv", function(rdata) {
-    racedata = rdata.map(function(d) { return {"Geography": d["Geography"], "percentMinority": +d["percentMinority"], "RecFacName": d["RecFacName"], "RecZip": +d["RecZip"], "RecPcntNonwhite": +d["RecPcntNonwhite"]}});
-  for (var k = 0; k<latlongReset.length; k++){
-    for (var i =0; i<racedata.length; i++){
-      if (latlongReset[k].zip == racedata[i].Geography){
-      latlongReset[k]["Race"] = racedata[i].percentMinority
-    } 
-  }
-}
-
-})*/
 d3.csv("data/completeDemographics.csv", function(povdata) { //move to top, embed in site info so not loading every time?
     povertydata = povdata.map(function(d) { return {
       "receivingfacilityzipcode": d["receivingfacilityzipcode"], 
@@ -1491,24 +1457,52 @@ function icicleImporters(data, name){
 } 
 };
 
+//various helper functions here: calculating flannery's compensation, and svg z-indexing.
+//flannery compensation for circles. modified from here: http://codepen.io/mxfh/pen/pggXoW
+var calcFlanneryRadius = function(x, max) {
+  // Flannery Compensation formula as described here:
+  //http://www.scribd.com/doc/33408233/SUG243-Cartography-Proportional-Symbol#scribd
+  // log x * 0.57
+  // anti log
+  var flannery = 0.57;
+  var log = Math.log(x);
+  var r = log * flannery;
+  r = Math.exp(r);
+  return (r);
+};
+
+var radiusFlannery = function(x) {
+  return flanneryScale(calcFlanneryRadius(x));
+};
+
+d3.selection.prototype.moveToFront = function() {
+  console.log(this)
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+  };
+d3.selection.prototype.moveToBack = function() { 
+    console.log(this)
+    return this.each(function() { 
+        var firstChild = this.parentNode.firstChild; 
+        if (firstChild) { 
+            this.parentNode.insertBefore(this, firstChild); 
+        } 
+    }); 
+};
+
 function importers(data){
-
-
   var max = d3.max(latlongReset, function(d) {return d.total_waste}),
   min = d3.min(latlongReset, function(d) {return d.total_waste})
   globalMax = max;
   globalMin = min;
- 
-  if (zoomed == false) {IMPradius= d3.scale.sqrt()
-    .domain([min+1, max]) //don't want min to be 0
-    .range([10, 30])}
-  if (zoomed == true) {IMPradius = d3.scale.sqrt()
-    .domain([min+1, max]) //don't want min to be 0
-    .range([15, 70])}
+
+  var flanMax = calcFlanneryRadius(max);
+  flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
   
   tooltip = d3.tip()
   .attr('class', 'd3-tip')
-  .offset([-10, 0])
+  .offset([-5, 0])
   .html(function(d) {
     return "<span style='color:white'>" + d.name + "</span>";
   })
@@ -1543,7 +1537,7 @@ function importers(data){
   imp.selectAll("circle")
     .transition()
     .duration(1000)
-    .attr("r", function(d) { return IMPradius(d.total_waste); })
+    .attr("r", function(d) { return radiusFlannery(d.total_waste); })
 
 /*  dots = svg.append("g")
   dots.selectAll("circle")
@@ -1603,7 +1597,8 @@ function exportThis(data){
    for (var i=0; i<latlongs.length; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
         if (latlongs[i]["values"][j]["values"][0]["longitude"] == data[k].long) {
-          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"], "units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": []}) //lat longs of the foreign waste sites
+          console.log(latlongs[i]["values"][j]["values"][0])
+          latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "signal": latlongs[i]["values"][j]["values"][0]["exporter_key"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"], "units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": []}) //lat longs of the foreign waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
             latlongdump[0]["types"].push(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
           };
@@ -1638,7 +1633,7 @@ function drawLinesOver(data, base){
   //min = d3.min(data, function(d) {return d.total_waste})
   lineStroke = d3.scale.sqrt()
     .domain([globalMin, globalMax]) 
-    .range([2, 10])
+    .range([2, 12])
 
   var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
@@ -1650,7 +1645,7 @@ function drawLinesOver(data, base){
   svg.call(tooltipFlow)
 
   //based on: http://bl.ocks.org/enoex/6201948
-  arcGroup = svg.append('g');
+  
   var path = d3.geo.path()
     .projection(projection);
 
@@ -1714,21 +1709,49 @@ var pathArcs = arcGroup.selectAll(".arc")
                 //  an arc between the points using the arc function
                 d: path
             })
-            .style("stroke", "#f33")
+            .style("stroke", "#252525")
             .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
             .style('cursor', "pointer")
             .on("mouseover", function(d) {tooltipFlow.show(d)}) //
             .on("mouseout", function(d) {tooltipFlow.hide(d)})
                 //'stroke-dasharray': '5'
-            .call(lineTransition); 
-if (zoomed){
-  arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+            .call(lineTransition); //at end of function call positions?
+  if (zoomed){
+    arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})
+  }
+
+  IMPpositions(data, base)
+
 }
+
+function IMPpositions (data, base){
+  //bring forward importer and exporters
+  d=base[0]
+
+  svg.selectAll("#importer").sort(function (a,b) {return b.total_waste-a.total_waste;})
+  svg.selectAll("#exporter").sort(function (a,b) {return b.total_waste-a.total_waste;})
+
+  svg.selectAll("circle").sort(function (a, b) {
+    if (a.id != d.id) return 0;               // a is not the hovered element, send "a" to the back
+    else return 1;                             // a is the hovered element, bring "a" to the front
+  });
+
+
+  var dump = []
+  for (x = 0; x<data.length; x++){
+    dump[x]=data[x].signal
+  }
+
+  svg.selectAll("circle").sort(function (a, b) {
+    if (dump.includes(a.id)) return 1;              // a is the hovered element, bring "a" to the front
+    else return 0;                              // a is not the hovered element, send "a" to the back
+    });
+  //var sel = d3.select("."+d.id); sel.moveToFront();
 }
 
 function drawLinesOut(){
-d3.selectAll(".arc").remove();
+  d3.selectAll(".arc").remove();
 }
 
 function colorize(data, name){
@@ -1915,6 +1938,10 @@ $("#tags").keypress(function(e) {
   });
 
 //do sort and rank here
+for (var j=0; j<latlongdump.length; j++){
+  if (typeof(latlongdump[j].total_waste) != "number"){latlongdump[j].total_waste = 1558}
+}
+
 latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
 for (var j=0; j<latlongdump.length; j++){
   latlongdump[j].rank = j+1+"/"+latlongdump.length}
@@ -1926,15 +1953,8 @@ for (var j=0; j<latlongdump.length; j++){
   exGlobalMax = max;
   exGlobalMin = min;
   
-
-  //scale according to zoom
-  
-  if (zoomed == false) {EXPradius= d3.scale.sqrt()
-    .domain([min+1, max]) //don't want min to be 0
-    .range([10, 30])}
-  if (zoomed == true) {EXPradius = d3.scale.sqrt()
-    .domain([min+1, max]) //don't want min to be 0
-    .range([15, 50])}
+  var flanMax = calcFlanneryRadius(max);
+  flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
 
   exp = svg.append("g")
   //add exporters to the map   
@@ -1943,11 +1963,12 @@ for (var j=0; j<latlongdump.length; j++){
     .data(latlongdump)
     .enter().append("circle")
     .attr("id", "exporter")
-    .attr("class", function (d) { return d.state+" "+d.id})
+    .attr("class", function (d) {return d.state+" "+d.id})
     .style({"fill": exDefaultColor /*, "stroke": exporterRing, "stroke-width": "3px"*/})
     .style(defaultStroke)
     .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
     .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
+    .attr("z-index", 0)
     .on("mouseover", function(d){
       tooltip.show(d);
       highlight(d);
@@ -1959,8 +1980,11 @@ for (var j=0; j<latlongdump.length; j++){
   exp.selectAll("circle")
     .transition()
     .duration(1000)
-    .attr("r", function(d) {return EXPradius(d.total_waste); })
+    .attr("r", function(d) {return radiusFlannery(d.total_waste); })
   //ports();
+
+  //this is the position the flow lines will be draw in
+  arcGroup = svg.append('g');
 };
 
 function viewer(data, latlongdump){
@@ -2135,7 +2159,7 @@ d3.select(".viewerText")
      .attr("height", barheight - barPadding).transition().duration(750)
      .attr("width", function(d){ return width - x(d)}).transition().duration(750)
      .attr("class", data.id)
-     .attr("fill", function(d) {console.log(document.getElementsByClassName(data.id)); return document.getElementsByClassName(data.id)["importer"].style.fill})
+     .attr("fill", function(d) { return document.getElementsByClassName(data.id)["importer"].style.fill})
 
 
 
@@ -2694,7 +2718,7 @@ function importThis(data){
 function exDrawLinesOver(data, base){
   lineStroke = d3.scale.sqrt()
     .domain([exGlobalMin, exGlobalMax]) 
-    .range([2, 10])
+    .range([2, 12])
 
   var tooltipFlow = d3.tip()
   .attr('class', 'd3-tip')
@@ -2773,9 +2797,10 @@ var pathArcs = arcGroup.selectAll(".arc")
                 d: path
             })
 
-            .style('stroke', "#f33")
+            .style('stroke', "#252525")
             .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
             .style('cursor', "pointer")
+            .attr("z-index", 0)
             .on("mouseover", function(d) {tooltipFlow.show(d)})//
             .on("mouseout", function(d) {tooltipFlow.hide(d)})
             .call(lineTransition); 
@@ -2783,6 +2808,32 @@ var pathArcs = arcGroup.selectAll(".arc")
     arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
         .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})
   }
+  EXPpositions(data,base)
+}
+
+function EXPpositions (data, base){
+  console.log(data, base)
+  //bring forward importer and exporters
+  
+  svg.selectAll("#importer").sort(function (a,b) {return b.total_waste-a.total_waste;})
+  svg.selectAll("#exporter").sort(function (a,b) {return b.total_waste-a.total_waste;})
+
+  svg.selectAll("circle").sort(function (a, b) {
+    if (a.id != base[0].id) return 0;               // a is not the hovered element, send "a" to the back
+    else return 1;                             // a is the hovered element, bring "a" to the front
+  });
+
+  var dump = []
+  for (x = 0; x<data.length; x++){
+    dump[x]=data[x].id
+  }
+  
+  svg.selectAll("circle").sort(function (a, b) {
+    if (dump.includes(a.id)) return 1;                // a is not the hovered element, send "a" to the back
+    else return 0;                             // a is the hovered element, bring "a" to the front
+  });
+
+  //var sel = d3.select("."+d.id); sel.moveToFront();
 }
 
 function mapDisplay(){ //show steady state of system - ports, importers, and exporters
@@ -2790,19 +2841,17 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
   d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.85+"px"})
+        .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.88+"px"})
 
   globalMean = sum/latlongReset.length
   exglobalMean = sum/exlatlongReset.length
 
-  radius= d3.scale.sqrt()
-    .domain([globalMin+1, globalMax]) //don't want min to be 0
-    .range([10, 30])
-
+  var flanMax = calcFlanneryRadius(globalMax);
+  flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
 
   var stringwork2 = ["Importers","Exporters"]
   var circleData = [[globalMax, defaultColor], [globalMean, defaultColor], [globalMin, defaultColor], [exGlobalMax, exDefaultColor], [exglobalMean, exDefaultColor], [exGlobalMin, exDefaultColor]]
-  var circleSpot = [34, 48, 53, 35, 50, 53] //calculate based on math?....
+  var circleSpot = [34, 53, 58, 34, 54, 57] //calculate based on math?....
 
   displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height",lambdaNOPX/2.5+"px")
 
@@ -2823,7 +2872,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
     //.attr("class", function(d) {return data.parent.name})
     .style("fill", function(d){return d[1]})
     .style(defaultStroke)
-    .attr("r", function(d){return radius(d[0])})
+    .attr("r", function(d){return radiusFlannery(d[0])})
     .attr("cy", function(d,i){
       return circleSpot[i]
     }) 
@@ -2869,7 +2918,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
     d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": (lambdaNOPX/.85)-5+"px"})
+        .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.88+"px"})
 
     var result = colorKey.filter(function( obj ) {return obj.name == data.name;});
     result = result[0];

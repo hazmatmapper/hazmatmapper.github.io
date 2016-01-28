@@ -42,7 +42,7 @@ a{
 }
 .showDiv{
   position: absolute;
-  width: 40%;
+  width: 80%;
   left:40%;
 }
 .yearDiv{
@@ -116,6 +116,7 @@ label {
   background-color:orange;
 }
 
+
 .CAN, .MEX, .USA{
   fill: #cccccc;
   stroke:white;
@@ -126,7 +127,11 @@ label {
   stroke: black;
   stroke-width: 1px
 }
-
+.epa {
+  stroke: none;
+  stroke-width: 2px;
+  fill: none;
+}
 
 .introTitle{
   color: yellow;
@@ -154,6 +159,7 @@ label {
   stroke-width:.5px;*/
   cursor: pointer;
 }
+
 
 
 
@@ -372,23 +378,7 @@ h3{
   color: black;
   border-radius: 1px;
 }
-/* Creates a small triangle extender for the tooltip */
-.d3-tip:after {
-  box-sizing: border-box;
-  display: inline;
-  width: 100%;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.8);
-  content: "\25BC";
-  position: absolute;
-  text-align: center;
-}
-/* Style northward tooltips differently */
-.d3-tip.n:after {
-  margin: -1px 0 0 0;
-  top: 100%;
-  left: 0;
-}
+
 
 
 .yaxis{
