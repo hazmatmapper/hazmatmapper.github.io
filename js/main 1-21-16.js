@@ -796,7 +796,7 @@ function shader(data){
     d3.select(".barWrap")
       .append("div")
       .attr("class", "descriptions")
-      .style({"bottom": lambdaNOPX/.5+"px", "height": (lambdaNOPX/.85)-(lambdaNOPX/.85)+"px"}) 
+      .style({"bottom": lambdaNOPX/.95+"px", "height": (lambdaNOPX/.85)-(lambdaNOPX/.95)+"px"}) 
       .html("<span class = 'importerName'>"+data+"</span>....<span class = 'viewerData'>"+lookup[data]+"</span>")
     d3.select(".mapDisplay").remove()
     d3.select(".barWrap")
