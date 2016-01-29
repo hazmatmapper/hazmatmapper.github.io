@@ -90,18 +90,15 @@ label {
   border-radius: 5px;
   padding: 5px;
 }
-.aboutFooter{
+.aboutFooter, {
   position:absolute;
-  left: 5px;
   cursor: pointer; 
+  left: 0%;
+  width: 5%;
 }
 .help{
   font-size:12px;
   color: black;
-}
-.data{
-  position:absolute;
-  left: 100px;
 }
 
 

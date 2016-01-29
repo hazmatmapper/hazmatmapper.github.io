@@ -108,7 +108,7 @@ function initialize(){
   d3.select(".footer")
     .append("div")
     .attr("class", "aboutFooter")
-    .html("<a href='abouts/help.html' class='about' target='_blank'>About</a>")
+    .html("<a href='abouts/about.html' class='about' target='_blank'>About</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp<a href='abouts/help.html' class='about' target='_blank'>Help</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbspData last updated: 10/30/15")
 /*    .on("click", function(){
       d3.select("body")
       .append("div")
@@ -121,11 +121,7 @@ function initialize(){
         d3.select(".about").remove()
         d3.select(".exitAbout").remove()
       })
-    })*/  
-  d3.select(".footer")
-  .append("text")
-  .attr("class", "data")
-  .html("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Data last updated: 10/30/15")
+    })*/ 
 
   setControls();
   /*d3.select("body")

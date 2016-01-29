@@ -29,23 +29,23 @@ h3{
 </style>
 </head>
 <body>
-<h3>What is this site?</h3>
-<p class = "help">This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. 
-<p class = "help"> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site.
-<p class = "help"> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method.</p>
-<h3>How do I use this site?</h3>
-<p class = "help"> Subquestions here </p>
-<h3>What is this data?</h3>
-<p class = "help">We received the EPA hazardous waste records for HazMatMapper as 971 scanned PDFs of regulatory forms. Each PDF contained an average of seven manifests, or bundles of unique shipments. A shipment is a collection of waste containers made discrete by its United Nations waste type classification, the kind of container holding the waste, or the intended processing method. Each manifest recorded anywhere from 1-74―but most frequently only one―shipment(s) of waste. For instance, a manifest might contain three shipments, with the first shipment comprising four metal drums of flammable waste paint, the second comprising two metal drums of material containing mercury, and the third comprising three burlap bags of the same mercury-containing material. To assemble a spatial database of the shipments records, we first separated each manifest into unique shipments and then hand-coded each shipment with the common attributes included in the PDFs: exporter name, address (geocoded using the Bing Maps batch geocoding service), port of entry, importer name and address, waste type and container, and planned processing method. Click <a href='data/manifests/CA.2010.HW.cmwnw%20inc-alcan%20bc.decOCR.pdf' target='_blank'>here</a> to see a sample manifest. Over 118,000 containers of waste were imported into the US between 2007 and 2012 as recorded by the nearly 10,000 manifests.</p>
-<h3>Why don't you have data for 2008?</h3>
-<p class = "help">Something about what EPA did provide us. We are currently trying to access 2008 data through a Freedom of Information Act request.
+<h3>How do I know how much waste a site imported as an amount, rather than a percent?</h3>
+<p class = "help"> Hovering over a site highlights the percent of waste that that particular site imported (on the right side panel).  Clicking on the site displays a panel on the left showing the total kilograms or liters imported by that site, as well as where that site ranks among other importers.  </p>
+<h3>What if I want to look at state information, rather than site information?</h3>
+<p class = "help">On the left hand side of the screen, select ‘states’.  This will display a choropleth map showing the amount each state imported during the selected time period.  Hovering over a particular state will display the number of sites located in that state, as well as the amount of the selected waste (solid or liquid) imported by that state. </p>
+<h3> How do I find out how a particular site is disposing of the waste? </h3>
+<p class = "help">Select ‘disposal’ on the right hand side.  Hover over the bar chart to get a feel for the different ways sites dispose of waste. Selecting one of the disposal types will highlight the sites that dispose of waste in that way.  Additionally, the panel at the right will give more detail about what that disposal method is. 
+<h3>How do I find out what types of waste a particular site imported?</h3>
+<p class = "help">Selecting a site displays a panel on the left that gives information about a given site, including the types of waste that site imported.  To find out more about a particular waste type, select ‘type’ on the right side panel, then select the desired waste type from the bar chart.  Information about that waste type will be displayed below.</p>
+<h3>Can I also look at demographic information along with the waste information?</h3>
+<p class = "help">Yes.  Poverty and race data can be overlaid on the map by selecting ‘poverty’ or ‘race’ from the right side panel.  For site specific information, first select or search for the site of interest.  From the left side panel that opens, select the ‘demographics’ tab to obtain more detailed race and poverty information for that site. </p>   
 <h3>Why is there liquid and solid waste?</h3>
 <p class = "help">We maintain the separation between solid and liquid waste in HazMatMapper given ambiguity in conversions between different hazardous elements. While this distinction is useful for analysis of the dataset, it does not reflect the regulatory definition of hazardous waste, which hinges on different notions of “solid” (40 USC. Sec 261.2. 2012).</p>
 <h3>Why are there liquid wastes under the solid category and vice versa?</h3>
 <p class = "help"> Because people report things in volume vs. weight.</p>
 <h3>What does N.O.S. mean?</h3>
 <p class = "help"> The waste is not otherwise specified, so specific hazards are unknown</p>
-<h3>Who are you?</h3>
+
 
  <!--<script src="lib/d3.v3.js"></script>-->
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>  
