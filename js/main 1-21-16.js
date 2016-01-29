@@ -62,6 +62,7 @@ var lambdaPlus = "300px"; lambdaplusNOPX = 300
 var chorodump;
 var format = d3.format("0,000");
 var phaseformat = {"Solids": "kg", "Liquids": "liters"}
+var clicky
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -109,19 +110,6 @@ function initialize(){
     .append("div")
     .attr("class", "aboutFooter")
     .html("<a href='abouts/about.html' class='about' target='_blank'>About</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp<a href='abouts/help.html' class='about' target='_blank'>Help</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbspData last updated: 10/30/15")
-/*    .on("click", function(){
-      d3.select("body")
-      .append("div")
-      .attr("class", "about")
-      //.text(footerText)
-      //.style({"color":"white", "font-family": 'Arial Narrow, Arial, sans-serif'})
-      .html("<span class='aboutText'>"+footerText+"") //<p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually imports much waste from these countries and other rich countries, for disposal. Many of these are transnational corporations shifting between subsidiaries. <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method.</p></span>")
-      .append("div").attr("class", "exitAbout").text("Exit")
-      .on("click", function(){
-        d3.select(".about").remove()
-        d3.select(".exitAbout").remove()
-      })
-    })*/ 
 
   setControls();
   /*d3.select("body")
@@ -195,100 +183,6 @@ function setControls(){
           })
       }
     })
-/*
-  d3.select("#showHide")
-    .append("div")
-    .html("<img src='/data/icons/min.svg' height='40' width='40'>")
-    .on("click", function(){
-      if (clickCheck == true) {
-        d3.select("#accordion")
-          .style("display", "none")
-        d3.select("#showHide")
-          .style({"right": "15px"})
-        /* d3.select("#mapSVG")
-          .transition()
-          .duration(450)
-          .style({"height": height100-50})
-         .each("end", function(){ // cut?
-              if (viewClickCheck == true) {
-              d3.select('.intro').remove()
-              d3.select(".viewerText").remove()
-              d3.select(".viewer")
-                .transition()
-                .duration(450)
-                .style("width", "0px")
-              d3.select("#viewShowHide")
-                .transition()
-                .duration(450)
-                .style({"left": "0px"})
-              viewClickCheck = false
-            }
-            if (view == "Sites"){
-              svg.selectAll("path, circle").remove()
-              projection = projectionLong//new projection terms
-              zoomed = false
-              zoom.translate([0,0]).scale(1)
-              setMap()
-              importers(latlongReset)
-            }
-            if (view == "States"){
-              svg.selectAll("path, circle").remove()
-              projection = projectionLong//new projection terms
-              zoomed = false
-              zoom.translate([0,0]).scale(1)
-              setMap()
-              setData(phase, currentYears, view)
-            }
-          })
-
-        clickCheck = false
-      }
-      else {
-/*          if (viewClickCheck == true) {
-              d3.select('.intro').remove()
-              d3.select(".viewerText").remove()
-              d3.select(".viewer")
-                .transition()
-                .duration(450)
-                .style("width", "0px")
-              d3.select("#viewShowHide")
-                .transition()
-                .duration(450)
-                .style({"left": "0px"})
-              viewClickCheck = false
-            }
-        d3.select("#accordion")
-          .transition()
-          .duration(750)
-          .style("display", "block")
-        d3.select("#showHide")
-          .style({"right": lambdaNOPX+15+"px","bottom": 15+lambdaNOPX/1.25+"px"})
-        d3.select("#mapSVG")
-          .transition()
-          .duration(450)
-          .style({"height": height100-lambdaNOPX-15})
-          .each("end", function(){
-            if (view == "Sites"){
-              svg.selectAll("path, circle").remove()
-              projection = projectionDefault //new projection terms
-              zoomed = false
-              zoom.translate([0,0]).scale(1)
-              setMap()
-              importers(latlongReset)
-            }
-            if (view == "States"){
-              svg.selectAll("path, circle").remove()
-              projection = projectionDefault//new projection terms
-              zoomed = false
-              zoom.translate([0,0]).scale(1)
-              setMap()
-              setData(phase, currentYears, view)
-            }
-          })
-        clickCheck = true
-      }
-    })
-*/
 
   //create a div to wrap accordion contents into
   d3.select("#accordion")
@@ -302,11 +196,6 @@ function setControls(){
     .attr("class", "filterSelector")
     .style({"width": lambda, "height": lambdaNOPX/1.25+"px", "bottom": 0})
 
-
-  //create SVGs for icicle and its y axis
-  /*IAsvg = d3.select(".barWrap").append("svg")
-    .style({"position": "absolute", "top": height100 - 2* (lambdaNOPX/1.25), "height": 15, "width": lambda, "right": 110})
-*/
   Isvg = d3.select(".barWrap").append("svg")
     .style({ "position": "absolute", "top": 0, "height": height100 - 2* (lambdaNOPX/1.25)+margin.bottom, "width": lambdaNOPX+margin.bottom, "right": 0}) 
 
@@ -454,8 +343,7 @@ d3.select(".barWrap")
 
       filterDomain = d
       icicle(window[d])
-      //icicleAxis();
-    });
+   });
   labelEnter.append("label").text(function(d) {return d;})
   labelEnter.append("text").html("&nbsp")
 
@@ -993,26 +881,6 @@ Isvg.selectAll("rects")
     })
     .on("mouseout", function(d){ icicleDehighlight(d); tip.hide(d);}) //
     .on('click', function(d){
-/*      if (filterDomain ==  "DisposalMethod" && d.depth == 1 || filterDomain ==  "Type" && d.depth == 2 || filterDomain ==  "Site" && d.depth == 3 || filterDomain ==  undefined && d.depth == 3){
-        //show details of method here
-        d3.select(".intro").remove()
-        d3.select(".viewerText").remove()
-        d3.select(".povertyChart").remove()
-        d3.selectAll(".yearData").remove()
-        drawLinesOut()
-        var show = {"name": mgmtTypeKey[d.name]}
-        ViewerHelp(show);
-      }
-      if (filterDomain ==  "DisposalMethod" && d.depth == 2 || filterDomain ==  "Type" && d.depth == 1 || filterDomain ==  "Site" && d.depth == 2 || filterDomain ==  undefined && d.depth == 2){
-        //show details of type here
-        drawLinesOut();
-        d3.select(".intro").remove()
-        d3.select(".viewerText").remove()
-        d3.select(".povertyChart").remove()
-        d3.selectAll(".yearData").remove()
-        var show = {"name": UNtypeKey[d.name]}
-        ViewerHelp(show);
-      }*/
       if (siteViewerHelp == true){
         for (var c = 0; c<latlongRdump.length; c++){
         if (d.name == latlongRdump[c].id){
@@ -1113,10 +981,13 @@ function icicleHighlight(data){
     svg.selectAll("circle")
       .transition().duration(500)
       .style(highlighted)
-    svg.selectAll("circle")
-      .data(latlongReset).filter(function(d) {for (var n = 0; n<icicleDump.length; n++){ if (icicleDump[n].name == d.id) {return d}}})
-      .transition().duration(500)
-      .style(defaultStroke) 
+
+    var yyy = d3.map(icicleDump, function(d){return d.name;}).keys()
+    for (var n = 0; n<yyy.length; n++){
+      svg.selectAll("."+yyy[n])
+        .transition().duration(500)
+        .style(defaultStroke)
+    }
   } else { 
     // if importer highlighted
     Isvg.selectAll("rect")
@@ -1258,9 +1129,11 @@ t[1] = Math.max(-(height100/2 - s*55), Math.min(t[1], height100/2 - s*55));
   m.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );      
   imp.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" ) //may need to fix to calculate based on import max?
+      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" ) 
+  var flanMax = calcFlanneryRadius(exGlobalMax)
+  flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
   exp.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
+      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" ) //may need to fix to calculate based on import max?
   if(arcGroup){arcGroup.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})}
 }
@@ -1330,7 +1203,6 @@ function dataCrunch(data){
 //years here
 for (var a =0; a<importByYear.length; a++){
   for(var b=0; b<latlongRdump.length; b++){
-    //console.log(importByYear[a]["key"], latlongRdump[b].id)
     if (importByYear[a]["key"] == latlongRdump[b].id){
       var obj = "";
       for (var c=0; c<importByYear[a]["values"].length; c++){
@@ -1472,13 +1344,11 @@ var radiusFlannery = function(x) {
 };
 
 d3.selection.prototype.moveToFront = function() {
-  console.log(this)
   return this.each(function(){
     this.parentNode.appendChild(this);
   });
   };
 d3.selection.prototype.moveToBack = function() { 
-    console.log(this)
     return this.each(function() { 
         var firstChild = this.parentNode.firstChild; 
         if (firstChild) { 
@@ -1526,9 +1396,11 @@ function importers(data){
       //drawLinesOut(d);
     })
    .on("click", function (d){
+    console.log(d)
       drawLinesOut();
       exportThis(d);
       updateDisplay(d);
+      //var sel = d3.select(this); sel.moveToFront();
     })
   imp.selectAll("circle")
     .transition()
@@ -1593,7 +1465,6 @@ function exportThis(data){
    for (var i=0; i<latlongs.length; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {
         if (latlongs[i]["values"][j]["values"][0]["longitude"] == data[k].long) {
-          console.log(latlongs[i]["values"][j]["values"][0])
           latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "signal": latlongs[i]["values"][j]["values"][0]["exporter_key"], "id": latlongs[i]["values"][j]["values"][0]["exporter_name"], "units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": []}) //lat longs of the foreign waste sites
           for (var z=0; z<latlongs[i]["values"][j]["values"].length; z++) {
             latlongdump[0]["types"].push(latlongs[i]["values"][j]["values"][z]["hazWasteDesc"])
@@ -1729,11 +1600,11 @@ function IMPpositions (data, base){
   svg.selectAll("#exporter").sort(function (a,b) {return b.total_waste-a.total_waste;})
 
   svg.selectAll("circle").sort(function (a, b) {
-    if (a.id != d.id) return 0;               // a is not the hovered element, send "a" to the back
+    if (a != d) return 0;               // a is not the hovered element, send "a" to the back
     else return 1;                             // a is the hovered element, bring "a" to the front
   });
 
-
+//solution? re-render?
   var dump = []
   for (x = 0; x<data.length; x++){
     dump[x]=data[x].signal
@@ -1757,15 +1628,14 @@ function colorize(data, name){
   for (var i=0; i<colorKey.length; i++) { if (colorKey[i].name == name) {colorDump.push(colorKey[i].color)}}
   //svg.selectAll("circle")
     //.style({"fill": "#1f77b4"})
-  svg.selectAll("circle")
-    .data(latlongReset).filter(function(d) {for (var r = 0; r<data.length; r++) { if (data[r].id == d.id){return d}}})
-    .style("fill", function(){
-      if (name == "total"){return defaultColor}
-      else {return colorDump[0]}
-      })
-    .style("opacity", function(){
-      return 1
-      })
+  
+  var yyy = d3.map(data, function(d){return d.id;}).keys()
+  console.log(yyy)
+  for (var r = 0; r<yyy.length; r++) {
+  svg.selectAll("."+yyy[r])
+    .style("fill", colorDump[0])
+    .style("opacity", 1)
+  }
 }
 
 function highlight(data){
@@ -2808,7 +2678,6 @@ var pathArcs = arcGroup.selectAll(".arc")
 }
 
 function EXPpositions (data, base){
-  console.log(data, base)
   //bring forward importer and exporters
   
   svg.selectAll("#importer").sort(function (a,b) {return b.total_waste-a.total_waste;})
@@ -2950,37 +2819,6 @@ function updateDisplay(data){ //function is called whether system change occurs 
          .attr("y", function (d, i){return 12+i*25})
          .attr("font-size", "12px")
          .attr("fill", "white")
-    } /*else if (data.depth == 2){ ///can cut???
-      if (mgmtTypeKey[data.name]) {data.desc = mgmtTypeKey[data.name]; data.desc2 = UNtypeKey[data.parent.name]}
-      if (UNtypeKey[data.name]) {data.desc = UNtypeKey[data.name]; data.desc2 = mgmtTypeKey[data.parent.name]}
-
-      if (filterDomain == "DisposalMethod"){var stringwork2 = ["= sites with " + data.desc2+"", "= sites doing " + data.desc2 + " of "+ data.desc]}
-      if (filterDomain == "Type"){var stringwork2 = ["= sites with " + data.desc2+"", "= sites doing " + data.desc + " of "+ data.desc2]}
-      var circleData = [data.parent.name, data.name]
-
-      var result2 = colorKey.filter(function( obj ) {return obj.name == data.parent.name; });
-      result=[result2[0], result]
-      displaySVG = d3.select(".mapDisplay").append("svg")
-      displaySVG.selectAll("circle")
-        .data(circleData)
-        .enter()
-        .append("circle")
-        //.attr("class", function(d) {return data.parent.name})
-        .style("fill", function(d, i){ return result[i].color})
-        .style(defaultStroke)
-        .attr("r", 16)
-        .attr("cy", function(d,i){return i*50 + 16}) 
-        .attr("cx", 16)
-      displaySVG.selectAll("text")
-        .data(stringwork2)
-         .enter()
-         .append("text")
-         .text(function(d){return d})
-         .attr("text-anchor", "right")
-         .attr("x", 0)
-         .attr("y", function (d, i){return 42+ i*50})
-         .attr("font-size", "12px")
-         .attr("fill", "white")
-    } */
+    }
 }
 }
