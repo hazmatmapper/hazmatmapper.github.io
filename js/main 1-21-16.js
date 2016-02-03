@@ -46,7 +46,7 @@ var highlighted = {"opacity": .2}
 var siteViewerHelp = false;
 var footerText;
 var descriptors = {};
-var currImporter,currColor,globalMax, globalMin, exGlobalMax, exGlobalMin, iceCheck, lastImporter; //iceCheck sees if click on site was first ice then not
+var currImporter,currColor,globalMax, globalMin, exGlobalMax, exGlobalMin, iceCheck, lastImporter, globalSum; //iceCheck sees if click on site was first ice then not
 var UNtypeKey = {};
 var mgmtTypeKey = {};
 var displaySVG;
@@ -59,7 +59,7 @@ var u, c, m, b, imp, exp, arcGroup, ports;
 var filterTypesYear, filterTypesSignal;
 var lambda = "200px"; lambdaNOPX = 200, lambdaPad = "215px"
 var lambdaPlus = "300px"; lambdaplusNOPX = 300
-var chorodump;
+var realchorodump;
 var format = d3.format("0,000");
 var phaseformat = {"Solids": "kg", "Liquids": "liters"}
 var clicky
@@ -288,7 +288,7 @@ labels.append("input")
         filterform.selectAll("input").property("disabled", false)
         showform.selectAll("input").property("disabled", false)
         filterform.selectAll("#Site").property("checked", true)
-        showform.selectAll("#None").property("checked", true)
+        //showform.selectAll("#None").property("checked", true)
       }
       if (d == "States") {
         $("#tags").catcomplete( "disable" );
@@ -414,23 +414,21 @@ d3.select(".barWrap")
       yearChange();
     })
 
-    var explanations = {"info2008": "We currently have no data for 2008"}
     var controlToolTips = d3.tip()
       .attr('class', 'd3-tip')
-      .html(function(d) {
-        return "<span style='color:white' style='font-size:4px'>" + explanations[d] + "</span>";
-    })
-    svg.call(controlToolTips)
+      //.offset([width100-100, height100-100])
+      .html("<span style='color:white' style='font-size:4px'>We currently have no data for 2008</span>")
+    Isvg.call(controlToolTips)
 
     labelEnter.append("label")
       .html(function(d) {if (d == "2008") {return d+" <img src='/data/icons/info.svg' height='12' width='12' id='info2008'>"} else {return d}})
     labelEnter.append("br")
     d3.select("#info2008")
       .on("mouseover", function(){
-       controlToolTips.show("info2008")
+       controlToolTips.show()
       })
       .on("mouseout", function(){
-        controlToolTips.hide()
+       controlToolTips.hide()
       })
 
   //these only run first time
@@ -482,6 +480,7 @@ d3.csv("data/"+phase+".csv", function(data) {
   }
 
   sum = d3.sum(data, function(d) {return d.totalQuantityinShipment})
+  globalSum = sum
   
   UNtypeKey={}
   data.forEach(function(d) {
@@ -622,30 +621,22 @@ d3.csv("data/"+phase+".csv", function(data) {
 
 function shader(data){
   if (data == "None"){
+    d3.selectAll(".descriptions").remove()
+    d3.select(".mapDisplay").remove()
+    mapDisplay();
     e.selectAll("path").style({"stroke": "none"})
     m.selectAll("text").style({"opacity": 0})
     svg.selectAll("#importer")
       .style({"fill": defaultColor, "fill-opacity": "1"})
-
   }
   else if (data == "EPA Regions"){
-    var epaTool = d3.tip()
-    .attr('class', 'd3-tip')
-    .direction("w")
-    .offset([0, 0])
-    .html(function(d) {
-      return "<span style='color:white'>EPA Region " +d.properties.region+ "</span>";
-    })
-    svg.call(epaTool)
     m.selectAll("text").style({
-        "opacity": .5
+        "opacity": 1
       })
     e.selectAll("path").style({
-        "stroke": "#777",
-        "stroke-dasharray": "2,2",
+        "stroke": "black",
+        "stroke-dasharray": "5,5",
         "stroke-linejoin": "round"})
-    .on("mouseover", function (d){epaTool.show(d)})
-    .on("mouseout", function(d){epaTool.hide(d)})
   }
   else if (data == "Poverty" || data == "Race"){
     svg.selectAll("#importer")
@@ -658,13 +649,15 @@ function shader(data){
     for (var i = 0; i<latlongReset.length; i++){
       if (latlongReset[i][data] != "-"){
       dump[latlongReset[i]["id"]] = latlongReset[i][data]}
-    } 
+  } 
 
-    var max = d3.max(d3.values(dump), Number);
-    var min = d3.min(d3.values(dump), Number);
+  var max = d3.max(d3.values(dump), Number);
+  var min = d3.min(d3.values(dump), Number);
+  var dumpMap = d3.values(dump).map(Number)
+  dumpMap.sort(function(a,b) {return a-b})
 
   var color = d3.scale.quantile()
-    .domain([min, max])
+    .domain(dumpMap)
     .range(['#edf8e9', '#bdd7e7','#6baed6','#3182bd','#08519c']);
 
   d3.selectAll("#importer")
@@ -675,7 +668,7 @@ function shader(data){
         }
       })
     
-    lookup = {"Race": "Race is defined as % minority (nonwhite, incl. Hispanic) in site's census tract. Data from 2012 American Community Survey 5 year estimate.", "Poverty": "Poverty defined as % in poverty within previous 12 months, at the census tract level.  Data from 2012 American Community Survey 5 year estimate."}
+    lookup = {"Race": "Race defined as % minority (nonwhite, incl. Hispanic) in site's census tract. Data from 2012 American Community Survey 5 year estimate.", "Poverty": "Poverty defined as % below poverty line w/in previous 12 months at census tract level. Data from 2012 American Community Survey 5 year estimate."}
     d3.select(".descriptions").remove()
     d3.select(".barWrap")
       .append("div")
@@ -698,8 +691,8 @@ function shader(data){
 
     
 
-    var stringwork2 = [results[3]+" - "+max+" %", results[2]+" - "+results[3]+" %", results[1]+" - "+results[2]+" %", results[0]+" - "+results[1]+" %", min+" - "+results[0]+" %"]
-    var squareData = [[16, '#08519c'], [16, '#3182bd'],[16, '#6baed6'],[16, '#bdd7e7'], [16,'#edf8e9']]
+    var stringwork2 = [results[3]+"% - "+max+"%", results[2]+"% - "+results[3]+"%", results[1]+"% - "+results[2]+"%", results[0]+"% - "+results[1]+"%", min+"% - "+results[0]+"%", "No data"]
+    var squareData = [[10, '#08519c'], [10, '#3182bd'],[10, '#6baed6'],[10, '#bdd7e7'], [10,'#edf8e9'], [10,'black']]
 
     displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height",lambdaNOPX/2.5+"px")
     displaySVG.selectAll("rect")
@@ -710,16 +703,16 @@ function shader(data){
       .style("fill", function(d){return d[1]})
       .attr("width", function(d){return d[0]})
       .attr("height", function(d){return d[0]})
-      .attr("y", function(d,i){return i * 16 + 5}) 
-      .attr("x", 16)
+      .attr("y", function(d,i){return i * 10 + 5}) 
+      .attr("x", 10)
     displaySVG.selectAll("text")
       .data(stringwork2)
        .enter()
        .append("text")
        .text(function(d){return d})
        .attr("text-anchor", "right")
-       .attr("x", 40)
-       .attr("y", function(d,i){return i * 16 + 16})
+       .attr("x", 25)
+       .attr("y", function(d,i){return i * 10 + 14})
        .attr("font-size", "12px")
        .attr("fill", "white")
  }     
@@ -727,17 +720,23 @@ function shader(data){
 
 
 function choropleth(data){
-    chorodump = [];
+    var chorodump = [];
     for (var i = 0; i<data.length; i++){
-      chorodump[data[i]["key"]] = data[i]["values"]["total_waste"]
+      chorodump[data[i]["key"]] = 100*(data[i]["values"]["total_waste"]/globalSum)
+    } 
+    realchorodump = [];
+    for (var i = 0; i<data.length; i++){
+      realchorodump[data[i]["key"]] = data[i]["values"]["total_waste"]
     } 
 
     //chorodump.sort(function(a,b) {return b.total_waste-a.total_waste;})
     var max = d3.max(d3.values(chorodump));
     var min = d3.min(d3.values(chorodump));
+    var chorodumpMap = d3.values(chorodump)
+    chorodumpMap.sort(function(a,b) {return a-b})
 
     var color = d3.scale.quantile()
-    .domain([min, max])
+    .domain(chorodumpMap)
     .range(['#bdd7e7','#6baed6','#3182bd','#08519c']);
 
     d3.selectAll(".USA")
@@ -755,6 +754,11 @@ function choropleth(data){
       .style("stroke", "black");
 
     d3.select(".descriptions").remove()
+    d3.select(".barWrap")
+      .append("div")
+      .attr("class", "descriptions")
+      .style({"bottom": lambdaNOPX/.95+"px", "height": (lambdaNOPX/.85)-(lambdaNOPX/.95)+"px"}) 
+      .html("<span class = 'importerName'>Percent of total waste flow</span>....<span class = 'viewerData'>By state, for the selected years. Hover over a state to see total imports and # of sites.</span>")
     d3.select(".mapDisplay").remove()
     d3.select(".barWrap")
           .append("div")
@@ -764,13 +768,13 @@ function choropleth(data){
     var results = color.quantiles()
     
     for (p = 0; p<results.length; p++){
-      results[p]=format(results[p])
+      results[p]=d3.round(results[p], 1)
     }
-    max = format(max)
-    min = format(min)
+    max = d3.round(max,1)
+    min = d3.round(min,1)
 
-    var stringwork2 = [results[2]+" - "+max+" "+phaseformat[phase], results[1]+" - "+results[2]+" "+phaseformat[phase], results[0]+" - "+results[1]+" "+phaseformat[phase], min+" - "+results[0]+" "+phaseformat[phase], " no imports"]
-    var squareData = [[16, '#08519c'], [16, '#3182bd'],[16, '#6baed6'],[16, '#bdd7e7'], [16,'#eff3ff']]
+    var stringwork2 = [results[2]+"% - "+max+"% ", results[1]+"% - "+results[2]+"% ", results[0]+"% - "+results[1]+"% ", min+"% - "+results[0]+"% ", " no imports"]
+    var squareData = [[12, '#08519c'], [12, '#3182bd'],[12, '#6baed6'],[12, '#bdd7e7'], [12,'#eff3ff']]
 
     displaySVG = d3.select(".mapDisplay").append("svg").attr("width", "100%").attr("height",lambdaNOPX/1.25+"px")
     displaySVG.selectAll("rect")
@@ -781,16 +785,16 @@ function choropleth(data){
       .style("fill", function(d){return d[1]})
       .attr("width", function(d){return d[0]})
       .attr("height", function(d){return d[0]})
-      .attr("y", function(d,i){return i * 16 + 5}) 
-      .attr("x", 16)
+      .attr("y", function(d,i){return i * 12 + 5}) 
+      .attr("x", 12)
     displaySVG.selectAll("text")
       .data(stringwork2)
        .enter()
        .append("text")
        .text(function(d){return d})
        .attr("text-anchor", "right")
-       .attr("x", 40)
-       .attr("y", function(d,i){return i * 16 + 16})
+       .attr("x", 30)
+       .attr("y", function(d,i){return i * 12 + 16})
        .attr("font-size", "12px")
        .attr("fill", "white")
 } 
@@ -893,7 +897,7 @@ Isvg.selectAll("rects")
         results = [];
         stringwork1= ["other sites"];
         d3.select(".viewerText").remove()
-        d3.select(".descriptions").remove()
+        //d3.select(".descriptions").remove()
         d3.select(".povertyChart").remove()
         d3.selectAll(".yearData").remove()
         drawLinesOut()
@@ -1059,7 +1063,7 @@ function callback(error, na, epa, borders){
     .data(topojson.feature(epa, epa.objects.epa).features)
     .enter().append("text")
         .style({
-        "fill": "#252525",
+        "stroke": "#252525",
         "opacity": 0,
         "font-size": "20px",
         "font-weight": 300
@@ -1099,7 +1103,7 @@ function callback(error, na, epa, borders){
   function statez(data){
    name = data.properties.gn_name
    ddd = data.properties.postal
-   sum = chorodump[ddd]
+   sum = realchorodump[ddd]
    if (sum == undefined){sum = 0}
    sum = format(sum)
    length = siteCount[ddd]
@@ -1396,11 +1400,9 @@ function importers(data){
       //drawLinesOut(d);
     })
    .on("click", function (d){
-    console.log(d)
       drawLinesOut();
       exportThis(d);
       updateDisplay(d);
-      //var sel = d3.select(this); sel.moveToFront();
     })
   imp.selectAll("circle")
     .transition()
@@ -2040,7 +2042,7 @@ d3.select(".viewerText")
             return i * barheight + barheight - barPadding + 8;
          })
       .attr("x", 0)
-      .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
+      .attr("class", function(d){return "percentLabel"}) 
 
 
 
@@ -2169,7 +2171,7 @@ typeSVG.append("g")
       }
         else {lastStart =0; return 0;} //return last d + spacing 
       }) //scale by x...
-      .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
+      .attr("class", function(d){return "percentLabel"}) 
 }
 
 function demographicCharts(data){ 
@@ -2231,7 +2233,7 @@ povSVG.selectAll("text")
               return i * barheight +barheight - barPadding +8;
          })
          .attr("x", 0)
-         .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
+         .attr("class", function(d){return "percentLabel"}) 
 
   //minority chart
   d3.select(".povertyChart").append("div")
@@ -2280,7 +2282,7 @@ rSVG.selectAll("text")
               return i * barheight +barheight - barPadding +8;
          })
          .attr("x", 0)
-         .attr("class", function(d){if (document.getElementsByClassName(data.id)["importer"].style.fill == "rgb(247, 247, 247)"){return "percentLabelDark"} else {return "percentLabel"}}) 
+         .attr("class", function(d){return "percentLabel"}) 
 }
 
 function manifestsCharts(data){
@@ -2772,11 +2774,11 @@ function updateDisplay(data){ //function is called whether system change occurs 
   if (mgmtTypeKey[data.name]) {data.desc, name = mgmtTypeKey[data.name]}
   if (UNtypeKey[data.name]) {data.desc, name = UNtypeKey[data.name]}
 
-  d3.select(".descriptions").remove()
 
   if (data.depth && filterDomain != "Site" && filterDomain != undefined){
+    d3.select(".descriptions").remove()
     d3.select(".barWrap").append("div").attr("class", "descriptions")
-      .style({"bottom": lambdaNOPX/1.15+"px", "height": (lambdaNOPX/.85)-(lambdaNOPX/1.15)+"px"}) 
+      .style({"bottom": lambdaNOPX/1.15+"px", "height": (lambdaNOPX/1.15)-(lambdaNOPX/2)+"px"}) 
       .html("<span class = 'importerName'>"+name+"</span>....<span class = 'viewerData'>"+descriptors[name]+"</span>")
     
     d3.select(".mapDisplay").remove()
@@ -2796,7 +2798,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
       stringwork1.splice(0,0,tempString)
       if (stringwork1.length > 3) {stringwork1.splice(3, stringwork1.length-3)}
 
-      displaySVG = d3.select(".mapDisplay").append("svg").attr("width", "100%").attr("height",lambdaNOPX/1.25+"px")
+      displaySVG = d3.select(".mapDisplay").append("svg").attr("width", "100%").attr("height",lambdaNOPX/1.15+"px")
       displaySVG.selectAll("circle")
         .data(stringwork1)
         .enter()
@@ -2804,9 +2806,9 @@ function updateDisplay(data){ //function is called whether system change occurs 
         //.attr("class", function(d) {return data.name})
         .style("fill", function(d,i) {return results[i].color})
         .style(defaultStroke)
-        .attr("r", 9)
-        .attr("cy", function(d,i){return i*25 + 9}) 
-        .attr("cx", 9)
+        .attr("r", 6)
+        .attr("cy", function(d,i){return i*20 + 6}) 
+        .attr("cx", 6)
 
 
       displaySVG.selectAll("text")
@@ -2815,8 +2817,8 @@ function updateDisplay(data){ //function is called whether system change occurs 
          .append("text")
          .text(function(d){return d})
          //.attr("text-anchor", "right")
-         .attr("x", 25)
-         .attr("y", function (d, i){return 12+i*25})
+         .attr("x", 20)
+         .attr("y", function (d, i){return 10+i*20})
          .attr("font-size", "12px")
          .attr("fill", "white")
     }

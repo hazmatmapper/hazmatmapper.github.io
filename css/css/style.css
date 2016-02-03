@@ -139,7 +139,7 @@ label {
   fill: none;
 }
 
-.introTitle{
+/*.introTitle{
   color: yellow;
 }
 .introButton{
@@ -156,7 +156,7 @@ label {
   border: solid yellow 2px;
   cursor: pointer;
 }
-
+*/
 
 
 
@@ -214,12 +214,7 @@ font-family: 'Rockwell';
 .percentLabel{
   font-size: 8px;
   text-align: bottom;
-  fill: #e8e8e8
-}
-.percentLabelDark{
-  font-size: 8px;
-  text-align: bottom;
-  fill:  #b2b2b2;
+  fill: #b2b2b2
 }
 .viewerData{
   font-size: 10px;
