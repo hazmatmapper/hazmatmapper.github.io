@@ -220,36 +220,36 @@ font-family: 'Rockwell';
   font-size: 10px;
   color: #e8e8e8;
 }
-.triImports:hover, .triDemos:hover, .triManifests:hover{
+.tri{
+  position:absolute;
+  text-align: center;
+  text-decoration: underline;
+  font-size: 10px;
+  color: #c2c2c2;
+}
+.tri:hover{
   text-decoration: none;
   cursor: pointer;
 }
-.triImports{
-  position:absolute;
+#Imports{
   left:0%;
-  width:33%;
-  text-align: center;
-  text-decoration: underline;
-  font-size: 10px;
-  color: #c2c2c2;
+  width:15%;
 }
-.triDemos{
-  position:absolute;
-  left:34%;
-  width:33%;
-  text-align: center;
-  text-decoration: underline;
-  font-size: 10px;
-  color: #c2c2c2;
+#Demos{
+  left:18%;
+  width:15%;
 }
-.triManifests{
-  position:relative;
-  left:68%;
-  width:33%;
-  text-align: center;
-  text-decoration: underline;
-  font-size: 10px;
-  color: #c2c2c2;
+#Manifests{
+  left:45%;
+  width:15%;
+}
+#stories{
+  left:62%;
+  width:15%;
+}
+#ECHO{
+  left:80%;
+  width:15%;
 }
 .povertyChart{
   border: none;
@@ -275,7 +275,11 @@ div.manifests, div.typeChart, div.povertyChart {
 }
 
 
-
+.chemSearch{
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
+}
 
 
 .textdiv { /* text in the boxes */

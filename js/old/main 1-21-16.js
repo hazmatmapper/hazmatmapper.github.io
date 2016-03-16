@@ -986,6 +986,7 @@ function icicleHighlight(data){
       .transition().duration(500)
       .style(highlighted)
 
+    console.log(icicleDump)
     var yyy = d3.map(icicleDump, function(d){return d.name;}).keys()
     for (var n = 0; n<yyy.length; n++){
       svg.selectAll("."+yyy[n])
