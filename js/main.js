@@ -56,14 +56,14 @@ var facilityName = {"name": ""}
 //var pathHelp;
 var flanneryScale;
 var lineStroke
-var u, c, m, b, imp, exp, arcGroup, ports;
+var u, c, m, b, imp, exp, arcGroup;
 var filterTypesYear, filterTypesSignal;
 var lambda = "200px"; lambdaNOPX = 200, lambdaPad = "215px"
 var lambdaPlus = "300px"; lambdaplusNOPX = 300
 var realchorodump;
 var format = d3.format("0,000");
 var phaseformat = {"Solids": "kg", "Liquids": "liters"}
-var clicky
+var clicky, ECHOdata
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -198,7 +198,7 @@ function setControls(){
     .style({"width": lambda, "height": lambdaNOPX/1.25+"px", "bottom": 0})
 
   Isvg = d3.select(".barWrap").append("svg")
-    .style({ "position": "absolute", "top": 0, "height": height100 - 2* (lambdaNOPX/1.25)+margin.bottom, "width": lambdaNOPX+margin.bottom, "right": 0}) 
+    .style({ "position": "absolute", "top": 0, "height": height100 - 2* (lambdaNOPX/1.25)+margin.bottom, "width": lambdaNOPX-100+margin.bottom, "right": 0}) 
 
 var form = d3.select(".title").append("form")
 var labels = form.selectAll("span").data([0]).enter().append("span")
@@ -306,11 +306,10 @@ labels.append("input")
   labels.append("text").html("&nbsp")
 
 //filter types selector
-
 d3.select(".barWrap")
     .append("div")
     .attr("class", "filterDiv")
-    .style("top", height100 - 2* (lambdaNOPX/1.25)+"px")
+    .style({"top": height100 - 2.6* (lambdaNOPX/1.25)+"px", "left": "50px"})
 
   filterTypes = ["Site", "Disposal", "Type"]
   var filterform = d3.select(".filterDiv").append("form"), j=0;
@@ -320,7 +319,7 @@ d3.select(".barWrap")
 
   var labelEnter = filterform.selectAll("span")
     .data(filterTypes)
-    .enter().append("span")
+    .enter().append("div")
 
   labelEnter.append("input")
     .attr({
@@ -433,7 +432,7 @@ d3.select(".barWrap")
       })
 
     //chemical search
-    var chemSearch = d3.select(".footer").append("div").attr("class", "chemSearch")
+    var chemSearch = d3.select(".barWrap").append("div").attr("class", "chemSearch").style({"top": height100 - 2* (lambdaNOPX/1.25)+"px", "left": "10px"})
     var chemForm = d3.select(".chemSearch").append("form")
 
     var labels = chemForm.selectAll("span").data([0]).enter().append("span")
@@ -447,7 +446,9 @@ d3.select(".barWrap")
     $("input").on("keydown",function search(e) {
         if(e.keyCode == 13) {
           chemical = $( "input:text" ).val()
+          reset()
           Isvg.selectAll("rect, div, g").remove();
+          d3.selectAll(".arc").remove()
           svg.selectAll("circle")
             .transition()
             .duration(750)
@@ -840,7 +841,7 @@ var y = d3.scale.linear()
     .range([0, height100- 10-(2* (lambdaNOPX/1.25))]);
 
 var x = d3.scale.linear()
-    .range([0, lambdaNOPX-margin.bottom]);
+    .range([0, lambdaNOPX-100-margin.bottom]);
 
 var color = d3.scale.ordinal()
   .range(['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928']);
@@ -977,14 +978,14 @@ var xAxis = d3.svg.axis()
     .orient("right");
 Isvg.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate("+175+", "+0+")")
+      .attr("transform", "translate("+70+", "+0+")")
       .call(xAxis)
 
 
 Isvg.append("g")
       .attr("class", "y axis")
     .append("text")
-    .attr("transform", "translate("+80+","+ (height100 - 2* (lambdaNOPX/1.25)+margin.bottom)/2+")rotate(-90)")
+    .attr("transform", "translate("+30+","+ (height100 - 2* (lambdaNOPX/1.25)+margin.bottom)/2+")rotate(-90)")
     .style("text-anchor", "middle")
     .text("Proportion of Total Waste")
 };
@@ -1719,8 +1720,9 @@ function exporters(){
   svg.selectAll("#exporter").remove();
     //begin constructing latlongs of exporters
   //if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
+  console.log(latlongs)
   latlongdump = [];
-   for (var i=0; i<latlongs.length-1; i++) {
+   for (var i=0; i<latlongs.length; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {   
           //console.log(latlongs[i]["values"][j]["values"][0])   
           latlongdump.push({"long": latlongs[i]["values"][j]["values"][0]["exporterLONG"], "lat": latlongs[i]["values"][j]["values"][0]["exporterLAT"], "name": latlongs[i]["values"][j]["values"][0]["exporter_name"], "id": latlongs[i]["values"][j]["values"][0]["exporter_key"], "address": latlongs[i]["values"][j]["values"][0]["exporter_address"], "city": latlongs[i]["values"][j]["values"][0]["exporter_city"], "state": latlongs[i]["values"][j]["values"][0]["exporter_state"],"units": latlongs[i]["values"][j]["values"][0]["units_final"], "types": [], "rank": []}) //lat longs of the foreign waste sites
@@ -1729,7 +1731,7 @@ function exporters(){
           };*/
         };
       };
-  for (var i =0; i<exporterSum.length-1; i++){
+  for (var i =0; i<exporterSum.length; i++){
     for (var j=0; j<latlongdump.length; j++){
       if (exporterSum[i]["key"] == latlongdump[j].long){
         latlongdump[j].total_waste = exporterSum[i]["values"]["total_waste"]
@@ -2352,12 +2354,17 @@ function stories(data){
       .append('div')
       .html("<br><span class = 'povLabel'>Stories about this site</span>")
 
+    console.log(storiesdata)
     for (a = 0; storiesdata.length; a++){
       if (storiesdata[a].epaNumber == data.id){
-        console.log(storiesdata[a])//figure otu how to get length of link/title list
         //print year, file name
-        d3.select(".stories").append('div').html("<a href='"+storiesdata[a].link1+"' target='_blank'>"+storiesdata[a].title1+"</a><br>")
+        var length = d3.keys(storiesdata[a]).length
+        console.log(length)
+        for (b = 0; b<length; b++){
+          d3.select(".stories").append('div').html("<a href='"+storiesdata[a].link[b]+"' target='_blank'>"+storiesdata[a].title[b]+"</a><br>")
+        }
       }
+      return //break
     }
   })
 }
@@ -2368,7 +2375,74 @@ function ECHO(data){
 
   d3.select(".ECHO")
     .append('div')
-    .html("<br><span class = 'povLabel'>Enforcement history at this site</span>")
+    .html("<br><span class = 'povLabel'>Compliance history at this site</span>")
+
+  
+  $.ajax({
+    url:"https://ofmpub.epa.gov/echo/dfr_rest_services.get_dfr?output=JSON&p_id="+data.id+"",
+    dataType:"json",
+    success: function (d){
+      if (d.Results.RCRACompliance.Sources[0].Status){
+        data = d.Results.RCRACompliance.Sources[0].Status
+        var legend = d.Results.RCRACompliance
+        delete legend.Sources
+      }
+      ECHOchart(data, legend)
+    }
+  })
+}
+
+function ECHOchart(data, legend){
+      var width = lambdaplusNOPX - 10
+      var height = (height100)/2
+      var barheight = (height/12 < 15) ? 15:height/12
+
+      d3.select(".povertyChart").append("div")
+          .attr("class", "raceLabel")
+          .html("<p>Compliance status")
+
+      var eSVG =  d3.select(".ECHO").append("svg")
+          .attr("width", width)
+          .attr("height", height);
+
+      var barPadding = 15;
+
+      var p = d3.keys(data)
+      p.shift()
+      var q = d3.values(data)
+      q.shift()
+
+      plegend={"In Viol": "In Violation", "No Viol": "No violation", "null": "Unknown status", "SNC": "Significant Non-Compliance"}
+
+      eSVG.selectAll("rect")
+           .data(q)
+           .enter()
+           .append("rect")
+           .attr("y", function(d, i) {
+              return i * barheight;
+           })
+           .attr("x", width/1.5)
+           .attr("height", barheight - barPadding).transition().duration(750)
+           .attr("width", width/4)
+           .attr("fill", function(d, i) {
+              if (d == "SNC"){return "red"};
+              if (d == "In Viol"){return "orange"};
+              if (d == "In Viol"){return "grey"};
+              if (d == null){return "black"};
+           })
+      eSVG.selectAll("text")
+           .data(p)
+           .enter()
+           .append("text")
+           .text(function(d,i) {
+              z = i+1
+              return legend["Qtr"+z+"Start"]+"-"+legend["Qtr"+z+"End"]+": "+plegend[q[i]];
+            })
+           .attr("y", function(d, i) {
+                return i * barheight + 8
+           })
+           .attr("x",0)
+           .attr("class", function(d){return "percentLabel"}) 
 }
 //} viewer ends
 
@@ -2776,7 +2850,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
 
   var stringwork2 = ["Importers","Exporters"]
   var circleData = [[globalMax, defaultColor], [globalMean, defaultColor], [globalMin, defaultColor], [exGlobalMax, exDefaultColor], [exglobalMean, exDefaultColor], [exGlobalMin, exDefaultColor]]
-  var circleSpot = [34, 53, 58, 34, 54, 57] //calculate based on math?....
+  //var circleSpot = [34, 53, 58, 34, 54, 57] 
 
   displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height",lambdaNOPX/2.5+"px")
 
@@ -2798,9 +2872,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
     .style("fill", function(d){return d[1]})
     .style(defaultStroke)
     .attr("r", function(d){return radiusFlannery(d[0])})
-    .attr("cy", function(d,i){
-      return circleSpot[i]
-    }) 
+    .attr("cy", 34) 
     .attr("cx", function(d, i){
       if (i <= 2) {return lambdaNOPX/4} else {return lambdaNOPX/1.5}
       })
