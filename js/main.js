@@ -16,13 +16,11 @@ var Disposal;
 var povertydata = [];
 var colorKey;
 var stringwork1= []//["other sites"];
-var clickCheck = true
-var viewClickCheck = false
-var checker = false; //checks to see whether we've run initial data crunching, essentially
+var clickCheck = true, viewClickCheck = false, liquidChecker = false; //checks to see whether we've just switched to liquids
 var methyTypeCheck = "Type";
 var povSVG;
 var zoomed = false;
-var firstTime = true, otherTimes = false, latlongGlobal, importByYearGlobal, exportByYearGlobal, filter, currentYears, siteCount=[];
+var firstTime = true, otherTimes = false, latlongGlobal, flowByYearGlobal ={"importer": [], "exporter": []}, filter, currentYears, siteCount=[];
 var exporterInfo;
 var icicleDump;
 var domain;
@@ -64,6 +62,8 @@ var realchorodump;
 var format = d3.format("0,000");
 var phaseformat = {"Solids": "kg", "Liquids": "liters"}
 var clicky, ECHOdata
+var mapDisplayStyle = {"height": lambdaNOPX/2.4+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.8+"px"} //legend positioning
+var descriptionsStyle = {"bottom": lambdaNOPX/1+"px", "height": (lambdaNOPX/1.15)-(lambdaNOPX/2)+"px"} //descriptions positioning
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -200,7 +200,7 @@ function setControls(){
   Isvg = d3.select(".barWrap").append("svg")
     .style({ "position": "absolute", "top": 0, "height": height100 - 2* (lambdaNOPX/1.25)+margin.bottom, "width": lambdaNOPX-100+margin.bottom, "right": 0}) 
 
-var form = d3.select(".title").append("form")
+var form = d3.select(".footer").append("form").style({"position": "absolute", "bottom": "2px", "right": "5px"})
 var labels = form.selectAll("span").data([0]).enter().append("span")
 labels.append("input")
     .attr({
@@ -208,6 +208,35 @@ labels.append("input")
         id: "tags",
         value: "Find a place"
     })
+
+//chemical search
+    var chemSearch = d3.select(".title").append("form")
+
+    var labels = chemSearch.selectAll("span").data([0]).enter().append("span")
+    labels.append("input")
+        .attr({
+            type: "text",
+            id: "chem",
+            size: 23,
+            value: "Search for a chemical (e.g. lead)"
+        })
+
+    $("#chem").on("keydown",function search(e) {
+        if(e.keyCode == 13) {
+          chemical = $( "#chem" ).val()
+          reset()
+          Isvg.selectAll("rect, div, g").remove();
+          d3.selectAll(".arc").remove()
+          svg.selectAll("circle")
+            .transition()
+            .duration(750)
+            .attr("r", 0)
+          .remove();
+          setData(phase)
+          event.preventDefault();
+        }
+    });
+
 
 //phase switcher here
 filterPhases = ["Solids", "Liquids"]
@@ -231,6 +260,7 @@ labels.append("input")
       filterform.selectAll("#Site")
         .property("checked", true)
       phase = d
+      if (phase == "Liquids"){liquidChecker = true}
       Isvg.selectAll("rect, div, g").remove();
       d3.selectAll(".arc").remove()
       d3.select(".descriptions").remove()
@@ -283,7 +313,7 @@ labels.append("input")
       view = d
       Isvg.selectAll("rect, div, g").remove();
       if (d == "Sites") {
-        $("#tags").catcomplete( "enable" );
+       $("#tags").catcomplete( "enable" );
         mapDisplay()
         svg.selectAll(".USA").transition().duration(2500).style({"fill": '#cccccc'}).style("stroke", "white");
         filterform.selectAll("input").property("disabled", false)
@@ -309,9 +339,9 @@ labels.append("input")
 d3.select(".barWrap")
     .append("div")
     .attr("class", "filterDiv")
-    .style({"top": height100 - 2.6* (lambdaNOPX/1.25)+"px", "left": "50px"})
+    .style({"top": height100 - 2.75* (lambdaNOPX/1.25)+"px", "left": "50px"})
 
-  filterTypes = ["Site", "Disposal", "Type"]
+  filterTypes = ["Site", "Company", "Disposal", "Type"]
   var filterform = d3.select(".filterDiv").append("form"), j=0;
   filterform.append("text")
     .attr("class", "viewerCategory")
@@ -431,33 +461,6 @@ d3.select(".barWrap")
        controlToolTips.hide()
       })
 
-    //chemical search
-    var chemSearch = d3.select(".barWrap").append("div").attr("class", "chemSearch").style({"top": height100 - 2* (lambdaNOPX/1.25)+"px", "left": "10px"})
-    var chemForm = d3.select(".chemSearch").append("form")
-
-    var labels = chemForm.selectAll("span").data([0]).enter().append("span")
-    labels.append("input")
-        .attr({
-            type: "text",
-            value: "Search for a chemical (e.g. lead)",
-            size: 75
-        })
-
-    $("input").on("keydown",function search(e) {
-        if(e.keyCode == 13) {
-          chemical = $( "input:text" ).val()
-          reset()
-          Isvg.selectAll("rect, div, g").remove();
-          d3.selectAll(".arc").remove()
-          svg.selectAll("circle")
-            .transition()
-            .duration(750)
-            .attr("r", 0)
-          .remove();
-          setData(phase)
-          event.preventDefault();
-        }
-    });
 
   //these only run first time
   setMap();
@@ -482,7 +485,7 @@ function yearChange(){
 }
 
 function setData(phase, years, view){
-d3.csv("data/"+phase+".csv", function(data) {
+d3.csv("data/data.csv", function(data) {
   data.forEach(function(d){
     d.totalQuantityinShipment = +d.totalQuantityinShipment // convert the quantity of waste from string to number
     d.exporterLAT = +d.exporterLAT
@@ -491,6 +494,8 @@ d3.csv("data/"+phase+".csv", function(data) {
     d.receivingLong = +d.longitude
     d.receivingFacilityZipCode = +d.receivingfacilityzipcode
     d.hazWasteDesc = d.hazWasteDesc
+    d.exporter_name = d.exporter_name
+    d.fullDescription - d.fullDescription
     d.exporter_key = d.exporter_key
     d.un = d.un
     d.mgmt = d.mgmt
@@ -499,6 +504,16 @@ d3.csv("data/"+phase+".csv", function(data) {
     d.filenom = d.filenom
     d.ExpectedManagementMethod = d.ExpectedManagementMethod
   });
+
+  if (phase == "Solids"){
+    data = data.filter(function(row){
+      return row["units_final"] == "kg"
+    })
+  } else {
+    data = data.filter(function(row){
+      return row["units_final"] == "l"
+    })
+  }
 
   if (otherTimes){
     //console.log(filterTypesSignal[filterTypesYear[3]])
@@ -510,11 +525,10 @@ d3.csv("data/"+phase+".csv", function(data) {
   if (chemical){
     //console.log(filterTypesSignal[filterTypesYear[3]])
     data = data.filter(function(row){
-      return row["hazWasteDesc"].toLowerCase().includes(chemical)
+      console.log(row["fullDescription"].toLowerCase(), chemical.toLowerCase())
+      return row["fullDescription"].toLowerCase().includes(chemical.toLowerCase())
     })
   }
-
-  console.log(data)
 
   sum = d3.sum(data, function(d) {return d.totalQuantityinShipment})
   globalSum = sum
@@ -532,6 +546,7 @@ d3.csv("data/"+phase+".csv", function(data) {
 
   Site = d3.nest()
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
+  .key(function(d) { return d.company})
   .key(function(d) { return d.un; })
   .key(function(d) { return d.mgmt; })
   .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
@@ -541,6 +556,7 @@ d3.csv("data/"+phase+".csv", function(data) {
   Disposal = d3.nest()  
   .key(function(d) { return d.mgmt; })
   .key(function(d) { return d.un; })
+  .key(function(d) { return d.company})
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
   .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
   .entries(data);
@@ -549,17 +565,25 @@ d3.csv("data/"+phase+".csv", function(data) {
   Type = d3.nest()
   .key(function(d) { return d.un; })
   .key(function(d) { return d.mgmt; })
+  .key(function(d) { return d.company})
   .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
   .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
   .entries(data);
   Type={"key": "total", "values": Type};
 
-  //need a sort by type solid/liquid here based on G/L vs K/P
-
+  Company = d3.nest()
+  .key(function(d) { return d.company})
+  .key(function(d) { return d.un; })
+  .key(function(d) { return d.mgmt; })
+  .key(function(d) { return d.ReceivingFacilityEPAIDNumber; })
+  .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})})
+  .entries(data);
+  Company={"key": "total", "values": Company};
 
   renameStuff(Site);
   renameStuff(Disposal);
   renameStuff(Type);
+  renameStuff(Company);
   function renameStuff(d) {
     d.name = d.key; delete d.key;
     if (typeof d.values === "number") d.size = d.values;
@@ -613,14 +637,17 @@ d3.csv("data/"+phase+".csv", function(data) {
   .key(function(d) { return d.Year})
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // 
   .entries(data);
-  if (firstTime) {importByYearGlobal = importByYear}
+  if (firstTime) {flowByYearGlobal.importer.Solids = importByYear}
+  if (liquidChecker) {flowByYearGlobal.importer.Liquids = importByYear}
 
   exportByYear =d3.nest() //calculate for each exporter, how much they get per year
   .key(function(d) { return d.exporterLONG; }) // EPA ID number
   .key(function(d) { return d.Year})
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // 
   .entries(data);
-  if (firstTime) {exportByYearGlobal = exportByYear}
+  if (firstTime) {flowByYearGlobal.exporter.Solids = exportByYear}
+  if (liquidChecker) {flowByYearGlobal.exporter.Liquids = exportByYear}
+  liquidChecker = false
 
   importByState=d3.nest() //calculate for each importer, how much they get per year
   .key(function(d) { return d.importer_state; }) // EPA ID number
@@ -710,13 +737,13 @@ function shader(data){
     d3.select(".barWrap")
       .append("div")
       .attr("class", "descriptions")
-      .style({"bottom": lambdaNOPX/.95+"px", "height": (lambdaNOPX/.85)-(lambdaNOPX/.95)+"px"}) 
+      .style(descriptionsStyle) 
       .html("<span class = 'importerName'>"+data+"</span>....<span class = 'viewerData'>"+lookup[data]+"</span>")
     d3.select(".mapDisplay").remove()
     d3.select(".barWrap")
           .append("div")
           .attr("class", "mapDisplay")
-          .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.88+"px"})
+          .style(mapDisplayStyle)
 
     var results = color.quantiles()
     
@@ -794,13 +821,13 @@ function choropleth(data){
     d3.select(".barWrap")
       .append("div")
       .attr("class", "descriptions")
-      .style({"bottom": lambdaNOPX/.95+"px", "height": (lambdaNOPX/.85)-(lambdaNOPX/.95)+"px"}) 
+      .style(descriptionsStyle) 
       .html("<span class = 'importerName'>Percent of total waste flow</span>....<span class = 'viewerData'>By state, for the selected years. Hover over a state to see total imports and # of sites.</span>")
     d3.select(".mapDisplay").remove()
     d3.select(".barWrap")
           .append("div")
           .attr("class", "mapDisplay")
-          .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.88+"px"})
+          .style(mapDisplayStyle)
 
     var results = color.quantiles()
     
@@ -866,7 +893,6 @@ var nodes = partition.nodes(data);
 var iceFilter = nodes.filter(function(d) {for (n=0; n<nodes.length; n++){ if (d.depth == 1){return d}}});
 iceFilter.sort(function(a,b){return a.value-b.value})
 
-color.domain(iceFilter)
 colorKey=[];
 
 Isvg.selectAll("rects")
@@ -880,57 +906,29 @@ Isvg.selectAll("rects")
     .style({"cursor": "pointer", "fill": function(d) { 
       colorKey.push({"name": d.name, "color": color((d.children ? d : d.parent).name)}); 
       if (d.name == "total"){return defaultColor} else {return color((d.children ? d : d.parent).name)}; }, "stroke": "black", "stroke-width": "1px", "opacity": 1})
-    .on("mouseover", function (d) {
-      //look up facility name
-      //can cut?
-      if (filterDomain ==  "Site" && d.depth == 1 || filterDomain == undefined && d.depth == 1){
-        for (var c = 0; c<latlongRdump.length; c++){
-        if (d.name == latlongRdump[c].id){
-          facilityName.name = latlongRdump[c].name
-          siteViewerHelp = true
-          }
-        }
-        //tip.show(facilityName); 
-      } else if (filterDomain ==  "Type" && d.depth == 3) {
-        for (var c = 0; c<latlongRdump.length; c++){
-        if (d.name == latlongRdump[c].id){
-          facilityName.name = latlongRdump[c].name
-          siteViewerHelp = true
-          }
-        }
-        //tip.show(facilityName); 
-      } else if (filterDomain ==  "Disposal" && d.depth == 3) {
-        for (var c = 0; c<latlongRdump.length; c++){
-        if (d.name == latlongRdump[c].id){
-          facilityName.name = latlongRdump[c].name
-          siteViewerHelp = true
-          }
-        }
-        //tip.show(facilityName); 
-      } else {siteViewerHelp = false} //tip.show(d); 
-      if (filterDomain == "Type" && d.depth == 1 || filterDomain == "Site" && d.depth == 2 || filterDomain == "Disposal" && d.depth == 2 || filterDomain == undefined && d.depth == 2){
+    .on("mouseover", function (d) { 
+      if (filterDomain == "Type"){
         var show = {"name": UNtypeKey[d.name]}
         tip.show(show)
       }
-      if (filterDomain == "Type" && d.depth == 2 || filterDomain == "Site" && d.depth == 3 || filterDomain == "Disposal" && d.depth == 1 || filterDomain == undefined && d.depth == 3){
+      if (filterDomain == "Disposal"){
         var show = {"name": mgmtTypeKey[d.name]}
         tip.show(show)
       }
+      if (filterDomain == "Site" || filterDomain == undefined){
+        tip.show(d)
+      }      
+      if (filterDomain == "Company"){
+        tip.show(d)
+      }
+
       //if (d.depth === 1 && d.name[0] != "H" || d.depth === 3 && d.name[0] !="H"){
       icicleHighlight(d);
       //};  
     })
     .on("mouseout", function(d){ icicleDehighlight(d); tip.hide(d);}) //
     .on('click', function(d){
-      if (siteViewerHelp == true){
-        for (var c = 0; c<latlongRdump.length; c++){
-        if (d.name == latlongRdump[c].id){
-          drawLinesOut();
-          exportThis(latlongRdump[c]);
-          }
-        }
-      } 
-      if (d.depth == 0) {
+
         results = [];
         stringwork1= ["other sites"];
         d3.select(".viewerText").remove()
@@ -939,20 +937,19 @@ Isvg.selectAll("rects")
         d3.selectAll(".yearData").remove()
         drawLinesOut()
         if (viewClickCheck == true) {
-        d3.select('.intro').remove()
-        d3.select(".viewerText")
-          .style("display", "none")
-        d3.select(".viewer")
-          .transition()
-          .duration(450)
-          .style("width", "0px")
-        d3.select("#viewShowHide")
-          .transition()
-          .duration(450)
-          .style({"left": "0px"})
-        viewClickCheck = false
-      }
-      }
+          d3.select('.intro').remove()
+          d3.select(".viewerText")
+            .style("display", "none")
+          d3.select(".viewer")
+            .transition()
+            .duration(450)
+            .style("width", "0px")
+          d3.select("#viewShowHide")
+            .transition()
+            .duration(450)
+            .style({"left": "0px"})
+          viewClickCheck = false
+        }
       //clicked(d);
       //icicleImporters(d);
       icicleFilter(d);
@@ -997,7 +994,9 @@ function icicleFilter(data){
   if (filterDomain != "Site" && filterDomain != undefined){
     for (var k=0; k<data.children.length; k++){
       for (var l=0; l<data.children[k].children.length; l++){
-        icicleDump.push(data.children[k].children[l])
+        for (var m=0; m<data.children[k].children[l].children.length; m++){
+        icicleDump.push(data.children[k].children[l].children[m])
+       }
      }
     }
     icicleImporters(icicleDump, name)
@@ -1014,16 +1013,17 @@ function icicleHighlight(data){
     .style({"opacity": "1"});
     var icicleDump =[]
     //get the importers
-    for (var k=0; k<data.children.length; k++){
+  for (var k=0; k<data.children.length; k++){
       for (var l=0; l<data.children[k].children.length; l++){
-        icicleDump.push(data.children[k].children[l])
+        for (var m=0; m<data.children[k].children[l].children.length; m++){
+        icicleDump.push(data.children[k].children[l].children[m])
        }
      }
+    }
     svg.selectAll("circle")
       .transition().duration(500)
       .style(highlighted)
 
-    console.log(icicleDump)
     var yyy = d3.map(icicleDump, function(d){return d.name;}).keys()
     for (var n = 0; n<yyy.length; n++){
       svg.selectAll("."+yyy[n])
@@ -1153,7 +1153,7 @@ function callback(error, na, epa, borders){
 
 function zoomer() {
   if (view == "States"){return}
-  if (zoom.scale() > 1) {zoomed = true} //else {return zoom.translate([0,0]); zoom.scale(1)} //control slippiness for arcgroup
+  if (zoom.scale() > 1 || zoom.translate()[0] != 0 || zoom.translate()[1] !=0) {zoomed = true}
 /*
 var t = d3.event.translate,
     s = d3.event.scale;
@@ -1627,9 +1627,7 @@ var pathArcs = arcGroup.selectAll(".arc")
     arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})
   }
-
   IMPpositions(data, base)
-
 }
 
 function IMPpositions (data, base){
@@ -1720,7 +1718,6 @@ function exporters(){
   svg.selectAll("#exporter").remove();
     //begin constructing latlongs of exporters
   //if (data.length == undefined){data = [data]}; //if we're just clicking one site, put data in an array so we can work with it below. otherwise, it's all exporters...
-  console.log(latlongs)
   latlongdump = [];
    for (var i=0; i<latlongs.length; i++) {
     for (var j=0; j<latlongs[i]["values"].length; j++) {   
@@ -1749,6 +1746,7 @@ function exporters(){
 
 exlatlongReset = latlongdump
 
+
 //search terms
 var database = []
 for (var o =0; o<latlongReset.length; o++) {
@@ -1758,10 +1756,6 @@ for (var o =0; o<latlongReset.length; o++) {
 for (var o =0; o<latlongdump.length; o++) {
   database.push({"label":latlongdump[o].name, "value":latlongdump[o].id, "category": "Exporters"})
 }
-
-//mexfips.forEach( function (d) {database.push(d.FIELD2)})
-//for (var key in mexfips){database.push({"label": mexfips[key].FIELD2, "value": mexfips[key].FIELD2, "category": "Places"})}
-//for (var key in fips){database.push({"label": fips[key].name, "value": fips[key].abbreviation, "category": "Places"})}
 
 $.widget( "custom.catcomplete", $.ui.autocomplete, {
     _create: function() {
@@ -1826,6 +1820,10 @@ $(function() {
         }
         return false;
         },
+        position: {
+         my: "left bottom",
+         at: "left top",
+        },
         response: function(event, ui) {
           // ui.content is the array that's about to be sent to the response callback.
           if (ui.content.length === 0) {
@@ -1849,8 +1847,7 @@ for (var j=0; j<latlongdump.length; j++){
 }
 
 latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: this is helpful in order that the larger sites are drawn on the map first, allowing smaller sites to be highlighted and selected rather than swamped out/overwritten by larger ones
-for (var j=0; j<latlongdump.length; j++){
-  latlongdump[j].rank = j+1+"/"+latlongdump.length}
+for (var j=0; j<latlongdump.length; j++){latlongdump[j].rank = j+1+"/"+latlongdump.length}
 
   //scale exporter symbolization
   var max = d3.max(latlongdump, function(d) {return d.total_waste}),
@@ -1889,7 +1886,7 @@ for (var j=0; j<latlongdump.length; j++){
     .attr("r", function(d) {return radiusFlannery(d.total_waste); })
   //ports();
 
-  //this is the position the flow lines will be draw in
+  //this is the position the flow lines will be draw in - after (above) the exporters
   arcGroup = svg.append('g');
 };
 
@@ -2008,6 +2005,7 @@ d3.select(".viewerText")
   d3.select(".yearData").append("div")
     .attr("class", "yearChart")
 
+  var importByYearGlobal = flowByYearGlobal.importer[phase]
   //do work here getting imports by year for importer
   var years= ["2007","2008","2009","2010","2011","2012"] 
   var yearskey = {"2007":0,"2008":0,"2009":0,"2010":0,"2011":0,"2012":0}
@@ -2019,6 +2017,7 @@ d3.select(".viewerText")
             } 
           }
         }
+
    yearskey = [yearskey["2007"],yearskey["2008"],yearskey["2009"],yearskey["2010"],yearskey["2011"],yearskey["2012"]]
 
   var maxi = d3.max(yearskey, function(d){return d})
@@ -2333,7 +2332,7 @@ function manifestsCharts(data){
 
     d3.select(".manifests")
       .append('div')
-      .html("<br><span class = 'povLabel'>Manifests for 2007-2012*</span><br><span class = 'percentLabel'>*At this time, only some manifests for each site are available. Keep checking in.</span>"); //could make it for only selected years...
+      .html("<br><span class = 'povLabel'>Manifests for 2007-2012*</span><br><span class = 'percentLabel'>*At this time, only some manifests for each site are available.</span>"); //could make it for only selected years...
 
     for (a = 0; a<manifestsdata.length; a++){
       if (manifestsdata[a].siteID == data.id){
@@ -2359,12 +2358,11 @@ function stories(data){
       if (storiesdata[a].epaNumber == data.id){
         //print year, file name
         var length = d3.keys(storiesdata[a]).length
-        console.log(length)
-        for (b = 0; b<length; b++){
-          d3.select(".stories").append('div').html("<a href='"+storiesdata[a].link[b]+"' target='_blank'>"+storiesdata[a].title[b]+"</a><br>")
+        length = (length - 2)/2
+        for (b = 1; b<length; b++){
+          d3.select(".stories").append('div').html("<a href='"+storiesdata[a]["link"+b]+"' target='_blank'>"+storiesdata[a]["title"+b]+"</a><p>")
         }
       }
-      return //break
     }
   })
 }
@@ -2421,7 +2419,7 @@ function ECHOchart(data, legend){
            .attr("y", function(d, i) {
               return i * barheight;
            })
-           .attr("x", width/1.5)
+           .attr("x", width/1.4)
            .attr("height", barheight - barPadding).transition().duration(750)
            .attr("width", width/4)
            .attr("fill", function(d, i) {
@@ -2519,6 +2517,7 @@ d3.selectAll(".viewerText").append("div").attr("class", "importCharts");
     .attr("class", "yearChart")
 
   //do work here getting imports by year for exporter
+  var exportByYearGlobal = flowByYearGlobal.exporter[phase]
   var years= ["2007","2008","2009","2010","2011","2012"] 
    var yearskey = {"2007":0,"2008":0,"2009":0,"2010":0,"2011":0,"2012":0}
   for (var i = 0; i<exportByYearGlobal.length; i++){
@@ -2840,7 +2839,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
   d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.88+"px"})
+        .style(mapDisplayStyle)
 
   globalMean = sum/latlongReset.length
   exglobalMean = sum/exlatlongReset.length
@@ -2852,7 +2851,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
   var circleData = [[globalMax, defaultColor], [globalMean, defaultColor], [globalMin, defaultColor], [exGlobalMax, exDefaultColor], [exglobalMean, exDefaultColor], [exGlobalMin, exDefaultColor]]
   //var circleSpot = [34, 53, 58, 34, 54, 57] 
 
-  displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height",lambdaNOPX/2.5+"px")
+  displaySVG = d3.select(".mapDisplay").append("svg").attr("width", lambda).attr("height",lambdaNOPX/2.4+"px")
 
   var legendKey = ["Max", "Mean", "Minimum","Max", "Mean", "Minimum"]
   var legendtooltip = d3.tip()
@@ -2891,7 +2890,7 @@ function mapDisplay(){ //show steady state of system - ports, importers, and exp
      .attr("x",  function(d, i){
       if (i == 0) {return lambdaNOPX/4} else {return lambdaNOPX/1.5}
       })
-     .attr("y", 75)
+     .attr("y", 80)
      .attr("font-size", "12px")
      .attr("fill", "white")
 }
@@ -2908,14 +2907,14 @@ function updateDisplay(data){ //function is called whether system change occurs 
   if (data.depth && filterDomain != "Site" && filterDomain != undefined){
     d3.select(".descriptions").remove()
     d3.select(".barWrap").append("div").attr("class", "descriptions")
-      .style({"bottom": lambdaNOPX/1.15+"px", "height": (lambdaNOPX/1.15)-(lambdaNOPX/2)+"px"}) 
+      .style(descriptionsStyle) 
       .html("<span class = 'importerName'>"+name+"</span>....<span class = 'viewerData'>"+descriptors[name]+"</span>")
     
     d3.select(".mapDisplay").remove()
     d3.select(".barWrap")
         .append("div")
         .attr("class", "mapDisplay")
-        .style({"height": lambdaNOPX/2.5+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.88+"px"})
+        .style(mapDisplayStyle)
 
     var result = colorKey.filter(function( obj ) {return obj.name == data.name;});
     result = result[0];

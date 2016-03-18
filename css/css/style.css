@@ -252,6 +252,7 @@ font-family: 'Rockwell';
 }
 .povertyChart{
   border: none;
+  overflow: auto;
 }
 .yearChart{
   position:absolute;
@@ -379,7 +380,7 @@ font-family: 'Rockwell';
   shape-rendering: crispEdges;
 }
 
-#tags {
+#chem {
     border-radius: 0px;
     border: 1px solid black;
     height: 0 0 30px;
@@ -387,7 +388,6 @@ font-family: 'Rockwell';
 
 .ui-autocomplete {
     background: #252525;
-    min-height: 300px;
     width: 150px;
     font-size:10px;
     padding: 1em 1em;
@@ -395,18 +395,16 @@ font-family: 'Rockwell';
 ul.ui-autocomplete {
     list-style: none;
 }
-
-.ui-state-focus
-{
+.ui-state-focus{
     color:White;
     background:#cccccc;
     outline:none;
     cursor:  pointer;
 }
-  .ui-autocomplete-category {
-    font-weight: bold;
-    padding: .2em .4em;
-    margin: .8em 0 .2em;
-    line-height: 1.5;
-  }
+.ui-autocomplete-category {
+  font-weight: bold;
+  padding: .2em .4em;
+  margin: .8em 0 .2em;
+  line-height: 1.5;
+}
 
