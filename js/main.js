@@ -200,14 +200,14 @@ function setControls(){
   Isvg = d3.select(".barWrap").append("svg")
     .style({ "position": "absolute", "top": 0, "height": height100 - 2* (lambdaNOPX/1.25)+margin.bottom, "width": lambdaNOPX-100+margin.bottom, "right": 0}) 
 
-var form = d3.select(".footer").append("form").style({"position": "absolute", "bottom": "2px", "right": "5px"})
+/*var form = d3.select(".footer").append("form").style({"position": "absolute", "bottom": "2px", "right": "5px"})
 var labels = form.selectAll("span").data([0]).enter().append("span")
 labels.append("input")
     .attr({
         type: "text",
         id: "tags",
         value: "Find a place"
-    })
+    })*/
 
 //chemical search
     var chemSearch = d3.select(".title").append("form")
@@ -313,7 +313,7 @@ labels.append("input")
       view = d
       Isvg.selectAll("rect, div, g").remove();
       if (d == "Sites") {
-       $("#tags").catcomplete( "enable" );
+       //$("#tags").catcomplete( "enable" );
         mapDisplay()
         svg.selectAll(".USA").transition().duration(2500).style({"fill": '#cccccc'}).style("stroke", "white");
         filterform.selectAll("input").property("disabled", false)
@@ -322,7 +322,7 @@ labels.append("input")
         //showform.selectAll("#None").property("checked", true)
       }
       if (d == "States") {
-        $("#tags").catcomplete( "disable" );
+        //$("#tags").catcomplete( "disable" );
         d3.selectAll(".mapDisplay").remove()
         filterform.selectAll("input").property("disabled", true)
         showform.selectAll("input").property("disabled", function(d){if (d=="Poverty" || d=="Race"){return true}})
@@ -1747,7 +1747,7 @@ function exporters(){
 exlatlongReset = latlongdump
 
 
-//search terms
+/*//search terms
 var database = []
 for (var o =0; o<latlongReset.length; o++) {
   database.push({"label":latlongReset[o].name, "value":latlongReset[o].id, "category": "Importers"})
@@ -1839,7 +1839,7 @@ $("#tags").keypress(function(e) {
         return false;
     }
 });
-  });
+  });*/
 
 //do sort and rank here
 for (var j=0; j<latlongdump.length; j++){
