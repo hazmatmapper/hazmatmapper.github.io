@@ -29,6 +29,7 @@ var margin = {top: 10, right: 10, bottom: 25, left: 10};
 var name; //the name of the chart area selected
 var phase = "Solids";
 var view = "Sites";
+var viewToggle = "Weight (kg)"
 var chemical = undefined;
 var defaultColor = "#f7f7f7";
 var results = [] //[{"name": "other sites", "color": defaultColor}];
@@ -46,8 +47,7 @@ var siteViewerHelp = false;
 var footerText;
 var descriptors = {};
 var currImporter,currColor,globalMax, globalMin, exGlobalMax, exGlobalMin, iceCheck, lastImporter, globalSum; //iceCheck sees if click on site was first ice then not
-var UNtypeKey = {};
-var mgmtTypeKey = {};
+var UNtypeKey = {}, mgmtTypeKey = {}, siteKey = {};
 var displaySVG;
 var facilityName = {"name": ""}
 //var activePlace = 666
@@ -56,14 +56,15 @@ var flanneryScale;
 var lineStroke
 var u, c, m, b, imp, exp, arcGroup;
 var filterTypesYear, filterTypesSignal;
-var lambda = "200px"; lambdaNOPX = 200, lambdaPad = "215px"
+var lambda = "260px"; lambdaNOPX = 260
 var lambdaPlus = "300px"; lambdaplusNOPX = 300
 var realchorodump;
-var format = d3.format("0,000");
+var format = d3.format(",.0f")	;
 var phaseformat = {"Solids": "kg", "Liquids": "liters"}
 var clicky, ECHOdata
 var mapDisplayStyle = {"height": lambdaNOPX/2.4+"px", "width": lambda, "right": 0, "bottom": lambdaNOPX/.8+"px"} //legend positioning
 var descriptionsStyle = {"bottom": lambdaNOPX/1+"px", "height": (lambdaNOPX/1.15)-(lambdaNOPX/2)+"px"} //descriptions positioning
+var importerManifests, exporterManifests, globalManifests, globalExManifests, mansbyDestination, mansbyExporter
 
 //begin script when window loads 
 window.onload = initialize(); 
@@ -77,10 +78,6 @@ function initialize(){
 
 
     //define width variables
-  width66 =  .55 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-  width75 =  .7 * Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-  height33 = .25 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-  height66 = .6 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
   height100 = window.innerHeight
   width100 = window.innerWidth
 
@@ -110,7 +107,7 @@ function initialize(){
   d3.select(".footer")
     .append("div")
     .attr("class", "aboutFooter")
-    .html("<a href='abouts/about.html' class='about' target='_blank'>About</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp<a href='abouts/help.html' class='about' target='_blank'>Help</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbspData last updated: 10/30/15")
+    .html("<a href='abouts/about.html' class='about' target='_blank'>About</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp<a href='abouts/help.html' class='about' target='_blank'>Help</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbspData last updated: 4/14/16")
 
   setControls();
   /*d3.select("body")
@@ -146,7 +143,7 @@ function setControls(){
   d3.select("body")
     .append("div")
     .classed("viewer", true)
-    .style({"top": 10+lambdaNOPX/1.6+"px", "width": 0, "height": height100-100+"px"})
+    .style({"top": 20+lambdaNOPX/1.6+"px", "width": 0, "height": height100-100+"px"})
     //.html("<span class = 'intro'><p>This is a tool for exploring transnational flows of hazardous waste. While we typically think the US exports all of its most toxic waste to poorer countries, the US actually now imports more than twice as much waste from Canada and Mexico than it exports to the two countries combined.  <p> All of the sites in the US that receive waste are mapped, the size indicating the relative amount they are importing. To begin exploring, <b>hover over</b> or <b>click</b> on a site. <p> To explore in-depth, you can use the filter control to investigate how much each site imports, what types of material they import, and what they do with it. By clicking on the controls you can show only those sites importing, for instance, lead, or, for instance, only those sites performing a certain management method. At any time you can show all the importers and foreign exporters.</span>")
     //.style("display", "inline-block");
 
@@ -217,7 +214,7 @@ labels.append("input")
         .attr({
             type: "text",
             id: "chem",
-            size: 23,
+            size: lambdaNOPX/5.5,
             value: "Search for a chemical (e.g. lead)"
         })
 
@@ -239,14 +236,15 @@ labels.append("input")
 
 
 //phase switcher here
-filterPhases = ["Solids", "Liquids"]
-var form = d3.select(".title").append("form"), j=0;
+var filterPhases = ["Solids", "Liquids"]
+d3.select(".title").append("div").attr("class", "togglers").style({"top": "50%"})
+var form = d3.select(".title").append("div").attr("class", "togglers").append("div").attr("class", "SolLiqDiv").append("form"), j=0;
 form.append("text")
   .attr("class", "viewerCategory")
  .text("Show waste type:")
 var labels = form.selectAll("span")
     .data(filterPhases)
-    .enter().append("span")
+    .enter().append("div")
 labels.append("input")
     .attr({
         type: "radio",
@@ -272,15 +270,45 @@ labels.append("input")
   labels.append("text").html("&nbsp")
 
 
-//site/state switcher here
-filterView = ["Sites", "States"]
-var form = d3.select(".title").append("form"), j=0;
+//normalizer (weight, volume, shipments) switcher here
+var filterNormalizers = ["Weight (kg)", "Volume (l)", "# of Shipments"]
+var form = d3.select(".title").append("div").attr("class", "NormDiv").append("form"), j=0;
 form.append("text")
   .attr("class", "viewerCategory")
- .text("Visualize waste by:")
+ .text("Normalize by:")
+var labels = form.selectAll("span")
+    .data(filterNormalizers)
+    .enter().append("div")
+labels.append("input")
+    .attr({
+        type: "radio",
+        name: "mode",
+        value: function(d, i) {return i;}
+    })
+    .property("checked", function(d, i) {return i===j;})
+    .on("click", function(d){
+      if (zoomed){reset()}
+      zoom.translate([0,0]).scale(1)
+      Isvg.selectAll("rect, div, g").remove();
+      d3.selectAll(".arc").remove()
+      d3.select(".descriptions").remove()
+      svg.selectAll("circle").transition().duration(1200).attr("r", 0).remove()//chain below so that removal only happens after r = 0
+      viewToggle = d
+      setData(phase, currentYears, view, viewToggle) 
+    })
+  labels.append("label").text(function(d) {return d;})
+  labels.append("text").html("&nbsp")
+
+
+//site/state switcher here
+var filterView = ["Sites", "States"]
+var form = d3.select(".title").append("div").attr("class", "AggDiv").append("form"), j=0;
+form.append("text")
+  .attr("class", "viewerCategory")
+ .text("Aggregate by:")
 var labels = form.selectAll("span")
     .data(filterView)
-    .enter().append("span")
+    .enter().append("div")
 
 labels.append("input")
     .attr({
@@ -334,6 +362,9 @@ labels.append("input")
     })
   labels.append("label").text(function(d) {return d;})
   labels.append("text").html("&nbsp")
+
+
+
 
 //filter types selector
 d3.select(".barWrap")
@@ -484,7 +515,7 @@ function yearChange(){
   setData(phase, currentYears, view)
 }
 
-function setData(phase, years, view){
+function setData(phase, years, view, viewToggle){
 d3.csv("data/data.csv", function(data) {
   data.forEach(function(d){
     d.totalQuantityinShipment = +d.totalQuantityinShipment // convert the quantity of waste from string to number
@@ -507,9 +538,20 @@ d3.csv("data/data.csv", function(data) {
 
   if (phase == "Solids"){
     data = data.filter(function(row){
-      return row["units_final"] == "kg"
+      return row["fullDescription"].toLowerCase().includes("solid") || row["hazWasteDesc"].toLowerCase().includes("solid") || (row["units_final"] == "kg" && row["hazWasteDesc"].toLowerCase().indexOf("liquid") == -1)
     })
   } else {
+    data = data.filter(function(row){
+      return row["fullDescription"].toLowerCase().includes("liquid") || row["hazWasteDesc"].toLowerCase().includes("liquid") || (row["units_final"] == "l" && row["hazWasteDesc"].toLowerCase().indexOf("solid") == -1)
+    })
+  }
+
+
+  if (viewToggle == "Weight (kg)"){
+    data = data.filter(function(row){
+      return row["units_final"] == "kg"
+    })
+  } else if (viewToggle == "Volume (l)"){
     data = data.filter(function(row){
       return row["units_final"] == "l"
     })
@@ -525,23 +567,35 @@ d3.csv("data/data.csv", function(data) {
   if (chemical){
     //console.log(filterTypesSignal[filterTypesYear[3]])
     data = data.filter(function(row){
-      console.log(row["fullDescription"].toLowerCase(), chemical.toLowerCase())
       return row["fullDescription"].toLowerCase().includes(chemical.toLowerCase())
     })
   }
 
+
   sum = d3.sum(data, function(d) {return d.totalQuantityinShipment})
   globalSum = sum
-  
+
+
+
   UNtypeKey={}
   data.forEach(function(d) {
     UNtypeKey[d.un] = d.hazWasteDesc;
   });
 
+  console.log(UNtypeKey)
+
   mgmtTypeKey={}
   data.forEach(function(d) {
     mgmtTypeKey[d.mgmt] = d.ExpectedManagementMethod;
   });
+
+
+  siteKey={}
+  data.forEach(function(d) {
+    siteKey[d.ReceivingFacilityEPAIDNumber] = d.importer_name;
+  });
+
+
 
 
   Site = d3.nest()
@@ -658,6 +712,40 @@ d3.csv("data/data.csv", function(data) {
   .key(function(d) {return d.exporterLONG;})
   .rollup(function(leaves) { return {"total_waste": d3.sum(leaves, function(d) {return d.totalQuantityinShipment;})} }) // sum by state code
   .entries(data);
+
+if (viewToggle == "# of Shipments"){
+  exporterManifests = d3.nest()
+  .key(function(d) {return d.exporterLONG;})
+  .key(function(d) {return d.rcra})
+  //.rollup(function(leaves) { return {"manifest_count": leaves.length}}) // sum by state code
+  .map(data);
+  var s = d3.keys(exporterManifests), t=[]
+  for (o=0; o<s.length; o++) {t[o]=d3.values(exporterManifests[s[o]]).length}
+  globalExManifests = t
+
+  importerManifests = d3.nest()
+  .key(function(d) {return d.ReceivingFacilityEPAIDNumber;})
+  .key(function(d) {return d.rcra})
+  .map(data);
+  var s = d3.keys(importerManifests), t=[]
+  for (o=0; o<s.length; o++) {t[o]=d3.values(importerManifests[s[o]]).length}
+  sum = d3.sum(t), globalSum = sum
+  globalManifests = t
+
+  mansbyDestination= d3.nest()
+  .key(function(d) {return d.ReceivingFacilityEPAIDNumber})
+  .key(function(d) {return d.exporterLONG;})
+  .key(function(d) {return d.rcra})
+   .map(data);
+
+  mansbyExporter= d3.nest()
+  .key(function(d) {return d.exporterLONG;})
+  .key(function(d) {return d.ReceivingFacilityEPAIDNumber})
+  .key(function(d) {return d.rcra})
+   .map(data);
+
+  console.log(mansbyExporter)
+}
 
   latlongs = d3.nest() //rollup unique exportlatlongs
   .key(function(d) {return d.importer_state;}) // state code
@@ -916,7 +1004,8 @@ Isvg.selectAll("rects")
         tip.show(show)
       }
       if (filterDomain == "Site" || filterDomain == undefined){
-        tip.show(d)
+      	var show = {"name": siteKey[d.name]}
+        tip.show(show)
       }      
       if (filterDomain == "Company"){
         tip.show(d)
@@ -975,7 +1064,7 @@ var xAxis = d3.svg.axis()
     .orient("right");
 Isvg.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate("+70+", "+0+")")
+      .attr("transform", "translate("+140+", "+0+")")
       .call(xAxis)
 
 
@@ -1161,7 +1250,8 @@ var t = d3.event.translate,
 t[0] = Math.max(-(width100/2 - s*55), Math.min(t[0], width100/2 - s*55));
 t[1] = Math.max(-(height100/2 - s*55), Math.min(t[1], height100/2 - s*55));
   */
-
+  if(arcGroup){arcGroup.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll(".arc").style('stroke-width', function(d) { return lineStroke(d.total_waste)/zoom.scale()})
   u.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
   b.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
@@ -1171,17 +1261,28 @@ t[1] = Math.max(-(height100/2 - s*55), Math.min(t[1], height100/2 - s*55));
   m.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );      
   imp.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" ) 
-  var flanMax = calcFlanneryRadius(exGlobalMax)
-  flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
+      .selectAll("circle")
+      .attr("r", function (d){
+      	var flanMax = calcFlanneryRadius(globalMax)
+  		flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
+  		return (viewToggle != "# of Shipments") ? radiusFlannery(d.total_waste)/(zoom.scale()) : radiusFlannery(d3.values(importerManifests[d.id]).length)/(zoom.scale())
+      })
+      .style("stroke-width", 1 / zoom.scale() + "px" ) 
   exp.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" ) //may need to fix to calculate based on import max?
-  if(arcGroup){arcGroup.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})}
+      .selectAll("circle")
+      .attr("r", function (d){
+       	var flanMax = calcFlanneryRadius(exGlobalMax)
+  		flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
+  		return (viewToggle != "# of Shipments") ? radiusFlannery(d.total_waste)/(zoom.scale()) : radiusFlannery(d3.values(exporterManifests[d.long]).length)/(zoom.scale())
+      })
+      .style("stroke-width", 1 / zoom.scale() + "px" ) //may need to fix to calculate based on import max?
+
+
+
+}
 }
 
 function reset() {
-  //d3.select("#mapSVG").remove()
   zoomed = false;
   zoom.translate([0,0]).scale(1)
 
@@ -1222,12 +1323,21 @@ function reset() {
       .selectAll("path").style("stroke-width", .5 / zoom.scale() + "px" );
   b.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
-  imp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
-  exp.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll("circle").attr("r", function (d){return radiusFlannery(d.total_waste)/(zoom.scale())}).style("stroke-width", 1 / zoom.scale() + "px" )
-  if (arcGroup){arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})}
+  imp.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("circle")
+      .attr("r", function (d){
+      	var flanMax = calcFlanneryRadius(globalMax)
+  		flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
+      	return (viewToggle != "# of Shipments") ? radiusFlannery(d.total_waste)/(zoom.scale()) : radiusFlannery(d3.values(importerManifests[d.id]).length)/(zoom.scale())
+      })
+      .style("stroke-width", 1 / zoom.scale() + "px" ) 
+  exp.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("circle")
+       .attr("r", function (d){
+       	var flanMax = calcFlanneryRadius(exGlobalMax)
+  		flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
+      	return (viewToggle != "# of Shipments") ? radiusFlannery(d.total_waste)/(zoom.scale()) : radiusFlannery(d3.values(exporterManifests[d.long]).length)/(zoom.scale())
+      })
 }
 
 function dataCrunch(data){
@@ -1385,25 +1495,12 @@ var radiusFlannery = function(x) {
   return flanneryScale(calcFlanneryRadius(x));
 };
 
-d3.selection.prototype.moveToFront = function() {
-  return this.each(function(){
-    this.parentNode.appendChild(this);
-  });
-  };
-d3.selection.prototype.moveToBack = function() { 
-    return this.each(function() { 
-        var firstChild = this.parentNode.firstChild; 
-        if (firstChild) { 
-            this.parentNode.insertBefore(this, firstChild); 
-        } 
-    }); 
-};
 
 function importers(data){
   var max = d3.max(latlongReset, function(d) {return d.total_waste}),
   min = d3.min(latlongReset, function(d) {return d.total_waste})
-  globalMax = max;
-  globalMin = min;
+  globalMax = max, globalMin = min;
+  if (viewToggle == "# of Shipments"){max = d3.max(globalManifests), min = d3.min(globalManifests), globalMax = max, globalMin = min}
 
   var flanMax = calcFlanneryRadius(max);
   flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
@@ -1445,20 +1542,10 @@ function importers(data){
   imp.selectAll("circle")
     .transition()
     .duration(1000)
-    .attr("r", function(d) { return radiusFlannery(d.total_waste); })
+    .attr("r", function(d) {
+      return (viewToggle != "# of Shipments") ? radiusFlannery(d.total_waste) : radiusFlannery(d3.values(importerManifests[d.id]).length)
+    })
 
-/*  dots = svg.append("g")
-  dots.selectAll("circle")
-    .data(data)
-    .enter().append("circle")
-    .style("fill", "red")
-    .attr("cx", function(d) {return projection([d.long, d.lat])[0]; }) 
-    .attr("cy", function(d) { return projection([d.long, d.lat])[1]; })
-  dots.selectAll("circle")
-    .transition()
-    .duration(1000)
-    .attr("r", 1)
-*/
   exporters();
  
 };
@@ -1538,6 +1625,7 @@ function exportThis(data){
 function drawLinesOver(data, base){
   //var max = d3.max(data, function(d) {return d.total_waste}),
   //min = d3.min(data, function(d) {return d.total_waste})
+
   lineStroke = d3.scale.sqrt()
     .domain([globalMin, globalMax]) 
     .range([2, 12])
@@ -1583,6 +1671,8 @@ function drawLinesOver(data, base){
         };
 
 var links = [];
+var units = (viewToggle != "# of Shipments") ? data[0].units : "shipments"
+
 for(var i=0, len=data.length; i<len; i++){
     // (note: loop until length - 1 since we're getting the next
     //  item with i+1)
@@ -1592,9 +1682,9 @@ for(var i=0, len=data.length; i<len; i++){
                 [ data[i].long, data[i].lat ],
                 [ base[0].long, base[0].lat ]
             ],
-            total_waste: data[i].total_waste,
+            total_waste: (viewToggle != "# of Shipments") ? data[i].total_waste : d3.values(mansbyExporter[data[i].long][base[0].id]).length,
             name: data[i].name,
-            units: data[i].units
+            units: units
         });
     }
 
@@ -1617,15 +1707,17 @@ var pathArcs = arcGroup.selectAll(".arc")
                 d: path
             })
             .style("stroke", "#252525")
-            .style('stroke-width', function(d) {return lineStroke(d.total_waste)})
+            .style('stroke-width', function(d) {console.log(d); return lineStroke(d.total_waste)})
             .style('cursor', "pointer")
             .on("mouseover", function(d) {tooltipFlow.show(d)}) //
             .on("mouseout", function(d) {tooltipFlow.hide(d)})
                 //'stroke-dasharray': '5'
             .call(lineTransition); //at end of function call positions?
   if (zoomed){
-    arcGroup.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
-      .selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/zoom.scale()})
+	if(arcGroup){
+		arcGroup.attr("transform", "translate(" +  zoom.translate() + ")scale(" + zoom.scale() + ")")
+      		.selectAll(".arc").style('stroke-width', function(d) {return lineStroke(d.total_waste)/(zoom.scale())})
+	}
   }
   IMPpositions(data, base)
 }
@@ -1850,12 +1942,11 @@ latlongdump.sort(function(a,b) {return b.total_waste-a.total_waste;}) // note: t
 for (var j=0; j<latlongdump.length; j++){latlongdump[j].rank = j+1+"/"+latlongdump.length}
 
   //scale exporter symbolization
-  var max = d3.max(latlongdump, function(d) {return d.total_waste}),
-  min = d3.min(latlongdump, function(d) {return d.total_waste})
-  
-  exGlobalMax = max;
-  exGlobalMin = min;
-  
+  var max = d3.max(latlongReset, function(d) {return d.total_waste}),
+  min = d3.min(latlongReset, function(d) {return d.total_waste})
+  exGlobalMax = max, exGlobalMin = min;
+  if (viewToggle == "# of Shipments"){max = d3.max(globalExManifests), min = d3.min(globalExManifests), exGlobalMax = max, exGlobalMin = min}
+
   var flanMax = calcFlanneryRadius(max);
   flanneryScale = d3.scale.linear().domain([0, flanMax]).range([10, 35]);
 
@@ -1883,7 +1974,9 @@ for (var j=0; j<latlongdump.length; j++){latlongdump[j].rank = j+1+"/"+latlongdu
   exp.selectAll("circle")
     .transition()
     .duration(1000)
-    .attr("r", function(d) {return radiusFlannery(d.total_waste); })
+    .attr("r", function(d) {
+      return (viewToggle != "# of Shipments") ? radiusFlannery(d.total_waste) : radiusFlannery(d3.values(exporterManifests[d.long]).length)
+    })
   //ports();
 
   //this is the position the flow lines will be draw in - after (above) the exporters
@@ -2763,6 +2856,8 @@ function exDrawLinesOver(data, base){
 
 
 var links = [];
+var units = (viewToggle != "# of Shipments") ? data[0].units : "shipments"
+
 for(var i=0, len=data.length; i<len; i++){
     // (note: loop until length - 1 since we're getting the next
     //  item with i+1)
@@ -2772,9 +2867,9 @@ for(var i=0, len=data.length; i<len; i++){
                 [ base[0].long, base[0].lat ],
                 [ data[i].long, data[i].lat ]
             ],
-            total_waste: data[i].total_waste,
+            total_waste: (viewToggle != "# of Shipments") ? data[i].total_waste : d3.values(mansbyDestination[data[i].id][base[0].long]).length,
             name: data[i].name,
-            units: data[i].units
+            units: units
         });
     }
 var pathArcs = arcGroup.selectAll(".arc")

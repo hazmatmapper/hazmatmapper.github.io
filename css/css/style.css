@@ -116,10 +116,27 @@ label {
   width: 95%;
   background: #252525;
 }
-.long{
-  width: 100%;
-  background-color:orange;
+.togglers{
+  position: absolute;
+  width: 90%;
+  height: 90%;
 }
+.SolLiqDiv{
+  position: relative;
+  left: 0%;
+  width: 40%;
+}
+.NormDiv{
+  position: absolute;
+  left: 35%;
+  width: 40%;
+}
+.AggDiv{
+  position: absolute;
+  width: 33%;
+  left: 70%;
+}
+
 
 
 .CAN, .MEX, .USA{
@@ -182,7 +199,7 @@ label {
 
 #viewShowHide{
   position: absolute;
-  top: 145px;
+  top: 185px;
   left: 0px
 }
 #viewShowHide:hover{
