@@ -214,7 +214,7 @@ labels.append("input")
         .attr({
             type: "text",
             id: "chem",
-            size: lambdaNOPX/5.5,
+            width: lambdaNOPX,
             value: "Search for a chemical (e.g. lead)"
         })
 
