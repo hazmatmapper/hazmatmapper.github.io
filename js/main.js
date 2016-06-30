@@ -214,7 +214,7 @@ labels.append("input")
         .attr({
             type: "text",
             id: "chem",
-            width: lambdaNOPX,
+            size: lambdaNOPX/5.5,
             value: "Search for a chemical (e.g. lead)"
         })
 
@@ -524,16 +524,6 @@ d3.csv("data/data.csv", function(data) {
     d.receivingLat = +d.latitude
     d.receivingLong = +d.longitude
     d.receivingFacilityZipCode = +d.receivingfacilityzipcode
-    d.hazWasteDesc = d.hazWasteDesc
-    d.exporter_name = d.exporter_name
-    d.fullDescription - d.fullDescription
-    d.exporter_key = d.exporter_key
-    d.un = d.un
-    d.mgmt = d.mgmt
-    d.rcra = d.rcra
-    d.inputer = d.inputer
-    d.filenom = d.filenom
-    d.ExpectedManagementMethod = d.ExpectedManagementMethod
   });
 
   if (phase == "Solids"){
@@ -3011,6 +3001,7 @@ function updateDisplay(data){ //function is called whether system change occurs 
         .attr("class", "mapDisplay")
         .style(mapDisplayStyle)
 
+    console.log(data)
     var result = colorKey.filter(function( obj ) {return obj.name == data.name;});
     result = result[0];
     results.splice(0,0,result)
